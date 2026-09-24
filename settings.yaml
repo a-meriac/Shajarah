@@ -1,0 +1,58 @@
+# Tunable settings for the proxies, predictors and data scripts.
+# Anything left out falls back to the default in edgeproxy/common/settings.py.
+# A misspelled key is an error, not silently ignored. Commit changes you run experiments with,
+# so every result can be traced back to its settings.
+
+jev:
+  model: typesafe/jev-1.13     # pin a dated version for experiments; never ~typesafe/jev-latest
+  max_options: 40              # links offered to Jev per page, in page order
+  timeout_s: 30
+
+links:
+  max_candidates: 255          # links extracted per page (Jev accepts at most 255 options)
+  same_origin_only: true       # ignore links to other sites
+
+prefetch:                      # which predicted pages the server pushes
+  threshold: 0.25              # normal: push links at least this likely...
+  budget_bytes: 2000000        # ...up to this many bytes per page view
+  handover_threshold: 0.03     # dropout predicted: much lower bar...
+  handover_budget_bytes: 20000000   # ...and a bigger budget
+  handover_budget_per_outage_s: 500000  # plus this much per second of predicted outage
+  max_budget_bytes: 60000000   # hard cap
+  metered_factor: 0.25         # budget multiplier on metered links (e.g. mobile data)
+  default_size: 300000         # size guess for a page whose size isn't known yet
+
+handover:                      # client-side dropout prediction from signal strength
+  threshold_dbm: -110          # signal below this is unusable (~-110 RSRP cellular, ~-80 Wi-Fi)
+  window_s: 5                  # fit the trend over this many seconds
+  level_window_s: 1            # current level = average over this many seconds
+  horizon_s: 8                 # warn if the signal will cross the threshold within this time
+  min_slope: -0.3              # dBm/s; flatter trends are noise, not a fade
+  min_confidence: 0.5          # minimum R^2 of the trend line
+  clear_margin_db: 3           # clear the warning only once this far back above the threshold
+  min_samples: 5
+
+client:
+  cache_mb: 200
+  request_timeout_s: 60        # give up on a page that isn't cached
+  revalidate_timeout_s: 2      # serve the cached copy if the tunnel doesn't answer in time
+  retry_delay_s: 0.2           # wait before retrying on a broken connection (TCP baseline)
+
+server:
+  origin_timeout_s: 15
+
+tunnel:
+  idle_timeout_s: 120          # must outlast the longest emulated outage
+  tcp_connect_timeout_s: 5
+
+snapshot:                      # data/build_snapshot.py
+  key_month: 2026-07           # clickstream month used as the answer key for Jev
+  session_month: 2026-08       # clickstream month that drives the browsing sessions
+  buckets:                     # popularity buckets: rank range by outgoing link clicks
+    head: [0, 1000]
+    torso: [1000, 50000]
+    tail: [50000, 300000]
+  per_bucket: 334              # seed pages sampled per bucket
+  targets_per_seed: 1          # most-clicked next pages added per seed
+  seed: 0                      # random seed for the sample
+  concurrency: 4               # parallel requests to the Wikimedia API

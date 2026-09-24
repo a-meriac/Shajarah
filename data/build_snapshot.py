@@ -12,7 +12,9 @@
    data/snapshot/clickstream-<month>.tsv, and the page list with revision ids to
    data/snapshot_manifest.json (committed, so the snapshot can be rebuilt exactly).
 
-  python -m data.build_snapshot --key-month 2026-07 --session-month 2026-08
+Months, buckets and sample sizes come from the `snapshot` section of settings.yaml.
+
+  python -m data.build_snapshot
 """
 
 from __future__ import annotations
@@ -24,6 +26,7 @@ import json
 import random
 import re
 import sys
+from dataclasses import asdict
 from pathlib import Path
 from urllib.parse import quote
 
@@ -31,22 +34,22 @@ import httpx
 from selectolax.parser import HTMLParser
 
 from data.clickstream import USER_AGENT, dump_path, outgoing_totals, transitions
+from edgeproxy.common.settings import load_settings
 
 HERE = Path(__file__).parent
 SNAPSHOT_DIR = HERE / "snapshot"
 MANIFEST = HERE / "snapshot_manifest.json"
 REST = "https://en.wikipedia.org/api/rest_v1/page/html/{title}"
-# Rank ranges (by outgoing link clicks, 0 = most) for the popularity buckets.
-BUCKETS = {"head": (0, 1_000), "torso": (1_000, 50_000), "tail": (50_000, 300_000)}
 EXCLUDE = {"Main_Page"}
 STRIP_ATTRS = ("data-mw", "data-parsoid")
 REVISION = re.compile(r"/revision/(\d+)")
 
 
-def sample_seeds(totals, per_bucket: int, rng: random.Random) -> list[dict]:
+def sample_seeds(totals, buckets: dict, per_bucket: int, rng: random.Random) -> list[dict]:
+    """`buckets` maps a name to a rank range [lo, hi) by outgoing link clicks (0 = most)."""
     ranked = [t for t, _ in totals.most_common() if t not in EXCLUDE]
     seeds = []
-    for bucket, (lo, hi) in BUCKETS.items():
+    for bucket, (lo, hi) in buckets.items():
         for rank in sorted(rng.sample(range(lo, min(hi, len(ranked))), per_bucket)):
             title = ranked[rank]
             seeds.append(
@@ -138,45 +141,37 @@ def write_transitions(month: str, sources: set[str]) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--key-month", default="2026-07", help="answer key for the predictor eval")
-    ap.add_argument("--session-month", default="2026-08", help="drives the browsing sessions")
-    ap.add_argument("--per-bucket", type=int, default=334)
-    ap.add_argument("--targets-per-seed", type=int, default=1)
-    ap.add_argument("--seed", type=int, default=0)
-    ap.add_argument("--concurrency", type=int, default=4)
-    args = ap.parse_args()
+    ap.add_argument("--settings", type=Path, default=None, help="default: settings.yaml")
+    cfg = load_settings(ap.parse_args().settings).snapshot
 
-    print(f"ranking articles by {args.key_month} clicks", file=sys.stderr)
-    seeds = sample_seeds(outgoing_totals(dump_path(args.key_month)), args.per_bucket,
-                         random.Random(args.seed))  # fmt: skip
+    print(f"ranking articles by {cfg.key_month} clicks", file=sys.stderr)
+    totals = outgoing_totals(dump_path(cfg.key_month))
+    seeds = sample_seeds(totals, cfg.buckets, cfg.per_bucket, random.Random(cfg.seed))
     seed_titles = {p["title"] for p in seeds}
 
-    print(f"picking targets from {args.session_month}", file=sys.stderr)
-    session = transitions(dump_path(args.session_month), seed_titles)
+    print(f"picking targets from {cfg.session_month}", file=sys.stderr)
+    session = transitions(dump_path(cfg.session_month), seed_titles)
     pages = list(seeds)
     known = set(seed_titles)
     for seed in seeds:
-        for target, _ in session[seed["title"]].most_common(args.targets_per_seed):
+        for target, _ in session[seed["title"]].most_common(cfg.targets_per_seed):
             if target not in known:
                 known.add(target)
                 pages.append({"title": target, "role": "target", "from": seed["title"]})
 
     print(f"fetching {len(pages)} pages", file=sys.stderr)
     SNAPSHOT_DIR.mkdir(parents=True, exist_ok=True)
-    asyncio.run(fetch_all(pages, args.concurrency))
+    asyncio.run(fetch_all(pages, cfg.concurrency))
 
     ok = {p["title"] for p in pages if "error" not in p}
-    for month in (args.key_month, args.session_month):
+    for month in (cfg.key_month, cfg.session_month):
         print(f"writing {month} clickstream rows", file=sys.stderr)
         write_transitions(month, ok)
 
     manifest = {
         "created": datetime.datetime.now(datetime.UTC).date().isoformat(),
         "source": "https://en.wikipedia.org/api/rest_v1/page/html/",
-        "key_month": args.key_month,
-        "session_month": args.session_month,
-        "buckets": BUCKETS,
-        "args": vars(args),
+        "settings": asdict(cfg),
         "pages": pages,
     }
     MANIFEST.write_text(json.dumps(manifest, indent=1, ensure_ascii=False) + "\n")

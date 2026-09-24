@@ -17,6 +17,7 @@ make test-netns             # Linux only: emulated networks, needs sudo
 
 ## Where things are
 
+- `settings.yaml`: every tunable value (Jev, prefetch budgets, dropout prediction, timeouts, snapshot sample) in one place
 - `edgeproxy/`: the proxies, the tunnel, and the prediction code
 - `emulation/`: fake Wi-Fi/5G/satellite links and dropout scenarios
 - `data/`: the local origin server and the Wikipedia clickstream reader

@@ -2,7 +2,7 @@ import gzip
 import random
 from collections import Counter
 
-from data.build_snapshot import BUCKETS, clean_html, sample_seeds
+from data.build_snapshot import clean_html, sample_seeds
 from data.clickstream import iter_links, outgoing_totals, transitions
 from edgeproxy.server.links import extract_links
 
@@ -28,12 +28,13 @@ def test_clean_html_rewrites_links_and_drops_metadata():
 def test_sample_seeds_is_stratified_and_reproducible():
     totals = Counter({f"P{i}": 1_000_000 - i for i in range(400_000)})
     totals["Main_Page"] = 10**9
-    a = sample_seeds(totals, 5, random.Random(0))
-    b = sample_seeds(totals, 5, random.Random(0))
+    buckets = {"head": [0, 1_000], "torso": [1_000, 50_000], "tail": [50_000, 300_000]}
+    a = sample_seeds(totals, buckets, 5, random.Random(0))
+    b = sample_seeds(totals, buckets, 5, random.Random(0))
     assert a == b and len(a) == 15
     assert all(p["title"] != "Main_Page" for p in a)
     for p in a:
-        lo, hi = BUCKETS[p["bucket"]]
+        lo, hi = buckets[p["bucket"]]
         assert lo <= p["rank"] < hi and p["title"] == f"P{p['rank']}"
 
 

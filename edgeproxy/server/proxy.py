@@ -51,19 +51,22 @@ class ServerProxy:
 
 
 async def _serve(args) -> None:
+    from edgeproxy.common.settings import load_settings
     from edgeproxy.tunnel.certs import generate_self_signed
 
     args.certdir.mkdir(parents=True, exist_ok=True)
     cert, key = args.certdir / "cert.pem", args.certdir / "key.pem"
     if not cert.exists():
         generate_self_signed(cert, key)
-    proxy = ServerProxy(log=EventLog(args.log, "server", args.run_id))
+    s = load_settings(args.settings)
+    proxy = ServerProxy(
+        Fetcher(timeout=s.server.origin_timeout_s), EventLog(args.log, "server", args.run_id)
+    )
     if args.transport == "quic":
         from edgeproxy.tunnel.quic_tunnel import QuicTunnelServer, server_configuration
 
-        server = QuicTunnelServer(
-            args.host, args.port, server_configuration(cert, key), proxy.handle
-        )
+        config = server_configuration(cert, key, idle_timeout=s.tunnel.idle_timeout_s)
+        server = QuicTunnelServer(args.host, args.port, config, proxy.handle)
     else:
         from edgeproxy.tunnel.tcp_transport import TcpTunnelServer, server_ssl_context
 
@@ -81,6 +84,7 @@ def main() -> None:
     ap.add_argument("--certdir", type=Path, default=Path("/tmp/ep"))
     ap.add_argument("--log", type=Path, default=None, help="JSONL event log")
     ap.add_argument("--run-id", default="")
+    ap.add_argument("--settings", type=Path, default=None, help="default: settings.yaml")
     asyncio.run(_serve(ap.parse_args()))
 
 

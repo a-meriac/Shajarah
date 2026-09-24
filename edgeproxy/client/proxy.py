@@ -232,23 +232,33 @@ class ClientProxy:
 
 
 async def _run(args) -> None:
+    from edgeproxy.common.settings import load_settings
+
+    s = load_settings(args.settings)
     cafile = args.certdir / "cert.pem"
     local = (args.local_ip, 0)
     if args.transport == "quic":
         from edgeproxy.tunnel.quic_tunnel import QuicClientTransport, client_configuration
 
-        transport = QuicClientTransport(
-            (args.server, args.port), client_configuration(cafile), local_addr=local
-        )
+        config = client_configuration(cafile, idle_timeout=s.tunnel.idle_timeout_s)
+        transport = QuicClientTransport((args.server, args.port), config, local_addr=local)
     else:
         from edgeproxy.tunnel.tcp_transport import TcpClientTransport, client_ssl_context
 
         transport = TcpClientTransport(
-            (args.server, args.port), client_ssl_context(cafile), local_addr=local
+            (args.server, args.port),
+            client_ssl_context(cafile),
+            local_addr=local,
+            connect_timeout=s.tunnel.tcp_connect_timeout_s,
         )
     await transport.connect()
     proxy = ClientProxy(
-        transport, Cache(args.cache_mb * 1_000_000), EventLog(args.log, "client", args.run_id)
+        transport,
+        Cache(s.client.cache_mb * 1_000_000),
+        EventLog(args.log, "client", args.run_id),
+        request_timeout=s.client.request_timeout_s,
+        revalidate_timeout=s.client.revalidate_timeout_s,
+        retry_delay=s.client.retry_delay_s,
     )
     await proxy.start(args.listen, args.listen_port)
     print(f"client proxy on {args.listen}:{proxy.port} -> {args.transport} tunnel", flush=True)
@@ -264,7 +274,7 @@ def main() -> None:
     ap.add_argument("--certdir", type=Path, default=Path("/tmp/ep"))
     ap.add_argument("--listen", default="127.0.0.1")
     ap.add_argument("--listen-port", type=int, default=8118)
-    ap.add_argument("--cache-mb", type=int, default=200)
+    ap.add_argument("--settings", type=Path, default=None, help="default: settings.yaml")
     ap.add_argument("--log", type=Path, default=None, help="JSONL event log")
     ap.add_argument("--run-id", default="")
     asyncio.run(_run(ap.parse_args()))

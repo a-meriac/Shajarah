@@ -19,6 +19,7 @@ Files marked *(planned)* don't exist yet.
 ```
 pyproject.toml            # pip + venv (make venv); deps: aioquic, httpx, selectolax, numpy, pandas,
                           # matplotlib, pyyaml; extras: demo (mitmproxy), dev (pytest, ruff)
+settings.yaml             # every tunable value, commented; loaded by edgeproxy/common/settings.py
 Makefile                  # make venv | test | lint | netns-up | netns-down | test-netns
                           # (planned: exp-predictor | exp-system | figures | paper)
 edgeproxy/
@@ -27,6 +28,7 @@ edgeproxy/
     http.py               # header handling shared by both proxies
     eventlog.py           # structured JSONL event log (ts, event, fields): single source for all metrics
     env.py                # secrets from the environment or .env
+    settings.py           # loads settings.yaml; typos and wrong types are errors
   tunnel/
     transport.py          # Transport ABC so the proxies don't care which one is in use
     quic_tunnel.py        # QUIC client + server over aioquic; migrate(); streams, pushes, DATAGRAM frames
