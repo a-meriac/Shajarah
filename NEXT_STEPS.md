@@ -12,23 +12,33 @@ Done:
 - Local origin server with ETag / If-Modified-Since, so revalidation works end to end.
 - Emulated network (network namespaces + netem), handover predictor, prefetch policy, Jev client.
 - **Day-4 gate passed** on the Linux PC: the tunnel survives a real Wi-Fi cut (below).
+- Wikipedia snapshot: 1,942 pages (334 seeds each from popular / medium / obscure articles, plus
+  their most-clicked next pages), 791 MB, with the July and August clickstream rows for them.
+  Rebuild with `python -m data.clickstream fetch 2026-07 2026-08 && python -m data.build_snapshot`
+  (the page list is in `data/snapshot_manifest.json`; the pages themselves aren't in git).
+- `settings.yaml`: every tunable value in one commented file.
 
-Tests: `make test` -> 42 passed (unit + loopback, any OS). `make test-netns` -> 2 passed (Linux).
+Measured on the snapshot (July clicks, median per seed page): the first 40 links, which is what
+Jev sees, get 65–69% of real clicks; the best possible 40 would get 87–96%. Removing navigation
+boxes and references doesn't change the first 40. This caps what any predictor can reach at 40.
+
+Tests: `make test` -> 56 passed (unit + loopback, any OS). `make test-netns` -> 2 passed (Linux).
 
 ## Next, in plan order
 
-1. **Wikipedia snapshot.** `data/build_snapshot.py`: pick ~1000 pages stratified by popularity
-   from the clickstream, fetch them via the Wikimedia REST API, rewrite links to `/wiki/<Title>`
-   and save them as `data/snapshot/wiki/<Title>.html` (the origin already serves that layout).
-   The clickstream reader is `data/clickstream.py`; July is the answer key for scoring Jev,
-   August drives the browsing sessions.
-2. **Origin changes between runs:** let the origin modify X% of pages, to measure the bytes
-   revalidation saves.
-3. **Prefetch:** in `ServerProxy.handle`, extract links (`server/links.py`), ask Jev
+1. **Prefetch:** in `ServerProxy.handle`, extract links (`server/links.py`), ask Jev
    (`predictors/jev.py`), push with `PrefetchPolicy`. The client proxy already stores pushes and
-   serves them. Jev needs `OPENROUTER_API_KEY` in `.env` (copy `.env.example`).
-4. **Predictor evaluation** (`experiments/predictor_eval.py`): Jev's top guesses vs the links
-   people actually clicked most, split by page popularity.
+   serves them. Jev needs `OPENROUTER_API_KEY` in `.env` (copy `.env.example`; this PC has none).
+2. **Predictor evaluation** (`experiments/predictor_eval.py`): Jev's top guesses vs the July
+   clicks, split by popularity bucket.
+3. **Link choice (offline, free):** measure click coverage for 60/80/100 links and for simple
+   selection rules (repeated links, lead/infobox first) before settling `jev.max_options`.
+4. **Compress pushed pages** in the tunnel: ~5× smaller HTML means ~5× more pages per outage budget.
+5. **Origin changes between runs:** let the origin modify X% of pages, to measure the bytes
+   revalidation saves.
+6. `data/sessions.py` (browsing sessions from the August clickstream), then the plan's D10–D13:
+   handover predictor on real traces, warm standby path (`path_manager.py`, config 5), the
+   experiment runner over all configs × scenarios × seeds, VoIP probe, figures.
 
 ## Still open outside the code
 
