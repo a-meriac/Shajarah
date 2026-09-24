@@ -24,8 +24,9 @@ from edgeproxy.tunnel.tcp_transport import (
     server_ssl_context,
 )
 
-PAGE_A = b"<html><body><a href='/wiki/B'>B</a></body></html>"
+PAGE_A = b"<html><head><title>A</title></head><body><a href='/wiki/B'>B</a> <a href='/wiki/C'>C</a></body></html>"
 PAGE_B = b"<html><body>B</body></html>"
+PAGE_C = b"<html><body>C</body></html>"
 
 
 @pytest.fixture
@@ -33,6 +34,7 @@ def origin(tmp_path):
     (tmp_path / "wiki").mkdir()
     (tmp_path / "wiki" / "A.html").write_bytes(PAGE_A)
     (tmp_path / "wiki" / "B.html").write_bytes(PAGE_B)
+    (tmp_path / "wiki" / "C.html").write_bytes(PAGE_C)
     server = OriginServer(tmp_path, ("127.0.0.1", 0))
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
@@ -48,11 +50,11 @@ def _url(origin, path):
 class Stack:
     """Everything between the browser and the origin, with a switch to stall the server side."""
 
-    def __init__(self, kind, tunnel_certs, **proxy_kwargs):
+    def __init__(self, kind, tunnel_certs, server_proxy=None, **proxy_kwargs):
         self.kind = kind
         self.certs = tunnel_certs
         self.proxy_kwargs = proxy_kwargs
-        self.server_proxy = ServerProxy()
+        self.server_proxy = server_proxy or ServerProxy()
         self.link_up = asyncio.Event()
         self.link_up.set()
 
@@ -179,3 +181,62 @@ async def test_tcp_request_survives_reconnect(tunnel_certs, origin):
         assert reply.status == 200 and reply.body == PAGE_B
         assert s.transport.connects == 2
         assert len({sess.peer_addr for sess in s.server.sessions}) == 2
+
+
+class FakePredictor:
+    """Fixed probabilities by link target, standing in for Jev (no API calls)."""
+
+    def __init__(self, by_target, fail=False):
+        self.by_target = by_target
+        self.fail = fail
+        self.states = []
+
+    async def predict(self, state):
+        self.states.append(state)
+        if self.fail:
+            raise RuntimeError("model down")
+        return {link.url: self.by_target.get(link.target, 0.0) for link in state.candidates}
+
+
+async def _wait_for(cond, timeout=3.0):
+    for _ in range(int(timeout / 0.02)):
+        if cond():
+            return True
+        await asyncio.sleep(0.02)
+    return False
+
+
+async def test_predicted_page_is_pushed_and_served_from_cache(kind, tunnel_certs, origin):
+    predictor = FakePredictor({"B": 0.8, "C": 0.1})
+    async with Stack(kind, tunnel_certs, ServerProxy(predictor=predictor)) as s:
+        r = await s.browser.get(_url(origin, "/wiki/A"))
+        assert r.content == PAGE_A
+        url_b, url_c = _url(origin, "/wiki/B"), _url(origin, "/wiki/C")
+        assert await _wait_for(lambda: s.cache.peek(url_b) is not None)
+        assert s.cache.peek(url_c) is None  # 0.1 is below the normal threshold
+        assert predictor.states[0].title == "A"
+
+        s.link_up.clear()  # served from the push, the tunnel isn't needed
+        r = await s.browser.get(url_b)
+        assert r.content == PAGE_B and r.headers[SOURCE_HEADER] == "push"
+
+
+async def test_handover_hint_pushes_more(kind, tunnel_certs, origin):
+    predictor = FakePredictor({"B": 0.8, "C": 0.1})
+    async with Stack(kind, tunnel_certs, ServerProxy(predictor=predictor)) as s:
+        hint = Frame(MsgType.HANDOVER_HINT, {"active": True, "eta_s": 4.0, "outage_s": 45.0})
+        await s.transport.send(hint)
+        await asyncio.sleep(0.1)
+        await s.browser.get(_url(origin, "/wiki/A"))
+        assert await _wait_for(lambda: s.cache.peek(_url(origin, "/wiki/C")) is not None)
+        assert s.cache.peek(_url(origin, "/wiki/B")) is not None
+
+
+async def test_failing_predictor_does_not_break_browsing(kind, tunnel_certs, origin):
+    predictor = FakePredictor({}, fail=True)
+    async with Stack(kind, tunnel_certs, ServerProxy(predictor=predictor)) as s:
+        r = await s.browser.get(_url(origin, "/wiki/A"))
+        assert r.status_code == 200 and r.content == PAGE_A
+        assert await _wait_for(lambda: predictor.states)
+        await asyncio.sleep(0.1)
+        assert len(s.cache) == 1  # only the page itself
