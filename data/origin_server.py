@@ -4,6 +4,12 @@
 ETag (content hash) and Last-Modified (file mtime), and conditional requests get 304, so the
 revalidation path can be measured.
 
+With --standins, an article outside the snapshot (/wiki/<anything> with no file) is answered with
+a stand-in: the HTML of a real snapshot page, picked deterministically from the URL, marked with
+X-Stand-In: 1. Readers never open those pages (sessions only visit snapshot pages), but the
+server proxy does prefetch them, and a push must cost what a real page would, or prefetching
+looks cheaper than it is. Stand-ins have real pages' sizes and compressibility.
+
   python -m data.origin_server --root data/snapshot --port 8080
 """
 
@@ -22,10 +28,11 @@ from urllib.parse import unquote, urlsplit
 class OriginServer(ThreadingHTTPServer):
     daemon_threads = True
 
-    def __init__(self, root: Path, addr: tuple[str, int]) -> None:
+    def __init__(self, root: Path, addr: tuple[str, int], standins: bool = False) -> None:
         super().__init__(addr, _Handler)
         self.root = root.resolve()
         self.log: list[tuple[str, int]] = []  # (path, status), for tests
+        self.standins = sorted((self.root / "wiki").rglob("*.html")) if standins else []
 
     def handle_error(self, request, client_address) -> None:
         # A client hanging up mid-response (e.g. a cancelled prefetch) is normal, not an error.
@@ -41,6 +48,12 @@ class OriginServer(ThreadingHTTPServer):
                 return path
         return None
 
+    def standin(self, url_path: str) -> Path | None:
+        if not self.standins or not url_path.startswith("/wiki/"):
+            return None
+        digest = hashlib.sha256(unquote(url_path).encode()).digest()
+        return self.standins[int.from_bytes(digest[:8], "big") % len(self.standins)]
+
 
 class _Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
@@ -55,6 +68,9 @@ class _Handler(BaseHTTPRequestHandler):
     def _respond(self, send_body: bool) -> None:
         url_path = urlsplit(self.path).path
         path = self.server.resolve(url_path)
+        standin = False
+        if path is None:
+            path, standin = self.server.standin(url_path), True
         if path is None:
             self._send(404, [("Content-Type", "text/plain")], b"not found\n", send_body)
             return
@@ -70,6 +86,8 @@ class _Handler(BaseHTTPRequestHandler):
             ("Last-Modified", formatdate(mtime, usegmt=True)),
             ("Cache-Control", "no-cache"),  # always revalidate, like Wikipedia's HTML
         ]
+        if standin:
+            headers.append(("X-Stand-In", "1"))
         if self._not_modified(etag, mtime):
             self._send(304, headers, b"", send_body=False)
         else:
@@ -108,8 +126,9 @@ def main() -> None:
     ap.add_argument("--root", type=Path, default=Path("data/snapshot"))
     ap.add_argument("--host", default="0.0.0.0")
     ap.add_argument("--port", type=int, default=8080)
+    ap.add_argument("--standins", action="store_true", help="serve stand-ins for missing articles")
     args = ap.parse_args()
-    server = OriginServer(args.root, (args.host, args.port))
+    server = OriginServer(args.root, (args.host, args.port), standins=args.standins)
     print(f"origin serving {args.root} on {args.host}:{args.port}", flush=True)
     server.serve_forever()
 

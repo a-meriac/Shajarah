@@ -55,3 +55,31 @@ def test_clickstream_reader(tmp_path):
     ]
     assert outgoing_totals(path) == Counter({"A": 53, "B": 20})
     assert transitions(path, {"B"}) == {"B": Counter({"C": 20})}
+
+
+def test_origin_standins_for_missing_articles(tmp_path):
+    import threading
+
+    import httpx
+
+    from data.origin_server import OriginServer
+
+    (tmp_path / "wiki").mkdir()
+    for name in ("A", "B"):
+        (tmp_path / "wiki" / f"{name}.html").write_text(f"<html>{name}</html>")
+    server = OriginServer(tmp_path, ("127.0.0.1", 0), standins=True)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    base = f"http://127.0.0.1:{server.server_address[1]}"
+    try:
+        real = httpx.get(f"{base}/wiki/A")
+        assert real.text == "<html>A</html>" and "x-stand-in" not in real.headers
+        first, again = httpx.get(f"{base}/wiki/Missing"), httpx.get(f"{base}/wiki/Missing")
+        assert first.headers["x-stand-in"] == "1" and first.text in (
+            "<html>A</html>",
+            "<html>B</html>",
+        )
+        assert again.text == first.text  # the same URL always gets the same stand-in
+        assert httpx.get(f"{base}/other/path").status_code == 404
+    finally:
+        server.shutdown()
+        server.server_close()

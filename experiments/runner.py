@@ -100,7 +100,7 @@ def run_one(out: Path, config, scenario: str, session: int, settings_file: Path 
     subprocess.run([str(NETNS), "up"], check=True, capture_output=True)
     try:
         origin = _ns("ep-org", PY, "-m", "data.origin_server", "--root", "data/snapshot",
-                     "--host", ORIGIN_HOST, "--port", str(ORIGIN_PORT),
+                     "--host", ORIGIN_HOST, "--port", str(ORIGIN_PORT), "--standins",
                      stdout=subprocess.PIPE, text=True)  # fmt: skip
         _wait_for_line(origin, "origin serving", 15)
         server_cmd = [
