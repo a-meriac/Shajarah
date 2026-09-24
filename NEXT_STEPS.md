@@ -46,21 +46,54 @@ Measured on the snapshot (July clicks, median per seed page): the first 40 links
 real clicks, the first 100 get 79–92%, the best possible 40 would get 87–96%. The link count
 matters much more than the selection rule on Wikipedia. This caps what Jev can reach.
 
-Tests: `make test` -> 84 passed (unit + loopback, any OS). `make test-netns` -> 2 passed (Linux).
+- Experiment harness: 30 browsing sessions that follow real August clicks
+  (`data/sessions.json`), Jev answers fetched ahead of time (`experiments/warm_jev.py`, the
+  emulation has no internet), the per-run client program and the runner (`make experiments`),
+  and `experiments/analyze.py`. The origin serves stand-ins for linked articles outside the
+  snapshot, so pushes cost what real pages would.
 
-## Next, in plan order
+Tests: `make test` -> 97 passed (unit + loopback, any OS). `make test-netns` -> 2 passed (Linux).
 
-1. **Experiment harness:** `data/sessions.py` (browsing sessions from the August clickstream),
-   a headless client driver, and `experiments/runner.py` that starts origin, server proxy,
-   client proxy + path manager and the netem shaper in the namespaces for each
-   (config × scenario × seed). Configs: 1 TCP, 2 QUIC, 3 fixed prefetch, 4 hover oracle,
-   5 full, 5a switch-early only, 5b hints only.
-2. **Correct Jev's overconfidence** before its probabilities set the prefetch budget (fit a
-   simple mapping on half the pages, check on the other half).
-3. **Ordinary websites:** run link extraction + Jev on a handful of non-Wikipedia pages as a
-   sanity check and demo.
-4. **Origin changes between runs** (X% of pages modified) to measure what revalidation saves.
-5. More scenarios (LEO gap, GEO fallback), the VoIP probe, `analyze.py` and the figures.
+## First system results (batch `main`, 24 Sep, 70 runs: 7 configs × 2 scenarios × 5 readers)
+
+Car tunnel (45 s with no network), total time each reader spent waiting for pages, in seconds:
+
+| config | reader 0 | 1 | 2 | 3 | 4 | mean |
+|---|---|---|---|---|---|---|
+| 1 TCP+TLS | 44.8 | 21.6 | 5.2 | 23.7 | 52.8 | 29.6 |
+| 2 QUIC migration | 32.7 | 9.7 | 1.1 | 10.6 | 41.5 | 19.1 |
+| 3 fixed prefetch | 2.8 | 9.7 | 1.0 | 10.1 | 41.4 | 13.0 |
+| 4 hover oracle | 32.6 | 9.8 | 0.3 | 10.3 | 41.1 | 18.8 |
+| 5 full system | 2.8 | 2.0 | 1.1 | 10.2 | 41.0 | 11.4 |
+
+- Each layer helps; the full system has the lowest mean. The hint-driven extra pushes saved
+  reader 1 (2.0 s vs 9.7 s with fixed prefetch).
+- Prediction is hit or miss per reader: readers 3 and 4 clicked pages that weren't pushed and
+  waited as long as with plain QUIC.
+- 5b (hints only) equals 5 and 5a (switch early only) equals 2: in a tunnel there is no other
+  network, so all the gain comes from hint-driven prefetch.
+- Data: ~0.6 MB pushed per run with config 5, ~97% never read.
+- Wi-Fi walk: every config waited under 2 s in total. Without prediction the switch comes ~1 s
+  after Wi-Fi dies and few clicks land in that second; page loads don't show the benefit of
+  switching early (a continuous stream would).
+
+Caveat: 5 readers with ~1 outage click each is too few for stable numbers.
+
+Reproduce: `python -m experiments.warm_jev` (needs the key), `make experiments`, then
+`python -m experiments.analyze main`.
+
+## Next
+
+1. **Choose the outage push cutoff offline** (free): replay the sessions against the cached Jev
+   answers and measure how often the next page would have been pushed, and at what data cost,
+   for `prefetch.handover_threshold` from 0.03 (now; ~4 pages) down to all 40 offered links.
+2. **Re-run the car tunnel with ~20 readers**, configs 1, 2, 3 and 5 only (~80 runs, ~2.5 h).
+3. **Show switching early with continuous traffic** during the Wi-Fi walk (the VoIP probe:
+   50 packets/s over QUIC datagrams, gap and loss across the switch).
+4. **Figures** (`analyze.py` -> figures/), then more scenarios (LEO gap, GEO fallback).
+5. Smaller items: correct Jev's overconfidence before its probabilities set budgets; run link
+   extraction + Jev on a few ordinary websites as a sanity check and demo; origin modifying X%
+   of pages between runs to measure what revalidation saves.
 
 ## Still open outside the code
 
