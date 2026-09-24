@@ -7,17 +7,17 @@ The claim to prove: **predicting a handover or outage locally, and using that pr
 
 ## Changes to the original plan (and why)
 
-1. **Your machine is macOS. Network namespaces and `tc netem` only exist on Linux.** Develop on macOS, but run everything network-related in a Linux VM (Lima or UTM with Ubuntu 24.04, 4 vCPU) or on a teammate's Linux laptop. Pin this down on Day 1. Unit tests run anywhere; the emulation tests run only in the VM.
+1. **Network namespaces and `tc netem` only exist on Linux.** Unit tests run anywhere; the emulation runs on the Linux PC.
 2. **Keep mitmproxy out of the measurement path.** In the experiments, a headless client replays sessions against a **local origin server** that serves a frozen snapshot of Wikipedia pages over plain HTTP. This makes the runs reproducible and independent of the live internet and TLS. mitmproxy (with its CA) is used only in the live browser demo for the video. This removes one of the four risky parts from the critical path.
 3. **Make-before-break means a warm standby QUIC connection, not multipath.** aioquic has no multipath and no convenient client-initiated path probing. We keep one live connection on the current interface. When the handover predictor fires, we open a **second connection on the next interface**, bound to its source IP, using session resumption. Requests move to it before the old link dies. "QUIC migration only" (config 2) is kept as a separate mechanism for comparison.
 4. **Handover traces must be real, not only synthetic.** If we generate the RSSI traces and also tune the predictor on them, the result is circular. Use public drive-test traces with RSRP and throughput over time (for example the Raca et al. Irish 4G/5G datasets from UCC, and Lumos5G). Use them both for the predictor input and to drive netem bandwidth, updating it every 100 ms. Use synthetic traces only for the satellite and tunnel scenarios, and say so in the paper.
-5. **Clickstream evaluation needs a temporal split and a frame for cold start.** The Wikipedia clickstream is aggregated `(prev, curr, count)` data, so a Markov model trained on it is almost the ground truth. Train on month M and test on month M+1. Expect Markov to win on popular pages. Jev's likely advantage is on **tail and new pages with no click history**, so split the results by page popularity. The hybrid model is where a real win is most likely. This framing also makes the originality claim hold up better.
-6. **Jev was released after my knowledge cutoff.** I can't check its SDK or API shape, so the plan puts it behind a `LinkPredictor` interface. The team must read docs.typesafe.ai on Day 1 before any Jev code is written. Nothing in this plan assumes specific method signatures beyond what you wrote.
+5. **Link prediction uses Jev only (decided 24 Sep).** The Wikipedia clickstream is the answer key: for each snapshot page, compare Jev's top guesses with the links people actually clicked most. Report the results split by page popularity. Without a trained baseline, the comparison against existing mechanisms comes from the system experiment (configs 1–5), not the predictor experiment.
+6. **Jev access is through OpenRouter** (TypeSafe's own waitlist is closed). Details, costs and gotchas: `docs/jev_notes.md`.
 
 ## Repo structure
 ```
 pyproject.toml            # uv-managed; deps: aioquic, httpx, selectolax, mitmproxy (demo extra),
-                          # numpy, pandas, scikit-learn, matplotlib, pyyaml, pytest, pytest-asyncio, ruff
+                          # numpy, pandas, matplotlib, pyyaml, pytest, pytest-asyncio, ruff
 README.md                 # quickstart, VM setup, reproducing every figure
 edgeproxy/
   common/
@@ -42,12 +42,8 @@ edgeproxy/
     path_manager.py       # interface selection, make-before-break standby, migration trigger
     mitm_addon.py         # demo only: mitmproxy addon forwarding to client/proxy.py
   predictors/
-    base.py               # LinkPredictor ABC: predict(PageState) -> dict[url, prob]
-    uniform.py, position.py   # trivial baselines (top-of-page links)
-    markov.py             # first-order Markov from clickstream
-    logistic.py           # sklearn LR over link features (+ optional Jev prob feature -> hybrid)
-    jev.py                # Jev Choice question; response cache on disk keyed by (url, model version)
-    hybrid.py
+    base.py               # Link / PageState: what the predictor sees
+    jev.py                # Jev Choice question via OpenRouter; first 40 links; disk cache
 emulation/
   netns_setup.sh          # client ns with 2–3 veth ifaces (wifi, cell, sat) -> router ns -> server ns -> origin ns
   policy_routing.sh       # ip rule "from <src> table N" so sockets bound to an iface IP actually egress there
@@ -68,7 +64,7 @@ experiments/
   analyze.py              # JSONL -> pandas -> tables + figures in figures/
   matrix.yaml             # the 5 configs × scenarios × seeds
 tests/
-  unit/ ...               # no network needed (run on macOS)
+  unit/ ...               # no network needed (run anywhere)
   integration/ ...        # loopback, no netns
   emulation/ ...          # marked @pytest.mark.netns, need root in the Linux VM
 paper/                    # LaTeX, figures symlinked from figures/
@@ -89,16 +85,16 @@ Also run **5a (only the standby path)** and **5b (only the adaptive prefetch)** 
 ## Milestones
 
 **Days 1–4 (24–27 Sep): skeleton, tunnel, emulation**
-- D1: Set up the VM. Write `netns_setup.sh` and `policy_routing.sh`, and ping across each interface. **Spike aioquic migration** (see Risks). One person reads the Jev docs, requests access, and records limits and pricing in `docs/jev_notes.md`.
+- D1: Write `netns_setup.sh` and `policy_routing.sh`, and ping across each interface. **Spike aioquic migration** (see Risks). Jev access set up via OpenRouter; findings in `docs/jev_notes.md`.
 - D2: `protocol.py`, `transport.py`, QUIC client and server with request/response over streams, TCP transport. Build the snapshot and origin server.
 - D3: client and server proxies end to end (no prefetch). Netem profiles, and `shaper.py` with a fixed profile.
 - D4: scripted handover (bring an iface down, or set 100% loss). Migration works (config 2) and TCP reconnect works (config 1). Start the JSONL event log. **Gate:** one page loads before, during and after a handover in the VM.
 
 **Days 5–9 (28 Sep–2 Oct): revalidation and predictors**
 - D5: ETag and If-Modified-Since in `fetcher.py`. NOT_MODIFIED frame, so the client keeps its copy. Measure bytes saved with the origin mutating X% of assets.
-- D6: download the clickstream. `sessions.py`, `links.py`, and the Markov, position and uniform baselines. `predictor_eval.py` skeleton.
-- D7: logistic model. `jev.py` with a disk cache and a concurrency limit. Call Jev over the ~1000 snapshot pages once and cache the results.
-- D8: hybrid model. Full predictor eval: precision@1/3/5, reliability diagrams, bytes vs hit rate, all split by popularity. **Gate:** choose the predictor for config 5 based on the data.
+- D6: download the clickstream. `sessions.py`, `links.py`. `predictor_eval.py` skeleton.
+- D7: add a concurrency limit to `jev.py`. Call Jev over the ~1000 snapshot pages once and cache the results.
+- D8: Full predictor eval: precision@1/3/5, reliability diagrams, bytes vs hit rate, all split by popularity.
 - D9: `prefetch_policy.py`, PUSH frames, client cache ingest. Configs 3 and 4 working.
 
 **Days 10–13 (3–6 Oct): handover prediction and the full matrix**
@@ -113,7 +109,7 @@ Also run **5a (only the standby path)** and **5b (only the adaptive prefetch)** 
 **Suggested split for 3–4 people:** (A) tunnel and netns, (B) data and predictors, (C) client, cache, prefetch and harness, (D, if you have one) paper, figures and video from Day 8. Otherwise A picks this up.
 
 ## Test strategy
-- **Unit (pytest, runs on macOS):** protocol round-trip, cache LRU and validators, link extraction on fixture HTML (including the logout and add-to-cart filter), prefetch policy thresholds and budget, handover predictor on hand-built slopes, Markov and LR against tiny fixtures, Jev adapter against recorded responses (no live calls in CI).
+- **Unit (pytest, runs anywhere):** protocol round-trip, cache LRU and validators, link extraction on fixture HTML (including the logout and add-to-cart filter), prefetch policy thresholds and budget, handover predictor on hand-built slopes, Jev adapter against a fake HTTP server (no live calls in CI).
 - **Integration (loopback):** client proxy ↔ QUIC ↔ server proxy ↔ origin server. Forced `migrate()` mid-transfer, where the stream must complete. 304 path. PUSH then cache hit.
 - **Emulation (`-m netns`, VM only):** a smoke scenario per config, asserting that the event log contains a handover and that the page completes. Runs before every matrix run.
 - `ruff` + `pytest` in a pre-commit hook. GitHub Actions runs unit and integration tests only.
@@ -121,18 +117,18 @@ Also run **5a (only the standby path)** and **5b (only the adaptive prefetch)** 
 ## Experiment harness → charts
 - Every component emits JSONL events (`req_start`, `req_done{bytes,from_cache}`, `push{prob,bytes}`, `handover_hint`, `iface_down/up`, `stream_stall`, `voip_pkt`). Runs are keyed by `run_id = config/scenario/seed` and record the git SHA.
 - `analyze.py` computes: page load time (CDF), **stall time per handover**, time to recover, prefetch hit rate, wasted bytes (pushed but never used), and no-handover overhead against a direct fetch. For VoIP: longest gap, loss and jitter.
-- Figures: (1) predictor precision@k by popularity bucket; (2) reliability diagram; (3) hit rate vs wasted bytes, one curve per predictor; (4) stall time per handover, box plot, 7 configs × scenarios; (5) timeline of one car-tunnel run (signal, hint, standby up, requests served from cache); (6) VoIP sequence gap across a handover; (7) handover predictor lead time vs false-alarm rate. Report medians with 95% bootstrap CIs over 5 seeds.
+- Figures: (1) predictor precision@k by popularity bucket; (2) reliability diagram; (3) hit rate vs wasted bytes as the prefetch threshold varies; (4) stall time per handover, box plot, 7 configs × scenarios; (5) timeline of one car-tunnel run (signal, hint, standby up, requests served from cache); (6) VoIP sequence gap across a handover; (7) handover predictor lead time vs false-alarm rate. Report medians with 95% bootstrap CIs over 5 seeds.
 
 ## Risks (tackle these first)
 1. **aioquic client migration (highest risk).** Its asyncio `connect()` wraps one socket. Plan: drive `QuicConnection` directly with our own UDP sockets (`quic_client.py`). To migrate, bind a new socket to the new iface IP, call `change_connection_id()`, and send from there. The server validates the path automatically. **Day 1 spike, 1 day time box.** Fallback: fast reconnect with 0-RTT resumption, and describe it honestly as "resumption, not migration".
 2. **Netns and source routing.** A socket bound to an iface IP won't egress there without `ip rule`. Loss-based handovers can also look like congestion rather than an outage. Script both kinds (iface down, 100% loss). Needs root in the VM.
-3. **Jev access and limits.** It is waitlisted, rate limits are unknown, and there is a 255-option cap. Mitigations: apply today, and in parallel use a gateway (OpenRouter, Vercel, Cloudflare) if docs.typesafe.ai lists one as official. Cache every response. Pre-filter candidates to ≤255. The predictor experiment is offline, so live latency only matters for config 5. There, use cached predictions plus a measured latency distribution. If access never arrives, the system still runs on LR, and Jev becomes future work. This is a real hit to originality, so escalate early.
+3. **Jev access and limits.** Resolved: working through OpenRouter (tested 24 Sep). Remaining risks: the endpoint is labelled alpha, rate limits are unknown, and probabilities are rounded to 2 decimals. Mitigation: cache every response, so experiments never depend on the service staying up.
 4. **mitmproxy.** Demo only (see change 2). Install the CA in a separate browser profile.
 5. **Prefetch benefit may be small.** It only shows up in long outages where the next click is predictable. Include the 45 s tunnel and LEO-gap scenarios, and dwell times from the sessions. If the gain is still small, report that honestly. The make-before-break result stands on its own.
 6. **Wikimedia REST scraping.** Set a descriptive User-Agent, stay at or below the rate limit, fetch once and freeze. Record the snapshot date for reproducibility.
 
 ## Verification (end to end)
-- `make test` passes on macOS (unit and integration).
-- In the VM: `make netns-up && pytest -m netns` passes. `python -m experiments.runner --config 5 --scenario car_tunnel_45s --seed 0` produces a run directory whose event log shows `handover_hint` before `iface_down`, and page loads during the outage served from the cache.
+- `make test` passes (unit and integration).
+- On the Linux PC: `make netns-up && pytest -m netns` passes. `python -m experiments.runner --config 5 --scenario car_tunnel_45s --seed 0` produces a run directory whose event log shows `handover_hint` before `iface_down`, and page loads during the outage served from the cache.
 - `make exp-predictor` produces the predictor tables and figures 1–3. `make exp-system && make figures` regenerates figures 4–7 from scratch in one command. This is what goes in the README for judges.
 - Sanity checks: with no handover, configs 1–5 differ only by the proxy-hop overhead. Config 2 stall < config 1 stall. Wasted bytes for config 3 > config 5.

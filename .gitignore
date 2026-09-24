@@ -10,3 +10,8 @@ data/snapshot/
 data/cache/
 *.pem
 .venv-linux/
+
+# Secrets (API keys) — never commit
+.env
+.env.*
+!.env.example

@@ -61,12 +61,13 @@ sudo kill %1; make netns-down
 1. Client proxy and server proxy end to end over the tunnel, TCP baseline transport (config 1),
    and an origin server that serves a frozen Wikipedia snapshot.
 2. ETag / If-Modified-Since revalidation (the NOT_MODIFIED frame already exists).
-3. Download two consecutive months of the Wikipedia clickstream. Evaluation: train on month M, test on M+1.
-4. Logistic baseline, then Jev once access exists. Fill in `docs/jev_notes.md` from the official
-   docs first; nobody should guess the API.
+3. Download a month of the Wikipedia clickstream. It's the answer key for scoring the link
+   predictor: for each page, did Jev's top guesses match the links people actually clicked most?
+4. Plug the Jev predictor (`edgeproxy/predictors/jev.py`, already working) into the server proxy.
+   It needs `OPENROUTER_API_KEY` in `.env` (copy `.env.example`).
 
 ## Still open outside the code
 
-- [ ] Request Jev access (waitlist) and fill in `docs/jev_notes.md`
+- [ ] Fill in the unknowns at the bottom of `docs/jev_notes.md` (rate limits, data retention)
 - [ ] Find public drive-test signal traces (e.g. the Raca et al. 4G/5G datasets, Lumos5G) to
       replace the hand-made signal curves in `emulation/scenarios/`
