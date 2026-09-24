@@ -56,6 +56,7 @@ class TunnelSettings:
 class SnapshotSettings:
     key_month: str = "2026-07"
     session_month: str = "2026-08"
+    history_month: str = "2026-06"
     buckets: dict = field(
         default_factory=lambda: {
             "head": [0, 1_000],

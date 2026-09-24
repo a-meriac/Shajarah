@@ -8,8 +8,8 @@
    (data-mw etc., ~25% of the bytes), rewrite article links to /wiki/<Title>, and save it as
    data/snapshot/wiki/<Title>.html. Images keep their upload.wikimedia.org URLs; the experiments
    fetch HTML only.
-4. Write the clickstream rows leaving every snapshot page, per month, to
-   data/snapshot/clickstream-<month>.tsv, and the page list with revision ids to
+4. Write the clickstream rows leaving every snapshot page (history, answer-key and session
+   months) to data/snapshot/clickstream-<month>.tsv, and the page list with revision ids to
    data/snapshot_manifest.json (committed, so the snapshot can be rebuilt exactly).
 
 Months, buckets and sample sizes come from the `snapshot` section of settings.yaml.
@@ -164,7 +164,7 @@ def main() -> None:
     asyncio.run(fetch_all(pages, cfg.concurrency))
 
     ok = {p["title"] for p in pages if "error" not in p}
-    for month in (cfg.key_month, cfg.session_month):
+    for month in (cfg.history_month, cfg.key_month, cfg.session_month):
         print(f"writing {month} clickstream rows", file=sys.stderr)
         write_transitions(month, ok)
 

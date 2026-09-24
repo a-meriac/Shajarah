@@ -51,6 +51,7 @@ tunnel:
 snapshot:                      # data/build_snapshot.py
   key_month: 2026-07           # clickstream month used as the answer key for Jev
   session_month: 2026-08       # clickstream month that drives the browsing sessions
+  history_month: 2026-06       # past clicks for the history baseline (before the answer key)
   buckets:                     # popularity buckets: rank range by outgoing link clicks
     head: [0, 1000]
     torso: [1000, 50000]
