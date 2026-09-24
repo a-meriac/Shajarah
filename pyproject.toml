@@ -27,7 +27,7 @@ include = ["edgeproxy*"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
-markers = ["netns: needs root + Linux network namespaces (run inside the VM)"]
+markers = ["netns: needs root + Linux network namespaces (make test-netns)"]
 addopts = "-m 'not netns'"
 
 [tool.ruff]

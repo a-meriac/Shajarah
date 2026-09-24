@@ -1,4 +1,4 @@
-"""Real interface switch in the netns topology. Linux VM only: `sudo -E make test-netns`."""
+"""Real interface switch in the netns topology. Linux only: `make test-netns`."""
 
 import json
 import os

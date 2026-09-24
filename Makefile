@@ -1,4 +1,4 @@
-# The repo folder is shared with the Linux VM, so each OS gets its own virtualenv.
+# macOS and Linux get separate virtualenvs, so one checkout can be shared between them.
 ifeq ($(shell uname -s),Linux)
 VENV ?= .venv-linux
 VENV_PY ?= python3
@@ -19,7 +19,7 @@ test:  ## unit + loopback integration tests (macOS or Linux)
 lint:
 	$(PY) -m ruff check edgeproxy emulation experiments data tests
 
-# --- Linux VM only (root) ---
+# --- Linux only (asks for sudo) ---
 netns-up:
 	sudo emulation/netns_setup.sh up
 
