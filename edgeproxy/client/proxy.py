@@ -30,7 +30,7 @@ from edgeproxy.common.http import (
     get_header,
     reason,
 )
-from edgeproxy.common.protocol import Frame, MsgType
+from edgeproxy.common.protocol import Frame, MsgType, set_compression
 from edgeproxy.tunnel.transport import ClientTransport
 
 SOURCE_HEADER = "X-Edgeproxy-Source"
@@ -235,6 +235,7 @@ async def _run(args) -> None:
     from edgeproxy.common.settings import load_settings
 
     s = load_settings(args.settings)
+    set_compression(s.tunnel.compress)
     cafile = args.certdir / "cert.pem"
     local = (args.local_ip, 0)
     if args.transport == "quic":

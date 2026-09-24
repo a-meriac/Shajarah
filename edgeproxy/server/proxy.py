@@ -26,7 +26,7 @@ from selectolax.parser import HTMLParser
 
 from edgeproxy.common.eventlog import NULL_LOG, EventLog
 from edgeproxy.common.http import get_header
-from edgeproxy.common.protocol import Frame, MsgType
+from edgeproxy.common.protocol import Frame, MsgType, set_compression
 from edgeproxy.predictors.base import PageState, Predictor
 from edgeproxy.server.fetcher import Fetcher
 from edgeproxy.server.links import extract_links, page_summary
@@ -150,13 +150,19 @@ class ServerProxy:
             except httpx.HTTPError as e:
                 self.log.emit("push_error", url=target, error=type(e).__name__)
                 continue
-            if r.status != 200 or spent + len(r.body) > decision.budget_bytes:
+            if r.status != 200:
                 continue
-            spent += len(r.body)
-            client.sent.add(target)
             headers = {"url": target, "prob": prob, "status": 200, "headers": r.headers}
-            await session.push(Frame(MsgType.PUSH, headers, r.body))
-            self.log.emit("push", url=target, prob=prob, bytes=len(r.body), source_url=url)
+            frame = Frame(MsgType.PUSH, headers, r.body)
+            wire = len(frame.encode())  # the budget is about bytes on the network
+            if spent + wire > decision.budget_bytes:
+                continue
+            spent += wire
+            client.sent.add(target)
+            await session.push(frame)
+            self.log.emit(
+                "push", url=target, prob=prob, bytes=len(r.body), wire_bytes=wire, source_url=url
+            )
 
 
 def make_predictor(name: str, settings) -> Predictor | None:
@@ -189,6 +195,7 @@ async def _serve(args) -> None:
     if not cert.exists():
         generate_self_signed(cert, key)
     s = load_settings(args.settings)
+    set_compression(s.tunnel.compress)
     proxy = ServerProxy(
         Fetcher(timeout=s.server.origin_timeout_s),
         EventLog(args.log, "server", args.run_id),

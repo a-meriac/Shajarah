@@ -24,7 +24,7 @@ prefetch:                      # which predicted pages the server pushes
   handover_budget_per_outage_s: 500000  # plus this much per second of predicted outage
   max_budget_bytes: 60000000   # hard cap
   metered_factor: 0.25         # budget multiplier on metered links (e.g. mobile data)
-  default_size: 300000         # size guess for a page whose size isn't known yet
+  default_size: 60000          # size guess (bytes on the wire) for a page not fetched yet
 
 handover:                      # client-side dropout prediction from signal strength
   threshold_dbm: -110          # signal below this is unusable (~-110 RSRP cellular, ~-80 Wi-Fi)
@@ -48,6 +48,7 @@ server:
 tunnel:
   idle_timeout_s: 120          # must outlast the longest emulated outage
   tcp_connect_timeout_s: 5
+  compress: true               # deflate page bodies in the tunnel (HTML ~5.7x smaller)
 
 snapshot:                      # data/build_snapshot.py
   key_month: 2026-07           # clickstream month used as the answer key for Jev

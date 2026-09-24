@@ -56,6 +56,7 @@ class ServerSettings:
 class TunnelSettings:
     idle_timeout_s: float = DEFAULT_IDLE_TIMEOUT
     tcp_connect_timeout_s: float = 5.0
+    compress: bool = True
 
 
 @dataclass

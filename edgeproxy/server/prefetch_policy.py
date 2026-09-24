@@ -20,7 +20,7 @@ class PolicyConfig:
     handover_budget_per_outage_s: int = 500_000
     max_budget_bytes: int = 60_000_000
     metered_factor: float = 0.25  # guideline: prefetch aggressively only on unmetered links
-    default_size: int = 300_000  # size guess when the page/asset size isn't known yet
+    default_size: int = 60_000  # wire-size guess for an unfetched page (~250 KB HTML, compressed)
 
 
 @dataclass
