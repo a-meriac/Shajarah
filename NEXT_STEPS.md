@@ -22,37 +22,45 @@ Done:
   HANDOVER_HINT from the client lowers the threshold and raises the budget.
 - Site-agnostic link choice for Jev (`jev.link_order`, default `content_first`: skip
   nav/header/footer/aside, which ordinary sites put before their content).
-- Baselines and offline evaluation (`python -m experiments.predictor_eval`), scored on July
-  clicks for the 1,002 seed pages:
+- Jev is the only predictor the system uses (decided 24 Sep: no click logs or blending). The
+  offline evaluation (`python -m experiments.predictor_eval`) scores it on July clicks for the
+  1,002 seed pages; the two baselines are there only as reference points:
 
-  | predictor | hit@1 | hit@3 | hit@10 | calibration error (top 10) |
-  |---|---|---|---|---|
-  | position (any site, no data) | 1.4% | 6.1% | 28% | 0.025 |
-  | past clicks, June (needs site logs) | 19% | 38% | 64% | 0.003 |
+  | predictor | hit@1 | hit@3 | hit@5 | hit@10 | calibration error (top 10) |
+  |---|---|---|---|---|---|
+  | **Jev** (40 links, content first) | 6.2% | 16.1% | 23.3% | 36.2% | 0.069 |
+  | position (any site, no data) | 2.7% | 9.4% | 16.7% | 32.6% | 0.024 |
+  | past clicks, June (needs site logs) | 19.2% | 38.1% | 48.7% | 63.6% | 0.003 |
 
-  hit@k = share of real clicks that went to the predictor's top k links.
+  hit@k = share of real clicks that went to the predictor's top k links. Jev beats position
+  about 2x on its top picks, is overconfident (favourite often given 30–70%), and 100 links or
+  extra page context didn't help on a 60-page test. Full run: 1,002 calls, $0.074, cached in
+  `data/cache/jev`.
+- Tunnel compression: page bodies deflated on the wire (HTML 5.7x smaller); the prefetch budget
+  counts wire bytes.
+- Path manager (`client/path_manager.py`): switches interface early on a predicted fade, or after
+  1 s of unanswered pings; sends HANDOVER_HINT when no other interface is healthy. On the
+  scenario files it switches 5.8 s before Wi-Fi dies and warns the server 5.2 s before the tunnel.
 
 Measured on the snapshot (July clicks, median per seed page): the first 40 links get 65–69% of
 real clicks, the first 100 get 79–92%, the best possible 40 would get 87–96%. The link count
 matters much more than the selection rule on Wikipedia. This caps what Jev can reach.
 
-Tests: `make test` -> 56 passed (unit + loopback, any OS). `make test-netns` -> 2 passed (Linux).
+Tests: `make test` -> 84 passed (unit + loopback, any OS). `make test-netns` -> 2 passed (Linux).
 
 ## Next, in plan order
 
-1. **Score Jev** (needs `OPENROUTER_API_KEY` in `.env`, copy `.env.example`):
-   `python -m experiments.predictor_eval --predictors jev --limit 60` first (~$0.003), then all
-   1,002 seeds (~$0.05). Also compare `jev.max_options` 40 vs 100 on the small set.
-2. **Ordinary websites:** run link extraction + Jev on a handful of non-Wikipedia pages (news,
-   docs, shops) to show the pipeline isn't Wikipedia-specific. No ground truth there, so this
-   is a sanity check and a demo, not a score.
-3. **Compress pushed pages** in the tunnel: ~5× smaller HTML means ~5× more pages per outage budget.
-4. **Origin changes between runs:** let the origin modify X% of pages, to measure the bytes
-   revalidation saves.
-5. `data/sessions.py` (browsing sessions from the August clickstream), then the plan's D10–D13:
-   handover predictor on real traces, warm standby path (`path_manager.py`, config 5), the
-   client sending HANDOVER_HINT, the experiment runner over all configs × scenarios × seeds,
-   VoIP probe, figures.
+1. **Experiment harness:** `data/sessions.py` (browsing sessions from the August clickstream),
+   a headless client driver, and `experiments/runner.py` that starts origin, server proxy,
+   client proxy + path manager and the netem shaper in the namespaces for each
+   (config × scenario × seed). Configs: 1 TCP, 2 QUIC, 3 fixed prefetch, 4 hover oracle,
+   5 full, 5a switch-early only, 5b hints only.
+2. **Correct Jev's overconfidence** before its probabilities set the prefetch budget (fit a
+   simple mapping on half the pages, check on the other half).
+3. **Ordinary websites:** run link extraction + Jev on a handful of non-Wikipedia pages as a
+   sanity check and demo.
+4. **Origin changes between runs** (X% of pages modified) to measure what revalidation saves.
+5. More scenarios (LEO gap, GEO fallback), the VoIP probe, `analyze.py` and the figures.
 
 ## Still open outside the code
 
