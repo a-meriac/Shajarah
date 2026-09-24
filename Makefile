@@ -17,7 +17,7 @@ test:  ## unit + loopback integration tests (macOS or Linux)
 	$(PY) -m pytest -q
 
 lint:
-	$(PY) -m ruff check edgeproxy emulation experiments tests
+	$(PY) -m ruff check edgeproxy emulation experiments data tests
 
 # --- Linux VM only (root) ---
 netns-up:

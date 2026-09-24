@@ -1,0 +1,181 @@
+"""Browser -> client proxy -> tunnel (QUIC or TCP) -> server proxy -> local origin, on loopback."""
+
+import asyncio
+import threading
+
+import httpx
+import pytest
+
+from data.origin_server import OriginServer
+from edgeproxy.client.cache import Cache
+from edgeproxy.client.proxy import SOURCE_HEADER, ClientProxy
+from edgeproxy.common.protocol import Frame, MsgType
+from edgeproxy.server.proxy import ServerProxy
+from edgeproxy.tunnel.quic_tunnel import (
+    QuicClientTransport,
+    QuicTunnelServer,
+    client_configuration,
+    server_configuration,
+)
+from edgeproxy.tunnel.tcp_transport import (
+    TcpClientTransport,
+    TcpTunnelServer,
+    client_ssl_context,
+    server_ssl_context,
+)
+
+PAGE_A = b"<html><body><a href='/wiki/B'>B</a></body></html>"
+PAGE_B = b"<html><body>B</body></html>"
+
+
+@pytest.fixture
+def origin(tmp_path):
+    (tmp_path / "wiki").mkdir()
+    (tmp_path / "wiki" / "A.html").write_bytes(PAGE_A)
+    (tmp_path / "wiki" / "B.html").write_bytes(PAGE_B)
+    server = OriginServer(tmp_path, ("127.0.0.1", 0))
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    yield server
+    server.shutdown()
+    server.server_close()
+
+
+def _url(origin, path):
+    return f"http://127.0.0.1:{origin.server_address[1]}{path}"
+
+
+class Stack:
+    """Everything between the browser and the origin, with a switch to stall the server side."""
+
+    def __init__(self, kind, tunnel_certs, **proxy_kwargs):
+        self.kind = kind
+        self.certs = tunnel_certs
+        self.proxy_kwargs = proxy_kwargs
+        self.server_proxy = ServerProxy()
+        self.link_up = asyncio.Event()
+        self.link_up.set()
+
+    async def _handler(self, frame, session):
+        await self.link_up.wait()  # cleared = outage: requests hang, like 100% loss
+        return await self.server_proxy.handle(frame, session)
+
+    async def __aenter__(self):
+        cert, key = self.certs
+        if self.kind == "quic":
+            self.server = QuicTunnelServer(
+                "127.0.0.1", 0, server_configuration(cert, key), self._handler
+            )
+            await self.server.start()
+            self.transport = QuicClientTransport(
+                ("127.0.0.1", self.server.port),
+                client_configuration(cert),
+                local_addr=("127.0.0.1", 0),
+            )
+        else:
+            self.server = TcpTunnelServer(
+                "127.0.0.1", 0, server_ssl_context(cert, key), self._handler
+            )
+            await self.server.start()
+            self.transport = TcpClientTransport(
+                ("127.0.0.1", self.server.port),
+                client_ssl_context(cert),
+                local_addr=("127.0.0.1", 0),
+            )
+        await self.transport.connect()
+        self.cache = Cache(10_000_000)
+        self.proxy = ClientProxy(self.transport, self.cache, **self.proxy_kwargs)
+        await self.proxy.start("127.0.0.1", 0)
+        self.browser = httpx.AsyncClient(
+            proxy=f"http://127.0.0.1:{self.proxy.port}", trust_env=False, timeout=10
+        )
+        return self
+
+    async def __aexit__(self, *exc):
+        self.link_up.set()
+        await self.browser.aclose()
+        await self.proxy.close()
+        await self.server_proxy.fetcher.close()
+        self.server.close()
+
+
+@pytest.fixture(params=["quic", "tcp"])
+def kind(request):
+    return request.param
+
+
+async def test_page_then_revalidation(kind, tunnel_certs, origin):
+    async with Stack(kind, tunnel_certs) as s:
+        r = await s.browser.get(_url(origin, "/wiki/A"))
+        assert r.status_code == 200 and r.content == PAGE_A
+        assert r.headers[SOURCE_HEADER] == "origin"
+        assert r.headers["content-type"].startswith("text/html")
+
+        r = await s.browser.get(_url(origin, "/wiki/A"))
+        assert r.status_code == 200 and r.content == PAGE_A
+        assert r.headers[SOURCE_HEADER] == "revalidated"
+        assert origin.log == [("/wiki/A", 200), ("/wiki/A", 304)]
+
+
+async def test_changed_page_is_refetched(kind, tunnel_certs, origin):
+    async with Stack(kind, tunnel_certs) as s:
+        await s.browser.get(_url(origin, "/wiki/B"))
+        (origin.root / "wiki" / "B.html").write_bytes(b"<html>B, edited</html>")
+        r = await s.browser.get(_url(origin, "/wiki/B"))
+        assert r.content == b"<html>B, edited</html>"
+        assert r.headers[SOURCE_HEADER] == "origin"
+
+
+async def test_not_found_passes_through(kind, tunnel_certs, origin):
+    async with Stack(kind, tunnel_certs) as s:
+        r = await s.browser.get(_url(origin, "/wiki/Nope"))
+        assert r.status_code == 404
+        assert not s.cache.peek(_url(origin, "/wiki/Nope"))
+
+
+async def test_pushed_page_served_without_tunnel(kind, tunnel_certs, origin):
+    async with Stack(kind, tunnel_certs) as s:
+        await s.browser.get(_url(origin, "/wiki/A"))  # opens the session on the server
+        url_b = _url(origin, "/wiki/B")
+        push = Frame(
+            MsgType.PUSH,
+            {"url": url_b, "prob": 0.8, "headers": [["Content-Type", "text/html"]]},
+            PAGE_B,
+        )
+        await s.server.sessions[-1].push(push)
+        for _ in range(50):
+            if s.cache.peek(url_b):
+                break
+            await asyncio.sleep(0.01)
+
+        s.link_up.clear()  # the push must be usable even with the link down
+        r = await s.browser.get(url_b)
+        assert r.content == PAGE_B and r.headers[SOURCE_HEADER] == "push"
+        assert s.cache.stats.push_hits == 1
+        assert ("/wiki/B", 200) not in origin.log
+
+
+async def test_outage_serves_stale_or_504(kind, tunnel_certs, origin):
+    async with Stack(kind, tunnel_certs, request_timeout=0.5, revalidate_timeout=0.3) as s:
+        await s.browser.get(_url(origin, "/wiki/A"))
+        s.link_up.clear()
+        r = await s.browser.get(_url(origin, "/wiki/A"))
+        assert r.content == PAGE_A and r.headers[SOURCE_HEADER] == "stale"
+        r = await s.browser.get(_url(origin, "/wiki/B"))
+        assert r.status_code == 504
+
+
+async def test_tcp_request_survives_reconnect(tunnel_certs, origin):
+    """Config 1 has no migration: an interface change kills the connection and the client
+    proxy retries on the new one."""
+    async with Stack("tcp", tunnel_certs) as s:
+        await s.browser.get(_url(origin, "/wiki/A"))
+        s.link_up.clear()
+        pending = asyncio.ensure_future(s.proxy.fetch("GET", _url(origin, "/wiki/B")))
+        await asyncio.sleep(0.1)
+        await s.transport.migrate(("127.0.0.1", 0))
+        s.link_up.set()
+        reply = await asyncio.wait_for(pending, 5)
+        assert reply.status == 200 and reply.body == PAGE_B
+        assert s.transport.connects == 2
+        assert len({sess.peer_addr for sess in s.server.sessions}) == 2

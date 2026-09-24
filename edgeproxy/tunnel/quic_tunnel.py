@@ -159,11 +159,16 @@ class QuicClientTransport(ClientTransport):
         _, protocol = await loop.create_datagram_endpoint(
             lambda: _ClientProtocol(connection), local_addr=self.local_addr
         )
-        protocol.on_push = self.on_push
-        protocol.on_datagram = self.on_datagram
+        # Look the handlers up per event, so ones set after connect() (the client proxy's) apply.
+        protocol.on_push = lambda frame: self._on_push(frame)
+        protocol.on_datagram = lambda data: self.on_datagram and self.on_datagram(data)
         self._protocol = protocol
         protocol.connect(self.server_addr)
         await protocol.wait_connected()
+
+    async def _on_push(self, frame: Frame) -> None:
+        if self.on_push is not None:
+            await self.on_push(frame)
 
     def _require(self) -> _ClientProtocol:
         if self._protocol is None:
