@@ -101,3 +101,25 @@ async def test_context_is_sent_only_when_enabled():
     assert "in: " not in plain["questions"]["next_click"]["criteria"]["link_0"]
     assert rich["state"]["page_summary"] == "P is a stylist."
     assert "Roach styles A" in rich["questions"]["next_click"]["criteria"]["link_0"]
+
+
+async def test_offline_replays_cached_answers_with_their_latency(tmp_path, monkeypatch):
+    online = JevPredictor(api_key="k", client=fake_jev([]), cache_dir=tmp_path)
+    probs = await online.predict(page())
+    (cached,) = tmp_path.glob("*.json")
+    data = json.loads(cached.read_text())
+    data["_latency_ms"] = 250.0
+    cached.write_text(json.dumps(data))
+
+    slept = []
+
+    async def fake_sleep(s):
+        slept.append(s)
+
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    monkeypatch.setattr("edgeproxy.predictors.jev.asyncio.sleep", fake_sleep)
+    offline = JevPredictor(cache_dir=tmp_path, offline=True, replay_latency=True)
+    assert await offline.predict(page()) == probs
+    assert slept == [0.25]
+    with pytest.raises(JevError, match="offline"):
+        await offline.predict(page(4))

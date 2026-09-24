@@ -3,10 +3,15 @@
 One Choice question per page: "which of these links will the reader click next?". Each candidate
 link becomes an option. Responses are cached on disk, so re-running an experiment makes no API
 calls and doesn't depend on the service staying up. Notes on the API: docs/jev_notes.md.
+
+For the emulation, whose network has no internet access, answers are fetched ahead of time and
+the server proxy runs with `offline=True` (a cache miss fails at once) and `replay_latency=True`
+(a cache hit waits as long as the real call took, so runs still feel Jev's delay).
 """
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
 import time
@@ -55,8 +60,12 @@ class JevPredictor:
         include_context: bool = DEFAULT_INCLUDE_CONTEXT,
         timeout_s: float = 30.0,
         client: httpx.AsyncClient | None = None,
+        offline: bool = False,
+        replay_latency: bool = False,
     ) -> None:
-        self.api_key = api_key or get_secret("OPENROUTER_API_KEY")
+        self.offline = offline
+        self.replay_latency = replay_latency
+        self.api_key = api_key or ("" if offline else get_secret("OPENROUTER_API_KEY"))
         self.model = model
         self.cache_dir = cache_dir
         self.max_options = max_options
@@ -99,7 +108,14 @@ class JevPredictor:
         cache_file = self._cache_file(body)
         if cache_file is not None and cache_file.exists():
             response = json.loads(cache_file.read_text())
-            self.last_call = CallInfo(cached=True, model_version=response.get("model", ""))
+            latency_ms = response.get("_latency_ms", 0.0)
+            if self.replay_latency:
+                await asyncio.sleep(latency_ms / 1000)
+            self.last_call = CallInfo(
+                cached=True, latency_ms=latency_ms, model_version=response.get("model", "")
+            )
+        elif self.offline:
+            raise JevError("offline and this page's answer isn't cached (run the warm-up)")
         else:
             start = time.perf_counter()
             r = await self._client.post(
@@ -119,7 +135,7 @@ class JevPredictor:
             )
             if cache_file is not None:
                 cache_file.parent.mkdir(parents=True, exist_ok=True)
-                cache_file.write_text(json.dumps(response))
+                cache_file.write_text(json.dumps({**response, "_latency_ms": latency_ms}))
         probs = response["answers"]["next_click"]["probabilities"]
         return {url: float(probs.get(key, 0.0)) for key, url in keys.items()}
 

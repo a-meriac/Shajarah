@@ -189,7 +189,8 @@ class ServerProxy:
             )
 
 
-def make_predictor(name: str, settings) -> Predictor | None:
+def make_predictor(name: str, settings, offline: bool = False) -> Predictor | None:
+    """offline: Jev answers only from the cache, replaying the recorded delay (emulation runs)."""
     if name == "none":
         return None
     if name == "position":
@@ -206,6 +207,8 @@ def make_predictor(name: str, settings) -> Predictor | None:
             include_context=settings.jev.include_context,
             timeout_s=settings.jev.timeout_s,
             cache_dir=Path(__file__).parents[2] / "data" / "cache" / "jev",
+            offline=offline,
+            replay_latency=offline,
         )
     raise ValueError(f"unknown predictor {name!r}")
 
@@ -223,7 +226,7 @@ async def _serve(args) -> None:
     proxy = ServerProxy(
         Fetcher(timeout=s.server.origin_timeout_s),
         EventLog(args.log, "server", args.run_id),
-        predictor=make_predictor(args.predictor, s),
+        predictor=make_predictor(args.predictor, s, offline=args.offline),
         policy=PrefetchPolicy(s.prefetch, adaptive=not args.fixed_policy),
         max_candidates=s.links.max_candidates,
         same_origin_only=s.links.same_origin_only,
@@ -252,6 +255,9 @@ def main() -> None:
     ap.add_argument("--port", type=int, default=4433)
     ap.add_argument("--certdir", type=Path, default=Path("/tmp/ep"))
     ap.add_argument("--predictor", choices=["none", "position", "jev"], default="none")
+    ap.add_argument(
+        "--offline", action="store_true", help="Jev from the warmed cache only (no internet)"
+    )
     ap.add_argument(
         "--fixed-policy", action="store_true", help="ignore handover hints (config 3, ablation 5a)"
     )
