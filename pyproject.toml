@@ -1,0 +1,36 @@
+[project]
+name = "edgeproxy"
+version = "0.1.0"
+description = "Handover-aware dual proxy for seamless connectivity (EDGE Challenge, ATP 2026)"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    "aioquic>=1.2",
+    "httpx>=0.27",
+    "selectolax>=0.3",
+    "numpy>=1.26",
+    "pandas>=2.2",
+    "scikit-learn>=1.5",
+    "matplotlib>=3.9",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+demo = ["mitmproxy>=11"]
+dev = ["pytest>=8", "pytest-asyncio>=0.24", "ruff>=0.6"]
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["edgeproxy*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+markers = ["netns: needs root + Linux network namespaces (run inside the VM)"]
+addopts = "-m 'not netns'"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

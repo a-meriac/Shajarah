@@ -1,0 +1,9 @@
+# One-way values, applied at both ends of each access link, so RTT ≈ 2 × delay.
+# Representative figures; cite measurement sources in the paper before relying on them
+# (e.g. Starlink/LEO RTT studies, operator 5G measurements, GEO ≈ 600 ms RTT by physics).
+wifi:  {delay_ms: 4,   jitter_ms: 2,  loss_pct: 0.1, rate_mbit: 100}
+5g:    {delay_ms: 12,  jitter_ms: 4,  loss_pct: 0.2, rate_mbit: 150}
+lte:   {delay_ms: 25,  jitter_ms: 8,  loss_pct: 0.5, rate_mbit: 30}
+leo:   {delay_ms: 20,  jitter_ms: 6,  loss_pct: 0.5, rate_mbit: 100}
+geo:   {delay_ms: 300, jitter_ms: 10, loss_pct: 0.3, rate_mbit: 20}
+dead:  {delay_ms: 0,   jitter_ms: 0,  loss_pct: 100, rate_mbit: 1}

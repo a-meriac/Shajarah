@@ -1,0 +1,21 @@
+# Driving on 5G, entering a 45 s road tunnel with no coverage, Wi-Fi unavailable, LEO satellite
+# unusable inside the tunnel too. Signal fades over ~8 s before the entrance (predictable),
+# then the link is dead until the exit.
+name: car_tunnel_45s
+duration_s: 120
+initial:
+  wifi0: dead
+  cell0: 5g
+  sat0: dead
+signal:  # per-interface signal trace (dBm) replayed to the client's signal monitor
+  cell0:
+    - {t: 0,  dbm: -85}
+    - {t: 30, dbm: -88}
+    - {t: 38, dbm: -112}   # linear fade 30->38 s: the handover predictor should fire here
+    - {t: 39, dbm: -140}
+    - {t: 84, dbm: -140}
+    - {t: 86, dbm: -95}
+    - {t: 120, dbm: -88}
+events:
+  - {t: 38, iface: cell0, profile: dead}
+  - {t: 84, iface: cell0, profile: 5g}

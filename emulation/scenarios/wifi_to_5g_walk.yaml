@@ -1,0 +1,20 @@
+# Walking out of a building: Wi-Fi fades and drops, 5G is available throughout. A short handover
+# where make-before-break should matter and prefetch should not.
+name: wifi_to_5g_walk
+duration_s: 60
+initial:
+  wifi0: wifi
+  cell0: 5g
+  sat0: dead
+signal:
+  wifi0:
+    - {t: 0,  dbm: -55}
+    - {t: 20, dbm: -60}
+    - {t: 28, dbm: -82}
+    - {t: 29, dbm: -95}
+    - {t: 60, dbm: -95}
+  cell0:
+    - {t: 0,  dbm: -92}
+    - {t: 60, dbm: -90}
+events:
+  - {t: 28.5, iface: wifi0, profile: dead}
