@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Protocol
 
 
 @dataclass(frozen=True)
@@ -23,3 +24,9 @@ class PageState:
     title: str
     candidates: list[Link]
     history: list[str] = field(default_factory=list)  # previous page titles, oldest first
+
+
+class Predictor(Protocol):
+    async def predict(self, state: PageState) -> dict[str, float]:
+        """Returns {link url: probability that it's the next link clicked}."""
+        ...
