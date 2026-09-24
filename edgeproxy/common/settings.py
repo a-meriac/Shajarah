@@ -60,6 +60,15 @@ class TunnelSettings:
 
 
 @dataclass
+class PathSettings:
+    wifi_threshold_dbm: float = -80.0  # cellular/satellite use handover.threshold_dbm
+    expected_outage_s: float = 30.0
+    dead_after_s: float = 1.0
+    ping_interval_s: float = 0.2
+    tick_s: float = 0.1
+
+
+@dataclass
 class SnapshotSettings:
     key_month: str = "2026-07"
     session_month: str = "2026-08"
@@ -85,6 +94,7 @@ SECTIONS = {
     "client": ClientSettings,
     "server": ServerSettings,
     "tunnel": TunnelSettings,
+    "paths": PathSettings,
     "snapshot": SnapshotSettings,
 }
 
@@ -98,6 +108,7 @@ class Settings:
     client: ClientSettings = field(default_factory=ClientSettings)
     server: ServerSettings = field(default_factory=ServerSettings)
     tunnel: TunnelSettings = field(default_factory=TunnelSettings)
+    paths: PathSettings = field(default_factory=PathSettings)
     snapshot: SnapshotSettings = field(default_factory=SnapshotSettings)
 
 

@@ -72,6 +72,8 @@ class ServerProxy:
         return self._clients.setdefault(session, _Client())
 
     async def handle(self, frame: Frame, session: ServerSession) -> Frame | None:
+        if frame.type is MsgType.PING:
+            return Frame(MsgType.RESPONSE, {"status": 204})
         if frame.type is MsgType.HANDOVER_HINT:
             self._on_hint(frame, session)
             return None

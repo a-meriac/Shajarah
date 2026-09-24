@@ -36,6 +36,7 @@ class MsgType(str, Enum):
     PUSH = "push"  # server -> client: predicted page/asset, unsolicited
     HANDOVER_HINT = "handover_hint"  # client -> server: outage predicted in eta_s seconds
     BUDGET = "budget"  # client -> server: current prefetch byte budget / threshold
+    PING = "ping"  # client -> server: liveness check, answered with an empty RESPONSE
 
 
 @dataclass

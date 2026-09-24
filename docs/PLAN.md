@@ -44,7 +44,8 @@ edgeproxy/
     cache.py              # LRU by bytes, validators, push hit and wasted-byte accounting
     signal_monitor.py     # replays a scenario's signal trace (planned: live nmcli/iw/ModemManager)
     handover_predictor.py # sliding-window slope + threshold -> HandoverHint(eta_s, confidence)
-    path_manager.py       # (planned) interface selection, make-before-break standby, migration trigger
+    path_manager.py       # switch interface early on a predicted fade (or after pings fail), and
+                          # send HANDOVER_HINT when no other interface is healthy
     mitm_addon.py         # (planned) demo only: mitmproxy in front of the client proxy for HTTPS
   predictors/
     base.py               # Link / PageState: what the predictor sees

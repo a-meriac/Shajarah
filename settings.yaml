@@ -27,7 +27,7 @@ prefetch:                      # which predicted pages the server pushes
   default_size: 60000          # size guess (bytes on the wire) for a page not fetched yet
 
 handover:                      # client-side dropout prediction from signal strength
-  threshold_dbm: -110          # signal below this is unusable (~-110 RSRP cellular, ~-80 Wi-Fi)
+  threshold_dbm: -110          # cellular/satellite signal below this is unusable (RSRP)
   window_s: 5                  # fit the trend over this many seconds
   level_window_s: 1            # current level = average over this many seconds
   horizon_s: 8                 # warn if the signal will cross the threshold within this time
@@ -35,6 +35,13 @@ handover:                      # client-side dropout prediction from signal stre
   min_confidence: 0.5          # minimum R^2 of the trend line
   clear_margin_db: 3           # clear the warning only once this far back above the threshold
   min_samples: 5
+
+paths:                         # client: which interface the tunnel uses (path_manager.py)
+  wifi_threshold_dbm: -80      # Wi-Fi signal below this is unusable (RSSI)
+  expected_outage_s: 30        # outage length announced to the server when no other link is up
+  dead_after_s: 1              # no ping answered for this long = link dead (reactive switch)
+  ping_interval_s: 0.2
+  tick_s: 0.1                  # how often signals are read and decisions made
 
 client:
   cache_mb: 200
