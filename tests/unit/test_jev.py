@@ -56,6 +56,14 @@ async def test_caps_options():
     assert len(probs) == 2
 
 
+@pytest.mark.parametrize("n", [1, 39, 40, 41])
+async def test_pages_with_few_or_many_links(n):
+    calls = []
+    probs = await JevPredictor(api_key="k", client=fake_jev(calls)).predict(page(n))
+    assert len(calls[0]["questions"]["next_click"]["criteria"]) == min(n, 40)
+    assert len(probs) == min(n, 40)
+
+
 async def test_cache_avoids_second_call(tmp_path):
     calls = []
     jev = JevPredictor(api_key="k", client=fake_jev(calls), cache_dir=tmp_path)
