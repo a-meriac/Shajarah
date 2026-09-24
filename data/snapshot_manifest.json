@@ -1,25 +1,24 @@
 {
  "created": "2026-09-24",
  "source": "https://en.wikipedia.org/api/rest_v1/page/html/",
- "key_month": "2026-07",
- "session_month": "2026-08",
- "buckets": {
-  "head": [
-   0,
-   1000
-  ],
-  "torso": [
-   1000,
-   50000
-  ],
-  "tail": [
-   50000,
-   300000
-  ]
- },
- "args": {
+ "settings": {
   "key_month": "2026-07",
   "session_month": "2026-08",
+  "history_month": "2026-06",
+  "buckets": {
+   "head": [
+    0,
+    1000
+   ],
+   "torso": [
+    1000,
+    50000
+   ],
+   "tail": [
+    50000,
+    300000
+   ]
+  },
   "per_bucket": 334,
   "targets_per_seed": 1,
   "seed": 0,
@@ -11288,8 +11287,8 @@
    "title": "Carl_\"Alfalfa\"_Switzer",
    "role": "target",
    "from": "Our_Gang",
-   "revision": 1361635541,
-   "bytes": 107046
+   "bytes": 107046,
+   "revision": 1361635541
   },
   {
    "title": "List_of_Joseph_Smith's_wives",
@@ -15558,8 +15557,8 @@
    "title": "Twelve_Variations_on_\"Ah_vous_dirai-je,_Maman\"",
    "role": "target",
    "from": "Ah!_vous_dirai-je,_maman",
-   "revision": 1376349088,
-   "bytes": 42753
+   "bytes": 42753,
+   "revision": 1376349088
   },
   {
    "title": "Qingyun_Ma",
