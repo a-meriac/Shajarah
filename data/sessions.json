@@ -1,0 +1,2616 @@
+{
+ "settings": {
+  "count": 30,
+  "pages": 12,
+  "dwell_median_s": 20.0,
+  "dwell_sigma": 0.8,
+  "dwell_min_s": 3.0,
+  "dwell_max_s": 120.0,
+  "seed": 1
+ },
+ "month": "2026-08",
+ "sessions": [
+  {
+   "id": 0,
+   "bucket": "head",
+   "pages": [
+    {
+     "title": "Dharmendra_Pradhan",
+     "dwell_s": 18.1
+    },
+    {
+     "title": "Talcher",
+     "dwell_s": 10.1
+    },
+    {
+     "title": "Talcher_Super_Thermal_Power_Station",
+     "dwell_s": 24.2
+    },
+    {
+     "title": "Talcher_Thermal_Power_Station",
+     "dwell_s": 27.0
+    },
+    {
+     "title": "Talcher_Super_Thermal_Power_Station",
+     "dwell_s": 21.7
+    },
+    {
+     "title": "Talcher_Thermal_Power_Station",
+     "dwell_s": 13.7
+    },
+    {
+     "title": "Talcher_Super_Thermal_Power_Station",
+     "dwell_s": 16.3
+    },
+    {
+     "title": "Talcher_Thermal_Power_Station",
+     "dwell_s": 16.1
+    },
+    {
+     "title": "Talcher_Super_Thermal_Power_Station",
+     "dwell_s": 14.1
+    },
+    {
+     "title": "Talcher_Thermal_Power_Station",
+     "dwell_s": 13.3
+    },
+    {
+     "title": "Talcher_Super_Thermal_Power_Station",
+     "dwell_s": 23.1
+    },
+    {
+     "title": "Talcher_Thermal_Power_Station",
+     "dwell_s": 23.8
+    }
+   ]
+  },
+  {
+   "id": 1,
+   "bucket": "torso",
+   "pages": [
+    {
+     "title": "List_of_United_States_Air_Force_installations",
+     "dwell_s": 5.4
+    },
+    {
+     "title": "Holloman_Air_Force_Base",
+     "dwell_s": 26.0
+    },
+    {
+     "title": "New_Mexico",
+     "dwell_s": 44.1
+    },
+    {
+     "title": "Michelle_Lujan_Grisham",
+     "dwell_s": 36.0
+    },
+    {
+     "title": "List_of_United_States_political_families_(L)",
+     "dwell_s": 20.2
+    },
+    {
+     "title": "Eugene_D._Lujan",
+     "dwell_s": 15.2
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "bucket": "tail",
+   "pages": [
+    {
+     "title": "Rudy_Youngblood",
+     "dwell_s": 25.5
+    },
+    {
+     "title": "Attrition_(film)",
+     "dwell_s": 7.8
+    },
+    {
+     "title": "Rudy_Youngblood",
+     "dwell_s": 59.4
+    },
+    {
+     "title": "Yaqui",
+     "dwell_s": 9.2
+    },
+    {
+     "title": "Uto-Aztecan_languages",
+     "dwell_s": 3.9
+    },
+    {
+     "title": "Huichol_language",
+     "dwell_s": 27.2
+    },
+    {
+     "title": "Uto-Aztecan_languages",
+     "dwell_s": 51.1
+    },
+    {
+     "title": "Tübatulabal_language",
+     "dwell_s": 29.3
+    },
+    {
+     "title": "Tübatulabal",
+     "dwell_s": 18.0
+    },
+    {
+     "title": "Keyesville_massacre",
+     "dwell_s": 14.8
+    },
+    {
+     "title": "Great_Flood_of_1862",
+     "dwell_s": 15.3
+    },
+    {
+     "title": "ARkStorm",
+     "dwell_s": 7.9
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "bucket": "head",
+   "pages": [
+    {
+     "title": "George_VI",
+     "dwell_s": 11.3
+    },
+    {
+     "title": "Elizabeth_II",
+     "dwell_s": 3.0
+    },
+    {
+     "title": "House_of_Windsor",
+     "dwell_s": 15.8
+    },
+    {
+     "title": "George_V",
+     "dwell_s": 24.5
+    },
+    {
+     "title": "George_VI",
+     "dwell_s": 20.1
+    },
+    {
+     "title": "Lying_in_state",
+     "dwell_s": 15.3
+    },
+    {
+     "title": "State_funeral",
+     "dwell_s": 30.3
+    },
+    {
+     "title": "Prime_Minister_of_Australia",
+     "dwell_s": 19.7
+    },
+    {
+     "title": "Robert_Menzies",
+     "dwell_s": 10.5
+    },
+    {
+     "title": "Frank_Menzies",
+     "dwell_s": 48.7
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "bucket": "torso",
+   "pages": [
+    {
+     "title": "The_Wonder_Years",
+     "dwell_s": 44.1
+    },
+    {
+     "title": "Alley_Mills",
+     "dwell_s": 24.7
+    },
+    {
+     "title": "Diary_of_a_Mad_Housewife",
+     "dwell_s": 6.0
+    },
+    {
+     "title": "Frank_Langella",
+     "dwell_s": 37.0
+    },
+    {
+     "title": "Kidding",
+     "dwell_s": 8.6
+    },
+    {
+     "title": "Jim_Carrey",
+     "dwell_s": 42.9
+    },
+    {
+     "title": "Jim_Carrey_filmography",
+     "dwell_s": 57.0
+    },
+    {
+     "title": "Doctor_Eggman",
+     "dwell_s": 49.3
+    },
+    {
+     "title": "Sonic_the_Hedgehog_(character)",
+     "dwell_s": 22.5
+    },
+    {
+     "title": "Mad_scientist",
+     "dwell_s": 12.9
+    },
+    {
+     "title": "Fringe_science",
+     "dwell_s": 29.7
+    },
+    {
+     "title": "Focal_infection_theory",
+     "dwell_s": 31.6
+    }
+   ]
+  },
+  {
+   "id": 5,
+   "bucket": "tail",
+   "pages": [
+    {
+     "title": "Like_a_Dragon_Gaiden:_The_Man_Who_Erased_His_Name",
+     "dwell_s": 20.5
+    },
+    {
+     "title": "Like_a_Dragon:_Infinite_Wealth",
+     "dwell_s": 25.4
+    },
+    {
+     "title": "Like_a_Dragon:_Pirate_Yakuza_in_Hawaii",
+     "dwell_s": 79.4
+    },
+    {
+     "title": "Yakuza_Kiwami_3_&_Dark_Ties",
+     "dwell_s": 32.8
+    },
+    {
+     "title": "Goro_Majima",
+     "dwell_s": 8.8
+    },
+    {
+     "title": "Like_a_Dragon:_Pirate_Yakuza_in_Hawaii",
+     "dwell_s": 17.9
+    },
+    {
+     "title": "Kazuma_Kiryu",
+     "dwell_s": 15.2
+    },
+    {
+     "title": "Yakuza_0",
+     "dwell_s": 5.4
+    },
+    {
+     "title": "Kazuma_Kiryu",
+     "dwell_s": 17.3
+    },
+    {
+     "title": "Yakuza_0",
+     "dwell_s": 13.8
+    },
+    {
+     "title": "Yakuza_Kiwami",
+     "dwell_s": 9.4
+    },
+    {
+     "title": "Yakuza_Kiwami_2",
+     "dwell_s": 48.2
+    }
+   ]
+  },
+  {
+   "id": 6,
+   "bucket": "head",
+   "pages": [
+    {
+     "title": "Sam_Worthington",
+     "dwell_s": 11.4
+    },
+    {
+     "title": "Lara_Worthington",
+     "dwell_s": 21.7
+    },
+    {
+     "title": "Sam_Worthington",
+     "dwell_s": 23.4
+    },
+    {
+     "title": "Lara_Worthington",
+     "dwell_s": 66.8
+    },
+    {
+     "title": "Michael_Clarke_(cricketer)",
+     "dwell_s": 22.6
+    },
+    {
+     "title": "Mitchell_Johnson",
+     "dwell_s": 23.4
+    },
+    {
+     "title": "List_of_international_cricket_five-wicket_hauls_by_Mitchell_Johnson",
+     "dwell_s": 14.3
+    }
+   ]
+  },
+  {
+   "id": 7,
+   "bucket": "torso",
+   "pages": [
+    {
+     "title": "1928_German_federal_election",
+     "dwell_s": 32.3
+    },
+    {
+     "title": "December_1924_German_federal_election",
+     "dwell_s": 42.2
+    },
+    {
+     "title": "1928_German_federal_election",
+     "dwell_s": 20.0
+    },
+    {
+     "title": "Communist_Party_of_Germany",
+     "dwell_s": 11.9
+    },
+    {
+     "title": "Ernst_Thälmann",
+     "dwell_s": 13.2
+    },
+    {
+     "title": "Battle_of_the_Somme",
+     "dwell_s": 18.1
+    },
+    {
+     "title": "First_day_on_the_Somme",
+     "dwell_s": 10.6
+    },
+    {
+     "title": "World_War_I",
+     "dwell_s": 32.8
+    },
+    {
+     "title": "Austria-Hungary",
+     "dwell_s": 27.7
+    },
+    {
+     "title": "German_question",
+     "dwell_s": 9.4
+    },
+    {
+     "title": "North_German_Confederation",
+     "dwell_s": 63.7
+    },
+    {
+     "title": "Duchy_of_Schleswig",
+     "dwell_s": 14.5
+    }
+   ]
+  },
+  {
+   "id": 8,
+   "bucket": "tail",
+   "pages": [
+    {
+     "title": "Loqueesha",
+     "dwell_s": 12.3
+    },
+    {
+     "title": "Dwayne_Perkins",
+     "dwell_s": 52.4
+    }
+   ]
+  },
+  {
+   "id": 9,
+   "bucket": "head",
+   "pages": [
+    {
+     "title": "Peddi",
+     "dwell_s": 6.1
+    },
+    {
+     "title": "Hamlet_(place)",
+     "dwell_s": 21.4
+    },
+    {
+     "title": "Dhani_(settlement_type)",
+     "dwell_s": 6.6
+    }
+   ]
+  },
+  {
+   "id": 10,
+   "bucket": "torso",
+   "pages": [
+    {
+     "title": "Book_of_Revelation",
+     "dwell_s": 16.9
+    },
+    {
+     "title": "Christian_eschatology",
+     "dwell_s": 65.9
+    },
+    {
+     "title": "Millennialism",
+     "dwell_s": 39.2
+    },
+    {
+     "title": "Historic_premillennialism",
+     "dwell_s": 51.1
+    },
+    {
+     "title": "Great_Tribulation",
+     "dwell_s": 34.7
+    },
+    {
+     "title": "Futurism_(Christianity)",
+     "dwell_s": 14.2
+    },
+    {
+     "title": "Idealism_(Christian_eschatology)",
+     "dwell_s": 120.0
+    },
+    {
+     "title": "Preterism",
+     "dwell_s": 25.0
+    },
+    {
+     "title": "Olivet_Discourse",
+     "dwell_s": 6.6
+    },
+    {
+     "title": "Synoptic_Gospels",
+     "dwell_s": 61.7
+    },
+    {
+     "title": "Q_source",
+     "dwell_s": 19.2
+    },
+    {
+     "title": "Synoptic_Gospels",
+     "dwell_s": 5.6
+    }
+   ]
+  },
+  {
+   "id": 11,
+   "bucket": "tail",
+   "pages": [
+    {
+     "title": "Nikkita_Lyons",
+     "dwell_s": 35.8
+    },
+    {
+     "title": "Selina_Majors",
+     "dwell_s": 11.2
+    },
+    {
+     "title": "The_Fabulous_Moolah",
+     "dwell_s": 5.3
+    },
+    {
+     "title": "Mae_Young",
+     "dwell_s": 13.0
+    },
+    {
+     "title": "The_Fabulous_Moolah",
+     "dwell_s": 24.0
+    },
+    {
+     "title": "Mae_Young",
+     "dwell_s": 14.2
+    },
+    {
+     "title": "Katie_Glass",
+     "dwell_s": 51.8
+    },
+    {
+     "title": "The_Fabulous_Moolah",
+     "dwell_s": 13.8
+    },
+    {
+     "title": "Velvet_McIntyre",
+     "dwell_s": 29.6
+    },
+    {
+     "title": "WWF_Women's_Tag_Team_Championship",
+     "dwell_s": 41.6
+    },
+    {
+     "title": "NWA_World_Women's_Tag_Team_Championship",
+     "dwell_s": 36.2
+    },
+    {
+     "title": "List_of_NWA_World_Women's_Tag_Team_Champions",
+     "dwell_s": 24.3
+    }
+   ]
+  },
+  {
+   "id": 12,
+   "bucket": "head",
+   "pages": [
+    {
+     "title": "Furious_(TV_series)",
+     "dwell_s": 22.1
+    },
+    {
+     "title": "Emmy_Rossum",
+     "dwell_s": 14.8
+    },
+    {
+     "title": "Sam_Esmail",
+     "dwell_s": 85.4
+    },
+    {
+     "title": "The_Resort_(TV_series)",
+     "dwell_s": 12.8
+    },
+    {
+     "title": "Skyler_Gisondo",
+     "dwell_s": 106.6
+    },
+    {
+     "title": "Focker-in-Law",
+     "dwell_s": 6.4
+    },
+    {
+     "title": "Meet_the_Parents_(film_series)",
+     "dwell_s": 8.2
+    },
+    {
+     "title": "Little_Fockers",
+     "dwell_s": 44.3
+    },
+    {
+     "title": "Robert_De_Niro",
+     "dwell_s": 10.0
+    },
+    {
+     "title": "Diahnne_Abbott",
+     "dwell_s": 11.2
+    },
+    {
+     "title": "Drena_De_Niro",
+     "dwell_s": 31.8
+    },
+    {
+     "title": "Virginia_Admiral",
+     "dwell_s": 31.5
+    }
+   ]
+  },
+  {
+   "id": 13,
+   "bucket": "torso",
+   "pages": [
+    {
+     "title": "Gillian_Anderson",
+     "dwell_s": 57.9
+    },
+    {
+     "title": "Animals_(2026_film)",
+     "dwell_s": 14.8
+    },
+    {
+     "title": "Gillian_Anderson",
+     "dwell_s": 15.1
+    },
+    {
+     "title": "Alexis_Rockman",
+     "dwell_s": 10.2
+    }
+   ]
+  },
+  {
+   "id": 14,
+   "bucket": "tail",
+   "pages": [
+    {
+     "title": "Jammu_and_Kashmir_Awami_Ittehad_Party",
+     "dwell_s": 4.4
+    },
+    {
+     "title": "Sheikh_Abdul_Rashid",
+     "dwell_s": 39.5
+    },
+    {
+     "title": "Baramulla_Lok_Sabha_constituency",
+     "dwell_s": 25.3
+    },
+    {
+     "title": "Omar_Abdullah",
+     "dwell_s": 33.8
+    },
+    {
+     "title": "Sachin_Pilot",
+     "dwell_s": 26.8
+    },
+    {
+     "title": "Ashok_Gehlot",
+     "dwell_s": 15.2
+    },
+    {
+     "title": "Bhairon_Singh_Shekhawat",
+     "dwell_s": 16.3
+    },
+    {
+     "title": "Krishan_Kant",
+     "dwell_s": 3.0
+    },
+    {
+     "title": "Inder_Kumar_Gujral",
+     "dwell_s": 17.7
+    },
+    {
+     "title": "Khatri",
+     "dwell_s": 5.0
+    },
+    {
+     "title": "Sachdev",
+     "dwell_s": 11.3
+    },
+    {
+     "title": "Sachdeva",
+     "dwell_s": 41.1
+    }
+   ]
+  },
+  {
+   "id": 15,
+   "bucket": "head",
+   "pages": [
+    {
+     "title": "Indonesia_national_football_team",
+     "dwell_s": 13.6
+    },
+    {
+     "title": "Kevin_Diks",
+     "dwell_s": 52.1
+    },
+    {
+     "title": "FIFA_Series",
+     "dwell_s": 25.4
+    },
+    {
+     "title": "2026_FIFA_Series_(women's_matches)",
+     "dwell_s": 16.5
+    },
+    {
+     "title": "Nyayo_National_Stadium",
+     "dwell_s": 14.5
+    },
+    {
+     "title": "Kenya_national_football_team",
+     "dwell_s": 8.4
+    },
+    {
+     "title": "Elijah_Lidonde",
+     "dwell_s": 58.4
+    }
+   ]
+  },
+  {
+   "id": 16,
+   "bucket": "torso",
+   "pages": [
+    {
+     "title": "Ramon_Magsaysay",
+     "dwell_s": 81.7
+    },
+    {
+     "title": "Malacañang_Palace",
+     "dwell_s": 13.3
+    },
+    {
+     "title": "Palacio_del_Gobernador",
+     "dwell_s": 13.7
+    },
+    {
+     "title": "Plaza_de_Roma",
+     "dwell_s": 86.0
+    },
+    {
+     "title": "Charles_IV_of_Spain",
+     "dwell_s": 11.9
+    },
+    {
+     "title": "Ferdinand_VII",
+     "dwell_s": 23.8
+    },
+    {
+     "title": "Spanish_American_wars_of_independence",
+     "dwell_s": 7.9
+    },
+    {
+     "title": "Battle_of_San_Lorenzo",
+     "dwell_s": 17.2
+    },
+    {
+     "title": "United_Provinces_of_the_Río_de_la_Plata",
+     "dwell_s": 49.5
+    },
+    {
+     "title": "Argentine_Confederation",
+     "dwell_s": 43.5
+    },
+    {
+     "title": "State_of_Buenos_Aires",
+     "dwell_s": 66.2
+    },
+    {
+     "title": "Argentina",
+     "dwell_s": 31.8
+    }
+   ]
+  },
+  {
+   "id": 17,
+   "bucket": "tail",
+   "pages": [
+    {
+     "title": "Cherami_Leigh",
+     "dwell_s": 18.7
+    },
+    {
+     "title": "Date_Everything!",
+     "dwell_s": 21.6
+    },
+    {
+     "title": "Neil_Newbon",
+     "dwell_s": 8.6
+    },
+    {
+     "title": "Marathon_(2026_video_game)",
+     "dwell_s": 5.1
+    },
+    {
+     "title": "Marathon_Infinity",
+     "dwell_s": 11.0
+    },
+    {
+     "title": "Double_Aught",
+     "dwell_s": 14.9
+    },
+    {
+     "title": "Marathon_Infinity",
+     "dwell_s": 40.3
+    },
+    {
+     "title": "Marathon_(series)",
+     "dwell_s": 17.4
+    },
+    {
+     "title": "Marathon_(2026_video_game)",
+     "dwell_s": 22.5
+    },
+    {
+     "title": "Bungie",
+     "dwell_s": 7.2
+    },
+    {
+     "title": "Alex_Seropian",
+     "dwell_s": 4.2
+    },
+    {
+     "title": "Industrial_Toys",
+     "dwell_s": 120.0
+    }
+   ]
+  },
+  {
+   "id": 18,
+   "bucket": "head",
+   "pages": [
+    {
+     "title": "The_Golden_Girls",
+     "dwell_s": 36.3
+    },
+    {
+     "title": "The_Golden_Palace",
+     "dwell_s": 14.2
+    },
+    {
+     "title": "Don_Cheadle",
+     "dwell_s": 13.8
+    },
+    {
+     "title": "No_Sudden_Move",
+     "dwell_s": 8.6
+    },
+    {
+     "title": "Julia_Fox",
+     "dwell_s": 22.3
+    },
+    {
+     "title": "One_Night_Only_(2026_film)",
+     "dwell_s": 69.0
+    },
+    {
+     "title": "King_Princess",
+     "dwell_s": 13.9
+    },
+    {
+     "title": "Amandla_Stenberg",
+     "dwell_s": 14.8
+    },
+    {
+     "title": "Lemonade_(album)",
+     "dwell_s": 39.6
+    },
+    {
+     "title": "All_Night_(Beyoncé_song)",
+     "dwell_s": 20.9
+    },
+    {
+     "title": "Quvenzhané_Wallis",
+     "dwell_s": 46.5
+    },
+    {
+     "title": "Breathe_(2024_film)",
+     "dwell_s": 15.5
+    }
+   ]
+  },
+  {
+   "id": 19,
+   "bucket": "torso",
+   "pages": [
+    {
+     "title": "Inner_Mongolia",
+     "dwell_s": 70.8
+    },
+    {
+     "title": "Tian",
+     "dwell_s": 32.3
+    },
+    {
+     "title": "Shangdi",
+     "dwell_s": 21.6
+    },
+    {
+     "title": "Shang_dynasty",
+     "dwell_s": 60.0
+    },
+    {
+     "title": "Di_Xin",
+     "dwell_s": 27.8
+    },
+    {
+     "title": "Shang_dynasty",
+     "dwell_s": 3.0
+    },
+    {
+     "title": "Zhou_dynasty",
+     "dwell_s": 21.1
+    },
+    {
+     "title": "Jiang_Yuan",
+     "dwell_s": 4.3
+    },
+    {
+     "title": "Hou_Ji",
+     "dwell_s": 50.4
+    },
+    {
+     "title": "Xia_dynasty",
+     "dwell_s": 9.6
+    },
+    {
+     "title": "Emperor_Shun",
+     "dwell_s": 27.8
+    },
+    {
+     "title": "Chen_dynasty",
+     "dwell_s": 6.0
+    }
+   ]
+  },
+  {
+   "id": 20,
+   "bucket": "tail",
+   "pages": [
+    {
+     "title": "Moritz_Borman",
+     "dwell_s": 14.0
+    },
+    {
+     "title": "Monsanto_(film)",
+     "dwell_s": 8.2
+    },
+    {
+     "title": "Bilal_Hasna",
+     "dwell_s": 20.8
+    },
+    {
+     "title": "Layla_(film)",
+     "dwell_s": 25.4
+    },
+    {
+     "title": "Amrou_Al-Kadhi",
+     "dwell_s": 6.1
+    },
+    {
+     "title": "Layla_(film)",
+     "dwell_s": 29.9
+    },
+    {
+     "title": "Bilal_Hasna",
+     "dwell_s": 76.1
+    },
+    {
+     "title": "Dead_Hot",
+     "dwell_s": 14.6
+    },
+    {
+     "title": "Bilal_Hasna",
+     "dwell_s": 60.4
+    },
+    {
+     "title": "Rule_of_Three_(film)",
+     "dwell_s": 89.0
+    },
+    {
+     "title": "Chloe_East",
+     "dwell_s": 13.2
+    },
+    {
+     "title": "Roommates_(2026_film)",
+     "dwell_s": 87.4
+    }
+   ]
+  },
+  {
+   "id": 21,
+   "bucket": "head",
+   "pages": [
+    {
+     "title": "The_Prestige",
+     "dwell_s": 20.8
+    },
+    {
+     "title": "David_Bowie",
+     "dwell_s": 6.5
+    },
+    {
+     "title": "Angie_Bowie",
+     "dwell_s": 53.2
+    },
+    {
+     "title": "Duncan_Jones",
+     "dwell_s": 18.6
+    },
+    {
+     "title": "Angie_Bowie",
+     "dwell_s": 8.2
+    },
+    {
+     "title": "Angie_(song)",
+     "dwell_s": 23.0
+    },
+    {
+     "title": "The_Rolling_Stones",
+     "dwell_s": 23.2
+    },
+    {
+     "title": "Mick_Jagger",
+     "dwell_s": 27.5
+    },
+    {
+     "title": "Melanie_Hamrick",
+     "dwell_s": 57.2
+    },
+    {
+     "title": "Mick_Jagger",
+     "dwell_s": 25.9
+    },
+    {
+     "title": "Melanie_Hamrick",
+     "dwell_s": 11.5
+    },
+    {
+     "title": "American_Ballet_Theatre",
+     "dwell_s": 26.0
+    }
+   ]
+  },
+  {
+   "id": 22,
+   "bucket": "torso",
+   "pages": [
+    {
+     "title": "96th_Academy_Awards",
+     "dwell_s": 42.2
+    },
+    {
+     "title": "Maestro_(2023_film)",
+     "dwell_s": 14.8
+    },
+    {
+     "title": "Leonard_Bernstein",
+     "dwell_s": 120.0
+    },
+    {
+     "title": "Aaron_Copland",
+     "dwell_s": 14.8
+    },
+    {
+     "title": "Rodeo_(ballet)",
+     "dwell_s": 38.2
+    },
+    {
+     "title": "Aaron_Copland",
+     "dwell_s": 38.7
+    },
+    {
+     "title": "Rodeo_(ballet)",
+     "dwell_s": 13.2
+    },
+    {
+     "title": "Aaron_Copland",
+     "dwell_s": 8.8
+    },
+    {
+     "title": "Appalachian_Spring",
+     "dwell_s": 17.8
+    },
+    {
+     "title": "Graham_technique",
+     "dwell_s": 10.9
+    },
+    {
+     "title": "Doris_Humphrey",
+     "dwell_s": 66.2
+    },
+    {
+     "title": "Isadora_Duncan",
+     "dwell_s": 10.1
+    }
+   ]
+  },
+  {
+   "id": 23,
+   "bucket": "tail",
+   "pages": [
+    {
+     "title": "Keppel_MRT_station",
+     "dwell_s": 58.0
+    },
+    {
+     "title": "Keppel_Harbour",
+     "dwell_s": 13.3
+    },
+    {
+     "title": "Henry_Keppel",
+     "dwell_s": 18.7
+    },
+    {
+     "title": "William_Keppel,_4th_Earl_of_Albemarle",
+     "dwell_s": 13.2
+    },
+    {
+     "title": "George_Keppel,_3rd_Earl_of_Albemarle",
+     "dwell_s": 27.7
+    },
+    {
+     "title": "Willem_van_Keppel,_2nd_Earl_of_Albemarle",
+     "dwell_s": 10.4
+    },
+    {
+     "title": "Arnold_van_Keppel,_1st_Earl_of_Albemarle",
+     "dwell_s": 56.2
+    },
+    {
+     "title": "Willem_van_Keppel,_2nd_Earl_of_Albemarle",
+     "dwell_s": 120.0
+    },
+    {
+     "title": "Arnold_van_Keppel,_1st_Earl_of_Albemarle",
+     "dwell_s": 4.7
+    },
+    {
+     "title": "Willem_van_Keppel,_2nd_Earl_of_Albemarle",
+     "dwell_s": 21.5
+    },
+    {
+     "title": "Arnold_van_Keppel,_1st_Earl_of_Albemarle",
+     "dwell_s": 5.9
+    },
+    {
+     "title": "William_III_of_England",
+     "dwell_s": 14.3
+    }
+   ]
+  },
+  {
+   "id": 24,
+   "bucket": "head",
+   "pages": [
+    {
+     "title": "2026_FIFA_World_Cup_squads",
+     "dwell_s": 9.8
+    },
+    {
+     "title": "Villarreal_CF",
+     "dwell_s": 11.2
+    },
+    {
+     "title": "Nathan_Saliba",
+     "dwell_s": 67.5
+    },
+    {
+     "title": "RSC_Anderlecht",
+     "dwell_s": 7.9
+    },
+    {
+     "title": "Anas_Tajaouart",
+     "dwell_s": 27.8
+    }
+   ]
+  },
+  {
+   "id": 25,
+   "bucket": "torso",
+   "pages": [
+    {
+     "title": "Shekhar_Kapur",
+     "dwell_s": 22.4
+    },
+    {
+     "title": "Parikshit_Sahni",
+     "dwell_s": 8.3
+    },
+    {
+     "title": "Balraj_Sahni",
+     "dwell_s": 40.1
+    },
+    {
+     "title": "Bhisham_Sahni",
+     "dwell_s": 21.0
+    },
+    {
+     "title": "Parikshit_Sahni",
+     "dwell_s": 11.3
+    },
+    {
+     "title": "Balraj_Sahni",
+     "dwell_s": 65.8
+    },
+    {
+     "title": "Bindya",
+     "dwell_s": 3.9
+    },
+    {
+     "title": "Padmini_(actress)",
+     "dwell_s": 12.9
+    },
+    {
+     "title": "Vineeth",
+     "dwell_s": 48.1
+    },
+    {
+     "title": "Shobana",
+     "dwell_s": 22.1
+    },
+    {
+     "title": "Vineeth",
+     "dwell_s": 12.0
+    },
+    {
+     "title": "Kadhal_Desam",
+     "dwell_s": 32.4
+    }
+   ]
+  },
+  {
+   "id": 26,
+   "bucket": "tail",
+   "pages": [
+    {
+     "title": "Eilish_McColgan",
+     "dwell_s": 10.6
+    },
+    {
+     "title": "Michael_Rimmer",
+     "dwell_s": 24.6
+    }
+   ]
+  },
+  {
+   "id": 27,
+   "bucket": "head",
+   "pages": [
+    {
+     "title": "Polyphemus",
+     "dwell_s": 77.3
+    },
+    {
+     "title": "The_Odyssey_(2026_film)",
+     "dwell_s": 23.8
+    },
+    {
+     "title": "Benny_Safdie",
+     "dwell_s": 17.0
+    },
+    {
+     "title": "Josh_Safdie",
+     "dwell_s": 28.8
+    },
+    {
+     "title": "Good_Time_(film)",
+     "dwell_s": 10.8
+    },
+    {
+     "title": "Robert_Pattinson",
+     "dwell_s": 18.8
+    },
+    {
+     "title": "Auteur",
+     "dwell_s": 23.9
+    },
+    {
+     "title": "Radley_Metzger",
+     "dwell_s": 110.0
+    },
+    {
+     "title": "Dictionary_of_Sex",
+     "dwell_s": 21.0
+    }
+   ]
+  },
+  {
+   "id": 28,
+   "bucket": "torso",
+   "pages": [
+    {
+     "title": "Soyuz_11",
+     "dwell_s": 9.3
+    },
+    {
+     "title": "Kármán_line",
+     "dwell_s": 57.7
+    },
+    {
+     "title": "North_American_X-15",
+     "dwell_s": 43.8
+    },
+    {
+     "title": "Michael_J._Adams",
+     "dwell_s": 19.7
+    },
+    {
+     "title": "Joseph_A._Walker",
+     "dwell_s": 11.0
+    },
+    {
+     "title": "North_American_XB-70_Valkyrie",
+     "dwell_s": 13.9
+    },
+    {
+     "title": "Strategic_bomber",
+     "dwell_s": 23.9
+    },
+    {
+     "title": "Tupolev_Tu-95",
+     "dwell_s": 26.3
+    },
+    {
+     "title": "Tupolev_Tu-142",
+     "dwell_s": 12.5
+    },
+    {
+     "title": "Kamenny_Ruchey",
+     "dwell_s": 44.6
+    }
+   ]
+  },
+  {
+   "id": 29,
+   "bucket": "tail",
+   "pages": [
+    {
+     "title": "Afghan_Civil_War_(1989–1992)",
+     "dwell_s": 7.7
+    },
+    {
+     "title": "Islamic_State_of_Afghanistan",
+     "dwell_s": 23.8
+    },
+    {
+     "title": "Transitional_Islamic_State_of_Afghanistan",
+     "dwell_s": 6.1
+    },
+    {
+     "title": "Hamid_Karzai",
+     "dwell_s": 54.9
+    },
+    {
+     "title": "Ahmad_Shah_Massoud",
+     "dwell_s": 26.7
+    },
+    {
+     "title": "Dost_Muhammad_Khan_(colonel)",
+     "dwell_s": 7.5
+    },
+    {
+     "title": "Ahmad_Massoud",
+     "dwell_s": 10.3
+    },
+    {
+     "title": "2025_Afghanistan–Pakistan_conflict",
+     "dwell_s": 63.9
+    },
+    {
+     "title": "Hibatullah_Akhundzada",
+     "dwell_s": 28.2
+    },
+    {
+     "title": "Mullah_Omar",
+     "dwell_s": 14.2
+    },
+    {
+     "title": "Hafiz_(Quran)",
+     "dwell_s": 8.8
+    },
+    {
+     "title": "Surah",
+     "dwell_s": 6.6
+    }
+   ]
+  }
+ ],
+ "fetched": [
+  {
+   "title": "Talcher",
+   "role": "session",
+   "revision": 1374266915,
+   "bytes": 90166
+  },
+  {
+   "title": "Holloman_Air_Force_Base",
+   "role": "session",
+   "revision": 1371248640,
+   "bytes": 351574
+  },
+  {
+   "title": "Attrition_(film)",
+   "role": "session",
+   "revision": 1339857955,
+   "bytes": 20620
+  },
+  {
+   "title": "Alley_Mills",
+   "role": "session",
+   "revision": 1372510855,
+   "bytes": 88707
+  },
+  {
+   "title": "December_1924_German_federal_election",
+   "role": "session",
+   "revision": 1347585448,
+   "bytes": 142647
+  },
+  {
+   "title": "Dwayne_Perkins",
+   "role": "session",
+   "revision": 1374269053,
+   "bytes": 149499
+  },
+  {
+   "title": "Hamlet_(place)",
+   "role": "session",
+   "revision": 1366654926,
+   "bytes": 179237
+  },
+  {
+   "title": "Christian_eschatology",
+   "role": "session",
+   "revision": 1375674698,
+   "bytes": 464541
+  },
+  {
+   "title": "Selina_Majors",
+   "role": "session",
+   "revision": 1374304638,
+   "bytes": 54674
+  },
+  {
+   "title": "Emmy_Rossum",
+   "role": "session",
+   "revision": 1376169421,
+   "bytes": 361462
+  },
+  {
+   "title": "Kevin_Diks",
+   "role": "session",
+   "revision": 1375711867,
+   "bytes": 161500
+  },
+  {
+   "title": "Malacañang_Palace",
+   "role": "session",
+   "revision": 1368921519,
+   "bytes": 318932
+  },
+  {
+   "title": "Date_Everything!",
+   "role": "session",
+   "revision": 1342614120,
+   "bytes": 106059
+  },
+  {
+   "title": "The_Golden_Palace",
+   "role": "session",
+   "revision": 1376428674,
+   "bytes": 288208
+  },
+  {
+   "title": "Tian",
+   "role": "session",
+   "revision": 1371065183,
+   "bytes": 336719
+  },
+  {
+   "title": "David_Bowie",
+   "role": "session",
+   "revision": 1376184501,
+   "bytes": 1331069
+  },
+  {
+   "title": "Maestro_(2023_film)",
+   "role": "session",
+   "revision": 1374000759,
+   "bytes": 426136
+  },
+  {
+   "title": "Keppel_Harbour",
+   "role": "session",
+   "revision": 1328054576,
+   "bytes": 28706
+  },
+  {
+   "title": "Villarreal_CF",
+   "role": "session",
+   "revision": 1373351129,
+   "bytes": 452319
+  },
+  {
+   "title": "Parikshit_Sahni",
+   "role": "session",
+   "revision": 1372592840,
+   "bytes": 89875
+  },
+  {
+   "title": "The_Odyssey_(2026_film)",
+   "role": "session",
+   "revision": 1376513424,
+   "bytes": 916591
+  },
+  {
+   "title": "Islamic_State_of_Afghanistan",
+   "role": "session",
+   "revision": 1374469603,
+   "bytes": 142852
+  },
+  {
+   "title": "Talcher_Super_Thermal_Power_Station",
+   "role": "session",
+   "revision": 1339502926,
+   "bytes": 59496
+  },
+  {
+   "title": "New_Mexico",
+   "role": "session",
+   "revision": 1376277266,
+   "bytes": 1560303
+  },
+  {
+   "title": "House_of_Windsor",
+   "role": "session",
+   "revision": 1374868724,
+   "bytes": 197727
+  },
+  {
+   "title": "Diary_of_a_Mad_Housewife",
+   "role": "session",
+   "revision": 1370609411,
+   "bytes": 69318
+  },
+  {
+   "title": "Like_a_Dragon:_Pirate_Yakuza_in_Hawaii",
+   "role": "session",
+   "revision": 1358551142,
+   "bytes": 151658
+  },
+  {
+   "title": "Dhani_(settlement_type)",
+   "role": "session",
+   "revision": 1312488146,
+   "bytes": 38454
+  },
+  {
+   "title": "Millennialism",
+   "role": "session",
+   "revision": 1375497327,
+   "bytes": 255130
+  },
+  {
+   "title": "The_Fabulous_Moolah",
+   "role": "session",
+   "revision": 1370883633,
+   "bytes": 491504
+  },
+  {
+   "title": "Sam_Esmail",
+   "role": "session",
+   "revision": 1369330394,
+   "bytes": 240011
+  },
+  {
+   "title": "Baramulla_Lok_Sabha_constituency",
+   "role": "session",
+   "revision": 1360527519,
+   "bytes": 152122
+  },
+  {
+   "title": "FIFA_Series",
+   "role": "session",
+   "revision": 1368961182,
+   "bytes": 232182
+  },
+  {
+   "title": "Palacio_del_Gobernador",
+   "role": "session",
+   "revision": 1374825911,
+   "bytes": 69318
+  },
+  {
+   "title": "Neil_Newbon",
+   "role": "session",
+   "revision": 1365798534,
+   "bytes": 119500
+  },
+  {
+   "title": "Don_Cheadle",
+   "role": "session",
+   "revision": 1375545956,
+   "bytes": 356011
+  },
+  {
+   "title": "Shangdi",
+   "role": "session",
+   "revision": 1370553271,
+   "bytes": 214688
+  },
+  {
+   "title": "Bilal_Hasna",
+   "role": "session",
+   "revision": 1375724750,
+   "bytes": 55569
+  },
+  {
+   "title": "Angie_Bowie",
+   "role": "session",
+   "revision": 1372665293,
+   "bytes": 159029
+  },
+  {
+   "title": "Leonard_Bernstein",
+   "role": "session",
+   "revision": 1375954308,
+   "bytes": 1069075
+  },
+  {
+   "title": "Henry_Keppel",
+   "role": "session",
+   "revision": 1361083363,
+   "bytes": 122665
+  },
+  {
+   "title": "Nathan_Saliba",
+   "role": "session",
+   "revision": 1375954689,
+   "bytes": 152383
+  },
+  {
+   "title": "Balraj_Sahni",
+   "role": "session",
+   "revision": 1375523734,
+   "bytes": 201828
+  },
+  {
+   "title": "North_American_X-15",
+   "role": "session",
+   "revision": 1370905562,
+   "bytes": 498358
+  },
+  {
+   "title": "Transitional_Islamic_State_of_Afghanistan",
+   "role": "session",
+   "revision": 1374469552,
+   "bytes": 108942
+  },
+  {
+   "title": "Talcher_Thermal_Power_Station",
+   "role": "session",
+   "revision": 1326875988,
+   "bytes": 78667
+  },
+  {
+   "title": "Michelle_Lujan_Grisham",
+   "role": "session",
+   "revision": 1376162551,
+   "bytes": 306231
+  },
+  {
+   "title": "George_V",
+   "role": "session",
+   "revision": 1374857949,
+   "bytes": 524857
+  },
+  {
+   "title": "Frank_Langella",
+   "role": "session",
+   "revision": 1372768865,
+   "bytes": 262138
+  },
+  {
+   "title": "Yakuza_Kiwami_3_&_Dark_Ties",
+   "role": "session",
+   "revision": 1376094808,
+   "bytes": 158348
+  },
+  {
+   "title": "Communist_Party_of_Germany",
+   "role": "session",
+   "revision": 1364437099,
+   "bytes": 544589
+  },
+  {
+   "title": "Historic_premillennialism",
+   "role": "session",
+   "revision": 1371298707,
+   "bytes": 73198
+  },
+  {
+   "title": "Mae_Young",
+   "role": "session",
+   "revision": 1368916364,
+   "bytes": 412186
+  },
+  {
+   "title": "The_Resort_(TV_series)",
+   "role": "session",
+   "revision": 1368617328,
+   "bytes": 106590
+  },
+  {
+   "title": "Alexis_Rockman",
+   "role": "session",
+   "revision": 1364548665,
+   "bytes": 213949
+  },
+  {
+   "title": "Omar_Abdullah",
+   "role": "session",
+   "revision": 1373743129,
+   "bytes": 192555
+  },
+  {
+   "title": "2026_FIFA_Series_(women's_matches)",
+   "role": "session",
+   "revision": 1366338053,
+   "bytes": 354278
+  },
+  {
+   "title": "Plaza_de_Roma",
+   "role": "session",
+   "revision": 1369382363,
+   "bytes": 93040
+  },
+  {
+   "title": "Marathon_(2026_video_game)",
+   "role": "session",
+   "revision": 1376093407,
+   "bytes": 194878
+  },
+  {
+   "title": "No_Sudden_Move",
+   "role": "session",
+   "revision": 1342703094,
+   "bytes": 120653
+  },
+  {
+   "title": "Shang_dynasty",
+   "role": "session",
+   "revision": 1372796090,
+   "bytes": 396220
+  },
+  {
+   "title": "Layla_(film)",
+   "role": "session",
+   "revision": 1337573879,
+   "bytes": 36586
+  },
+  {
+   "title": "Duncan_Jones",
+   "role": "session",
+   "revision": 1376024084,
+   "bytes": 153146
+  },
+  {
+   "title": "Aaron_Copland",
+   "role": "session",
+   "revision": 1365565292,
+   "bytes": 564830
+  },
+  {
+   "title": "William_Keppel,_4th_Earl_of_Albemarle",
+   "role": "session",
+   "revision": 1356273612,
+   "bytes": 65543
+  },
+  {
+   "title": "RSC_Anderlecht",
+   "role": "session",
+   "revision": 1376221842,
+   "bytes": 853762
+  },
+  {
+   "title": "Bhisham_Sahni",
+   "role": "session",
+   "revision": 1372263149,
+   "bytes": 120198
+  },
+  {
+   "title": "Michael_J._Adams",
+   "role": "session",
+   "revision": 1367700475,
+   "bytes": 61858
+  },
+  {
+   "title": "Hamid_Karzai",
+   "role": "session",
+   "revision": 1373949008,
+   "bytes": 516394
+  },
+  {
+   "title": "List_of_United_States_political_families_(L)",
+   "role": "session",
+   "revision": 1370772645,
+   "bytes": 500557
+  },
+  {
+   "title": "Uto-Aztecan_languages",
+   "role": "session",
+   "revision": 1373622890,
+   "bytes": 334123
+  },
+  {
+   "title": "Kidding",
+   "role": "session",
+   "revision": 1368928444,
+   "bytes": 267012
+  },
+  {
+   "title": "Goro_Majima",
+   "role": "session",
+   "revision": 1376215111,
+   "bytes": 145442
+  },
+  {
+   "title": "Michael_Clarke_(cricketer)",
+   "role": "session",
+   "revision": 1369530855,
+   "bytes": 468274
+  },
+  {
+   "title": "Ernst_Thälmann",
+   "role": "session",
+   "revision": 1367059170,
+   "bytes": 290629
+  },
+  {
+   "title": "Great_Tribulation",
+   "role": "session",
+   "revision": 1373493271,
+   "bytes": 164915
+  },
+  {
+   "title": "Skyler_Gisondo",
+   "role": "session",
+   "revision": 1375866865,
+   "bytes": 177027
+  },
+  {
+   "title": "Sachin_Pilot",
+   "role": "session",
+   "revision": 1373354592,
+   "bytes": 189812
+  },
+  {
+   "title": "Nyayo_National_Stadium",
+   "role": "session",
+   "revision": 1372221410,
+   "bytes": 62314
+  },
+  {
+   "title": "Charles_IV_of_Spain",
+   "role": "session",
+   "revision": 1375495045,
+   "bytes": 226857
+  },
+  {
+   "title": "Marathon_Infinity",
+   "role": "session",
+   "revision": 1349390856,
+   "bytes": 58720
+  },
+  {
+   "title": "Julia_Fox",
+   "role": "session",
+   "revision": 1376221840,
+   "bytes": 236982
+  },
+  {
+   "title": "Di_Xin",
+   "role": "session",
+   "revision": 1375050150,
+   "bytes": 268923
+  },
+  {
+   "title": "Amrou_Al-Kadhi",
+   "role": "session",
+   "revision": 1372415760,
+   "bytes": 77781
+  },
+  {
+   "title": "Rodeo_(ballet)",
+   "role": "session",
+   "revision": 1366390818,
+   "bytes": 93755
+  },
+  {
+   "title": "George_Keppel,_3rd_Earl_of_Albemarle",
+   "role": "session",
+   "revision": 1369511302,
+   "bytes": 56214
+  },
+  {
+   "title": "Anas_Tajaouart",
+   "role": "session",
+   "revision": 1376302228,
+   "bytes": 91065
+  },
+  {
+   "title": "Good_Time_(film)",
+   "role": "session",
+   "revision": 1373501301,
+   "bytes": 179564
+  },
+  {
+   "title": "Joseph_A._Walker",
+   "role": "session",
+   "revision": 1374181676,
+   "bytes": 122662
+  },
+  {
+   "title": "Ahmad_Shah_Massoud",
+   "role": "session",
+   "revision": 1375939327,
+   "bytes": 578962
+  },
+  {
+   "title": "Eugene_D._Lujan",
+   "role": "session",
+   "revision": 1373409825,
+   "bytes": 22624
+  },
+  {
+   "title": "Huichol_language",
+   "role": "session",
+   "revision": 1366116877,
+   "bytes": 136992
+  },
+  {
+   "title": "Lying_in_state",
+   "role": "session",
+   "revision": 1374901415,
+   "bytes": 303725
+  },
+  {
+   "title": "Jim_Carrey",
+   "role": "session",
+   "revision": 1376077907,
+   "bytes": 658890
+  },
+  {
+   "title": "Mitchell_Johnson",
+   "role": "session",
+   "revision": 1369531531,
+   "bytes": 320352
+  },
+  {
+   "title": "Battle_of_the_Somme",
+   "role": "session",
+   "revision": 1375545746,
+   "bytes": 507351
+  },
+  {
+   "title": "Futurism_(Christianity)",
+   "role": "session",
+   "revision": 1362091987,
+   "bytes": 207479
+  },
+  {
+   "title": "Focker-in-Law",
+   "role": "session",
+   "revision": 1374962764,
+   "bytes": 63144
+  },
+  {
+   "title": "Ashok_Gehlot",
+   "role": "session",
+   "revision": 1366513219,
+   "bytes": 238621
+  },
+  {
+   "title": "Kenya_national_football_team",
+   "role": "session",
+   "revision": 1376065815,
+   "bytes": 557914
+  },
+  {
+   "title": "Ferdinand_VII",
+   "role": "session",
+   "revision": 1373155567,
+   "bytes": 298663
+  },
+  {
+   "title": "Double_Aught",
+   "role": "session",
+   "revision": 1373098559,
+   "bytes": 17429
+  },
+  {
+   "title": "One_Night_Only_(2026_film)",
+   "role": "session",
+   "revision": 1376490189,
+   "bytes": 152881
+  },
+  {
+   "title": "Angie_(song)",
+   "role": "session",
+   "revision": 1375558026,
+   "bytes": 176467
+  },
+  {
+   "title": "Willem_van_Keppel,_2nd_Earl_of_Albemarle",
+   "role": "session",
+   "revision": 1362970383,
+   "bytes": 124163
+  },
+  {
+   "title": "North_American_XB-70_Valkyrie",
+   "role": "session",
+   "revision": 1376056562,
+   "bytes": 520079
+  },
+  {
+   "title": "Dost_Muhammad_Khan_(colonel)",
+   "role": "session",
+   "revision": 1352393497,
+   "bytes": 33587
+  },
+  {
+   "title": "State_funeral",
+   "role": "session",
+   "revision": 1375668144,
+   "bytes": 81820
+  },
+  {
+   "title": "Jim_Carrey_filmography",
+   "role": "session",
+   "revision": 1374882930,
+   "bytes": 161777
+  },
+  {
+   "title": "Kazuma_Kiryu",
+   "role": "session",
+   "revision": 1374243730,
+   "bytes": 274184
+  },
+  {
+   "title": "List_of_international_cricket_five-wicket_hauls_by_Mitchell_Johnson",
+   "role": "session",
+   "revision": 1375678579,
+   "bytes": 151492
+  },
+  {
+   "title": "First_day_on_the_Somme",
+   "role": "session",
+   "revision": 1370619759,
+   "bytes": 584291
+  },
+  {
+   "title": "Idealism_(Christian_eschatology)",
+   "role": "session",
+   "revision": 1349763020,
+   "bytes": 105475
+  },
+  {
+   "title": "Katie_Glass",
+   "role": "session",
+   "revision": 1366199637,
+   "bytes": 30289
+  },
+  {
+   "title": "Meet_the_Parents_(film_series)",
+   "role": "session",
+   "revision": 1373067816,
+   "bytes": 122392
+  },
+  {
+   "title": "Bhairon_Singh_Shekhawat",
+   "role": "session",
+   "revision": 1370354026,
+   "bytes": 171924
+  },
+  {
+   "title": "Elijah_Lidonde",
+   "role": "session",
+   "revision": 1363814078,
+   "bytes": 50221
+  },
+  {
+   "title": "Spanish_American_wars_of_independence",
+   "role": "session",
+   "revision": 1376380590,
+   "bytes": 696850
+  },
+  {
+   "title": "King_Princess",
+   "role": "session",
+   "revision": 1375733212,
+   "bytes": 289397
+  },
+  {
+   "title": "Zhou_dynasty",
+   "role": "session",
+   "revision": 1374105297,
+   "bytes": 412410
+  },
+  {
+   "title": "The_Rolling_Stones",
+   "role": "session",
+   "revision": 1376062391,
+   "bytes": 1453762
+  },
+  {
+   "title": "Arnold_van_Keppel,_1st_Earl_of_Albemarle",
+   "role": "session",
+   "revision": 1361640173,
+   "bytes": 63380
+  },
+  {
+   "title": "Bindya",
+   "role": "session",
+   "revision": 1341622193,
+   "bytes": 65064
+  },
+  {
+   "title": "Auteur",
+   "role": "session",
+   "revision": 1371494475,
+   "bytes": 294356
+  },
+  {
+   "title": "Strategic_bomber",
+   "role": "session",
+   "revision": 1375816362,
+   "bytes": 119423
+  },
+  {
+   "title": "Ahmad_Massoud",
+   "role": "session",
+   "revision": 1374628924,
+   "bytes": 140275
+  },
+  {
+   "title": "Tübatulabal_language",
+   "role": "session",
+   "revision": 1368776425,
+   "bytes": 169589
+  },
+  {
+   "title": "Prime_Minister_of_Australia",
+   "role": "session",
+   "revision": 1373762398,
+   "bytes": 426276
+  },
+  {
+   "title": "Doctor_Eggman",
+   "role": "session",
+   "revision": 1375332069,
+   "bytes": 307325
+  },
+  {
+   "title": "Yakuza_0",
+   "role": "session",
+   "revision": 1376093683,
+   "bytes": 248132
+  },
+  {
+   "title": "World_War_I",
+   "role": "session",
+   "revision": 1376154299,
+   "bytes": 1158786
+  },
+  {
+   "title": "Preterism",
+   "role": "session",
+   "revision": 1371311022,
+   "bytes": 270039
+  },
+  {
+   "title": "Little_Fockers",
+   "role": "session",
+   "revision": 1375869086,
+   "bytes": 105744
+  },
+  {
+   "title": "Krishan_Kant",
+   "role": "session",
+   "revision": 1371292026,
+   "bytes": 137799
+  },
+  {
+   "title": "Battle_of_San_Lorenzo",
+   "role": "session",
+   "revision": 1370588378,
+   "bytes": 180167
+  },
+  {
+   "title": "Marathon_(series)",
+   "role": "session",
+   "revision": 1376049370,
+   "bytes": 170044
+  },
+  {
+   "title": "Amandla_Stenberg",
+   "role": "session",
+   "revision": 1375765618,
+   "bytes": 289188
+  },
+  {
+   "title": "Jiang_Yuan",
+   "role": "session",
+   "revision": 1373685273,
+   "bytes": 28984
+  },
+  {
+   "title": "Dead_Hot",
+   "role": "session",
+   "revision": 1368719877,
+   "bytes": 115152
+  },
+  {
+   "title": "Padmini_(actress)",
+   "role": "session",
+   "revision": 1374471931,
+   "bytes": 101724
+  },
+  {
+   "title": "Radley_Metzger",
+   "role": "session",
+   "revision": 1372111078,
+   "bytes": 261760
+  },
+  {
+   "title": "Tupolev_Tu-95",
+   "role": "session",
+   "revision": 1374466221,
+   "bytes": 347825
+  },
+  {
+   "title": "2025_Afghanistan–Pakistan_conflict",
+   "role": "session",
+   "revision": 1370425152,
+   "bytes": 489620
+  },
+  {
+   "title": "Tübatulabal",
+   "role": "session",
+   "revision": 1348631859,
+   "bytes": 76846
+  },
+  {
+   "title": "Robert_Menzies",
+   "role": "session",
+   "revision": 1372540845,
+   "bytes": 643543
+  },
+  {
+   "title": "Sonic_the_Hedgehog_(character)",
+   "role": "session",
+   "revision": 1376230682,
+   "bytes": 413922
+  },
+  {
+   "title": "Austria-Hungary",
+   "role": "session",
+   "revision": 1375906665,
+   "bytes": 1083579
+  },
+  {
+   "title": "Olivet_Discourse",
+   "role": "session",
+   "revision": 1374813873,
+   "bytes": 246878
+  },
+  {
+   "title": "Velvet_McIntyre",
+   "role": "session",
+   "revision": 1366218473,
+   "bytes": 106345
+  },
+  {
+   "title": "Robert_De_Niro",
+   "role": "session",
+   "revision": 1373149098,
+   "bytes": 1088200
+  },
+  {
+   "title": "Inder_Kumar_Gujral",
+   "role": "session",
+   "revision": 1370151540,
+   "bytes": 334933
+  },
+  {
+   "title": "United_Provinces_of_the_Río_de_la_Plata",
+   "role": "session",
+   "revision": 1376494212,
+   "bytes": 467587
+  },
+  {
+   "title": "Lemonade_(album)",
+   "role": "session",
+   "revision": 1374293605,
+   "bytes": 1345526
+  },
+  {
+   "title": "Hou_Ji",
+   "role": "session",
+   "revision": 1347449964,
+   "bytes": 46625
+  },
+  {
+   "title": "Appalachian_Spring",
+   "role": "session",
+   "revision": 1350618347,
+   "bytes": 450471
+  },
+  {
+   "title": "Vineeth",
+   "role": "session",
+   "revision": 1357321482,
+   "bytes": 130841
+  },
+  {
+   "title": "Dictionary_of_Sex",
+   "role": "session",
+   "revision": 1369992645,
+   "bytes": 69069
+  },
+  {
+   "title": "Tupolev_Tu-142",
+   "role": "session",
+   "revision": 1371253795,
+   "bytes": 232655
+  },
+  {
+   "title": "Hibatullah_Akhundzada",
+   "role": "session",
+   "revision": 1374768797,
+   "bytes": 429699
+  },
+  {
+   "title": "Keyesville_massacre",
+   "role": "session",
+   "revision": 1358192358,
+   "bytes": 30158
+  },
+  {
+   "title": "Frank_Menzies",
+   "role": "session",
+   "revision": 1355900931,
+   "bytes": 39447
+  },
+  {
+   "title": "Mad_scientist",
+   "role": "session",
+   "revision": 1374004265,
+   "bytes": 97046
+  },
+  {
+   "title": "German_question",
+   "role": "session",
+   "revision": 1362093523,
+   "bytes": 117389
+  },
+  {
+   "title": "Synoptic_Gospels",
+   "role": "session",
+   "revision": 1376003554,
+   "bytes": 342212
+  },
+  {
+   "title": "WWF_Women's_Tag_Team_Championship",
+   "role": "session",
+   "revision": 1352689250,
+   "bytes": 100472
+  },
+  {
+   "title": "Diahnne_Abbott",
+   "role": "session",
+   "revision": 1368342067,
+   "bytes": 48978
+  },
+  {
+   "title": "Khatri",
+   "role": "session",
+   "revision": 1376243075,
+   "bytes": 608524
+  },
+  {
+   "title": "Argentine_Confederation",
+   "role": "session",
+   "revision": 1370512968,
+   "bytes": 114306
+  },
+  {
+   "title": "Bungie",
+   "role": "session",
+   "revision": 1376093292,
+   "bytes": 488928
+  },
+  {
+   "title": "All_Night_(Beyoncé_song)",
+   "role": "session",
+   "revision": 1369182833,
+   "bytes": 137453
+  },
+  {
+   "title": "Xia_dynasty",
+   "role": "session",
+   "revision": 1375215323,
+   "bytes": 292556
+  },
+  {
+   "title": "Rule_of_Three_(film)",
+   "role": "session",
+   "revision": 1376183160,
+   "bytes": 26194
+  },
+  {
+   "title": "Graham_technique",
+   "role": "session",
+   "revision": 1364186301,
+   "bytes": 161359
+  },
+  {
+   "title": "Shobana",
+   "role": "session",
+   "revision": 1376451419,
+   "bytes": 368756
+  },
+  {
+   "title": "Kamenny_Ruchey",
+   "role": "session",
+   "revision": 1365013948,
+   "bytes": 37244
+  },
+  {
+   "title": "Mullah_Omar",
+   "role": "session",
+   "revision": 1367776546,
+   "bytes": 497555
+  },
+  {
+   "title": "Great_Flood_of_1862",
+   "role": "session",
+   "revision": 1360456762,
+   "bytes": 217559
+  },
+  {
+   "title": "Fringe_science",
+   "role": "session",
+   "revision": 1359251788,
+   "bytes": 238503
+  },
+  {
+   "title": "Yakuza_Kiwami",
+   "role": "session",
+   "revision": 1376094612,
+   "bytes": 201003
+  },
+  {
+   "title": "North_German_Confederation",
+   "role": "session",
+   "revision": 1366475511,
+   "bytes": 250384
+  },
+  {
+   "title": "Q_source",
+   "role": "session",
+   "revision": 1373765378,
+   "bytes": 233690
+  },
+  {
+   "title": "NWA_World_Women's_Tag_Team_Championship",
+   "role": "session",
+   "revision": 1359273329,
+   "bytes": 76060
+  },
+  {
+   "title": "Drena_De_Niro",
+   "role": "session",
+   "revision": 1356924385,
+   "bytes": 54552
+  },
+  {
+   "title": "Sachdev",
+   "role": "session",
+   "revision": 1360128214,
+   "bytes": 14922
+  },
+  {
+   "title": "State_of_Buenos_Aires",
+   "role": "session",
+   "revision": 1373364393,
+   "bytes": 101732
+  },
+  {
+   "title": "Alex_Seropian",
+   "role": "session",
+   "revision": 1372605944,
+   "bytes": 102246
+  },
+  {
+   "title": "Quvenzhané_Wallis",
+   "role": "session",
+   "revision": 1369783493,
+   "bytes": 222528
+  },
+  {
+   "title": "Emperor_Shun",
+   "role": "session",
+   "revision": 1376351182,
+   "bytes": 146731
+  },
+  {
+   "title": "Chloe_East",
+   "role": "session",
+   "revision": 1369781587,
+   "bytes": 82359
+  },
+  {
+   "title": "Doris_Humphrey",
+   "role": "session",
+   "revision": 1345268703,
+   "bytes": 124514
+  },
+  {
+   "title": "Hafiz_(Quran)",
+   "role": "session",
+   "revision": 1364880123,
+   "bytes": 126178
+  },
+  {
+   "title": "ARkStorm",
+   "role": "session",
+   "revision": 1351796109,
+   "bytes": 65025
+  },
+  {
+   "title": "Focal_infection_theory",
+   "role": "session",
+   "revision": 1365303411,
+   "bytes": 331766
+  },
+  {
+   "title": "Yakuza_Kiwami_2",
+   "role": "session",
+   "revision": 1376094754,
+   "bytes": 141609
+  },
+  {
+   "title": "Duchy_of_Schleswig",
+   "role": "session",
+   "revision": 1366746987,
+   "bytes": 114801
+  },
+  {
+   "title": "List_of_NWA_World_Women's_Tag_Team_Champions",
+   "role": "session",
+   "revision": 1375530478,
+   "bytes": 265057
+  },
+  {
+   "title": "Virginia_Admiral",
+   "role": "session",
+   "revision": 1353585792,
+   "bytes": 61127
+  },
+  {
+   "title": "Sachdeva",
+   "role": "session",
+   "revision": 1362978084,
+   "bytes": 11818
+  },
+  {
+   "title": "Argentina",
+   "role": "session",
+   "revision": 1375817612,
+   "bytes": 1370975
+  },
+  {
+   "title": "Industrial_Toys",
+   "role": "session",
+   "revision": 1359548354,
+   "bytes": 57888
+  },
+  {
+   "title": "Breathe_(2024_film)",
+   "role": "session",
+   "revision": 1368849779,
+   "bytes": 36001
+  },
+  {
+   "title": "Chen_dynasty",
+   "role": "session",
+   "revision": 1375409742,
+   "bytes": 176505
+  },
+  {
+   "title": "Roommates_(2026_film)",
+   "role": "session",
+   "revision": 1374032785,
+   "bytes": 100722
+  },
+  {
+   "title": "American_Ballet_Theatre",
+   "role": "session",
+   "revision": 1373603113,
+   "bytes": 370519
+  },
+  {
+   "title": "Isadora_Duncan",
+   "role": "session",
+   "revision": 1371684429,
+   "bytes": 344669
+  },
+  {
+   "title": "William_III_of_England",
+   "role": "session",
+   "revision": 1375897399,
+   "bytes": 532991
+  },
+  {
+   "title": "Kadhal_Desam",
+   "role": "session",
+   "revision": 1370833797,
+   "bytes": 110621
+  },
+  {
+   "title": "Surah",
+   "role": "session",
+   "revision": 1371076838,
+   "bytes": 134406
+  }
+ ]
+}

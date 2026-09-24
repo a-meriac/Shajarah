@@ -267,3 +267,14 @@ async def test_revalidated_page_counts_as_viewed(kind, tunnel_certs, origin):
         assert r.headers[SOURCE_HEADER] == "revalidated"
         assert await _wait_for(lambda: len(predictor.states) == 2)
         assert predictor.states[1].history == ["A"]
+
+
+async def test_oracle_prefetch_is_served_instantly_later(kind, tunnel_certs, origin):
+    from edgeproxy.client.proxy import PREFETCH_HEADER
+
+    async with Stack(kind, tunnel_certs) as s:
+        url_b = _url(origin, "/wiki/B")
+        await s.browser.get(url_b, headers={PREFETCH_HEADER: "1"})
+        s.link_up.clear()
+        r = await s.browser.get(url_b)
+        assert r.content == PAGE_B and r.headers[SOURCE_HEADER] == "push"

@@ -17,7 +17,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from edgeproxy.client.cache import Cache, Entry
@@ -35,6 +35,9 @@ from edgeproxy.common.protocol import Frame, MsgType, set_compression
 from edgeproxy.tunnel.transport import ClientTransport
 
 SOURCE_HEADER = "X-Edgeproxy-Source"
+# Set by the experiment driver for config 4 (hover oracle): fetch now and keep the page ready to
+# serve instantly, like a <link rel=prefetch> or Speculation Rules prefetch.
+PREFETCH_HEADER = "X-Edgeproxy-Prefetch"
 
 
 @dataclass
@@ -124,8 +127,12 @@ class ClientProxy:
 
     async def fetch(self, method: str, url: str, headers: Headers = (), body: bytes = b"") -> Reply:
         start = time.monotonic()
-        self.log.emit("req_start", url=url, method=method)
-        reply = await self._fetch(method, url, filter_headers(headers, REQUEST_DROP), body)
+        prefetch = get_header(headers, PREFETCH_HEADER) is not None
+        headers = [(k, v) for k, v in headers if k.lower() != PREFETCH_HEADER.lower()]
+        self.log.emit("req_start", url=url, method=method, prefetch=prefetch)
+        reply = await self._fetch(
+            method, url, filter_headers(headers, REQUEST_DROP), body, prefetch
+        )
         self.log.emit(
             "req_done",
             url=url,
@@ -134,11 +141,18 @@ class ClientProxy:
             source=reply.source,
             from_cache=reply.source in ("push", "revalidated", "stale"),
             dur_s=time.monotonic() - start,
+            prefetch=prefetch,
         )
         return reply
 
-    async def _fetch(self, method: str, url: str, headers: Headers, body: bytes) -> Reply:
+    async def _fetch(
+        self, method: str, url: str, headers: Headers, body: bytes, prefetch: bool = False
+    ) -> Reply:
         entry = self.cache.peek(url) if method in ("GET", "HEAD") else None
+        if prefetch and entry is not None:
+            # Oracle prefetch of a page we already hold: treat it as fresh for the coming click.
+            self.cache.put(replace(entry, pushed=True, hits=0))
+            return Reply(200, _entry_headers(entry), entry.body, "push")
         if entry is not None and entry.pushed and entry.hits == 0:
             self.cache.get(url)
             # The server never saw this request; tell it, so it predicts from here (and in the
@@ -178,6 +192,7 @@ class ClientProxy:
                     headers={k.lower(): v for k, v in resp_headers},
                     etag=get_header(resp_headers, "etag"),
                     last_modified=get_header(resp_headers, "last-modified"),
+                    pushed=prefetch,
                 )
             )
         return Reply(status, resp_headers, answer.body, "origin")

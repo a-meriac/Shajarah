@@ -52,6 +52,23 @@ def _title(html: bytes, url: str) -> str:
     return text or url
 
 
+def build_page_state(
+    url: str,
+    html: bytes | str,
+    history: list[str],
+    max_candidates: int = 2000,
+    same_origin_only: bool = True,
+) -> PageState:
+    """What the predictor is asked about for a page. The Jev warm-up builds states with this
+    same function, so its cached answers match the server's questions exactly."""
+    links = extract_links(
+        html, url, same_origin_only=same_origin_only, max_candidates=max_candidates
+    )
+    return PageState(
+        url, _title(html, url), links, history=list(history), summary=page_summary(html)
+    )
+
+
 class ServerProxy:
     def __init__(
         self,
@@ -137,14 +154,11 @@ class ServerProxy:
             if r.status != 200:
                 return
             html = r.body
-        title = _title(html, url)
-        links = extract_links(
-            html, url, same_origin_only=self.same_origin_only, max_candidates=self.max_candidates
+        state = build_page_state(
+            url, html, client.history, self.max_candidates, self.same_origin_only
         )
-        state = PageState(
-            url, title, links, history=list(client.history), summary=page_summary(html)
-        )
-        client.history = [*client.history, title][-HISTORY_LEN:]
+        links = state.candidates
+        client.history = [*client.history, state.title][-HISTORY_LEN:]
         if not links:
             return
         start = time.monotonic()
