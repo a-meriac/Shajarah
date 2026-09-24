@@ -98,6 +98,14 @@ class ClientProxy:
         )
         self.log.emit("push_recv", url=url, bytes=len(frame.body), prob=frame.headers.get("prob"))
 
+    async def _notify_viewed(self, url: str) -> None:
+        try:
+            await asyncio.wait_for(
+                self.transport.send(Frame(MsgType.VIEWED, {"url": url})), self.request_timeout
+            )
+        except (OSError, TimeoutError):
+            self.log.emit("viewed_not_sent", url=url)
+
     async def _roundtrip(self, frame: Frame, timeout: float) -> Frame:
         """Send one request, retrying on a broken connection (TCP reconnect) until the deadline."""
         loop = asyncio.get_running_loop()
@@ -132,6 +140,9 @@ class ClientProxy:
         entry = self.cache.peek(url) if method in ("GET", "HEAD") else None
         if entry is not None and entry.pushed and entry.hits == 0:
             self.cache.get(url)
+            # The server never saw this request; tell it, so it predicts from here (and in the
+            # background, since the link may be down).
+            asyncio.ensure_future(self._notify_viewed(url))
             return Reply(200, _entry_headers(entry), entry.body, "push")
 
         timeout = self.request_timeout

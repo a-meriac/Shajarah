@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import mimetypes
+import sys
 from email.utils import formatdate, parsedate_to_datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -25,6 +26,12 @@ class OriginServer(ThreadingHTTPServer):
         super().__init__(addr, _Handler)
         self.root = root.resolve()
         self.log: list[tuple[str, int]] = []  # (path, status), for tests
+
+    def handle_error(self, request, client_address) -> None:
+        # A client hanging up mid-response (e.g. a cancelled prefetch) is normal, not an error.
+        if isinstance(sys.exception(), ConnectionError):
+            return
+        super().handle_error(request, client_address)
 
     def resolve(self, url_path: str) -> Path | None:
         rel = unquote(url_path).lstrip("/")

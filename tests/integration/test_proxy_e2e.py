@@ -240,3 +240,30 @@ async def test_failing_predictor_does_not_break_browsing(kind, tunnel_certs, ori
         assert await _wait_for(lambda: predictor.states)
         await asyncio.sleep(0.1)
         assert len(s.cache) == 1  # only the page itself
+
+
+async def test_reading_a_pushed_page_keeps_the_server_predicting(kind, tunnel_certs, origin):
+    """Opening a pushed page is reported to the server, which then predicts from that page."""
+    (origin.root / "wiki" / "B.html").write_bytes(
+        b"<html><head><title>B</title></head><body><a href='/wiki/C'>C</a></body></html>"
+    )
+    predictor = FakePredictor({"B": 0.9, "C": 0.9})
+    async with Stack(kind, tunnel_certs, ServerProxy(predictor=predictor)) as s:
+        await s.browser.get(_url(origin, "/wiki/A"))
+        url_b = _url(origin, "/wiki/B")
+        assert await _wait_for(lambda: s.cache.peek(url_b) is not None)
+        r = await s.browser.get(url_b)
+        assert r.headers[SOURCE_HEADER] == "push"
+        assert await _wait_for(lambda: len(predictor.states) == 2)
+        assert predictor.states[1].title == "B"
+        assert predictor.states[1].history == ["A"]
+
+
+async def test_revalidated_page_counts_as_viewed(kind, tunnel_certs, origin):
+    predictor = FakePredictor({})
+    async with Stack(kind, tunnel_certs, ServerProxy(predictor=predictor)) as s:
+        await s.browser.get(_url(origin, "/wiki/A"))
+        r = await s.browser.get(_url(origin, "/wiki/A"))
+        assert r.headers[SOURCE_HEADER] == "revalidated"
+        assert await _wait_for(lambda: len(predictor.states) == 2)
+        assert predictor.states[1].history == ["A"]

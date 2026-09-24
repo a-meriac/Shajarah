@@ -6,7 +6,9 @@ push within the byte budget. The page response is never held up by this, and a f
 only means nothing is pushed.
 
 Each client connection has its own state: pages it browsed (the predictor's history), URLs it
-already has, and its connectivity outlook. A HANDOVER_HINT frame from the client ("dropout in
+already has, and its connectivity outlook. Pages the client opens from its cache never reach
+the server as requests, so the client reports them with VIEWED; the server then predicts from
+that page too (the reader is now there), and its history matches what the reader actually saw. A HANDOVER_HINT frame from the client ("dropout in
 eta_s seconds, lasting about outage_s") switches the policy to its lower threshold and bigger
 budget until the client clears it.
 
@@ -77,6 +79,9 @@ class ServerProxy:
         if frame.type is MsgType.HANDOVER_HINT:
             self._on_hint(frame, session)
             return None
+        if frame.type is MsgType.VIEWED:
+            self._page_viewed(frame.headers["url"], session, None)
+            return None
         if frame.type is not MsgType.REQUEST:
             return None
         url = frame.headers["url"]
@@ -95,16 +100,22 @@ class ServerProxy:
             bytes=len(r.body),
             dur_s=time.monotonic() - start,
         )
-        client = self._client(session)
-        client.sent.add(url)
+        self._client(session).sent.add(url)
+        is_html = (get_header(r.headers, "content-type") or "").startswith("text/html")
+        if method == "GET" and is_html and r.status in (200, 304):
+            self._page_viewed(url, session, r.body if r.status == 200 else None)
         if r.status == 304:
             return Frame(MsgType.NOT_MODIFIED, {"status": 304, "headers": r.headers})
-        is_html = (get_header(r.headers, "content-type") or "").startswith("text/html")
-        if self.predictor is not None and method == "GET" and r.status == 200 and is_html:
-            if client.prefetch is not None:
-                client.prefetch.cancel()  # the reader moved on; predictions for the old page are stale
-            client.prefetch = asyncio.ensure_future(self._prefetch(url, r.body, session, client))
         return Frame(MsgType.RESPONSE, {"status": r.status, "headers": r.headers}, r.body)
+
+    def _page_viewed(self, url: str, session: ServerSession, html: bytes | None) -> None:
+        """The reader is now on `url`: start predicting and pushing its likely next pages."""
+        if self.predictor is None:
+            return
+        client = self._client(session)
+        if client.prefetch is not None:
+            client.prefetch.cancel()  # the reader moved on; predictions for the old page are stale
+        client.prefetch = asyncio.ensure_future(self._prefetch(url, html, session, client))
 
     def _on_hint(self, frame: Frame, session: ServerSession) -> None:
         h = frame.headers
@@ -114,7 +125,18 @@ class ServerProxy:
         outlook.metered = bool(h.get("metered", outlook.metered))
         self.log.emit("handover_hint_recv", **{k: v for k, v in h.items() if k != "type"})
 
-    async def _prefetch(self, url: str, html: bytes, session: ServerSession, client: _Client):
+    async def _prefetch(
+        self, url: str, html: bytes | None, session: ServerSession, client: _Client
+    ) -> None:
+        if html is None:  # viewed from the client's cache, or revalidated: get the page ourselves
+            try:
+                r = await self.fetcher.fetch(url)
+            except httpx.HTTPError as e:
+                self.log.emit("origin_error", url=url, error=type(e).__name__)
+                return
+            if r.status != 200:
+                return
+            html = r.body
         title = _title(html, url)
         links = extract_links(
             html, url, same_origin_only=self.same_origin_only, max_candidates=self.max_candidates
