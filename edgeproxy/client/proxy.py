@@ -26,6 +26,7 @@ from edgeproxy.common.http import (
     REQUEST_DROP,
     RESPONSE_DROP,
     Headers,
+    canonical_url,
     filter_headers,
     get_header,
     reason,
@@ -214,7 +215,7 @@ class ClientProxy:
         if not target.startswith("http://"):
             await self._write(writer, method, Reply(501, [], b"only plain HTTP\n", "error"), False)
             return False
-        reply = await self.fetch(method, target, headers, body)
+        reply = await self.fetch(method, canonical_url(target), headers, body)
         keep = (
             version == "HTTP/1.1" and (get_header(headers, "connection") or "").lower() != "close"
         )

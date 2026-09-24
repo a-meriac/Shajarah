@@ -69,3 +69,12 @@ snapshot:                      # data/build_snapshot.py
   targets_per_seed: 1          # most-clicked next pages added per seed
   seed: 0                      # random seed for the sample
   concurrency: 4               # parallel requests to the Wikimedia API
+
+sessions:                      # data/sessions.py: simulated readers for the system experiments
+  count: 30                    # sessions (each config x scenario replays the same ones)
+  pages: 12                    # longest session; a run stops at the scenario's end anyway
+  dwell_median_s: 20           # reading time per page: log-normal around this median...
+  dwell_sigma: 0.8             # ...with this spread
+  dwell_min_s: 3
+  dwell_max_s: 120
+  seed: 1

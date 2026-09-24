@@ -7,6 +7,7 @@ headers). Hop-by-hop headers never cross the tunnel.
 from __future__ import annotations
 
 from http import HTTPStatus
+from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
 Headers = list[tuple[str, str]]
 
@@ -44,3 +45,20 @@ def reason(status: int) -> str:
         return HTTPStatus(status).phrase
     except ValueError:
         return "Unknown"
+
+
+_PATH_SAFE = "/:@!$&'()*+,;=~"
+_QUERY_SAFE = "/:@!$&'()*+,;=~?%"
+
+
+def canonical_url(url: str) -> str:
+    """One spelling per URL, so a pushed page and the browser's later request share a cache key.
+
+    Pages link to 'Sandra_Hüller' while browsers send 'Sandra_H%C3%BCller': percent-encode the
+    path uniformly, encode non-ASCII in the query (keeping its existing escapes), lowercase the
+    scheme and host, and drop the fragment.
+    """
+    p = urlsplit(url)
+    path = quote(unquote(p.path), safe=_PATH_SAFE)
+    query = quote(p.query, safe=_QUERY_SAFE)
+    return urlunsplit((p.scheme.lower(), p.netloc.lower(), path, query, ""))

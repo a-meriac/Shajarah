@@ -8,10 +8,11 @@ next page to read: media files on any site, and Wikipedia's non-article pages.
 from __future__ import annotations
 
 import re
-from urllib.parse import unquote, urljoin, urlsplit, urlunsplit
+from urllib.parse import unquote, urljoin, urlsplit
 
 from selectolax.parser import HTMLParser
 
+from edgeproxy.common.http import canonical_url
 from edgeproxy.predictors.base import Link
 
 # Deliberately broad: a missed prefetch costs little, a prefetched "logout" breaks the session.
@@ -131,8 +132,8 @@ def extract_links(
         parts = urlsplit(absolute)
         if parts.scheme not in ("http", "https"):
             continue
-        url = urlunsplit(parts._replace(fragment=""))
-        if url == urlunsplit(page._replace(fragment="")):
+        url = canonical_url(absolute)
+        if url == canonical_url(page_url):
             continue
         if url in index:
             seen_before = raw[index[url]]

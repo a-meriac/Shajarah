@@ -76,7 +76,7 @@ def test_skips_media_files_and_wiki_meta_pages():
       <a href="/gallery">gallery</a>
     </body>"""
     links = extract_links(html, "https://s/wiki/Page")
-    assert [link.url.rsplit("/", 1)[1] for link in links] == ["Sandra_Hüller", "gallery"]
+    assert [link.target for link in links] == ["Sandra_Hüller", "https://s/gallery"]
 
 
 def test_link_context_and_page_summary():
@@ -91,3 +91,16 @@ def test_link_context_and_page_summary():
     assert page_summary(html).startswith("Law Roach is an American fashion stylist.")
     meta = '<head><meta name="description" content="A stylist."></head><body></body>'
     assert page_summary(meta) == "A stylist."
+
+
+def test_link_urls_match_what_browsers_send():
+    import httpx
+
+    from edgeproxy.common.http import canonical_url
+
+    (link,) = extract_links('<a href="/wiki/Sandra_Hüller#Career">x</a>', "http://o/wiki/Page")
+    sent = str(httpx.Request("GET", "http://o/wiki/Sandra_Hüller").url)
+    assert link.url == canonical_url(sent) == "http://o/wiki/Sandra_H%C3%BCller"
+    assert (
+        canonical_url("HTTP://O/wiki/A_(film)?q=é&x=%2F") == "http://o/wiki/A_(film)?q=%C3%A9&x=%2F"
+    )

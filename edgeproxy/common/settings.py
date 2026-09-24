@@ -86,6 +86,17 @@ class SnapshotSettings:
     concurrency: int = 4
 
 
+@dataclass
+class SessionSettings:
+    count: int = 30
+    pages: int = 12  # longest session; runs stop at the scenario's end anyway
+    dwell_median_s: float = 20.0
+    dwell_sigma: float = 0.8
+    dwell_min_s: float = 3.0
+    dwell_max_s: float = 120.0
+    seed: int = 1
+
+
 SECTIONS = {
     "jev": JevSettings,
     "links": LinkSettings,
@@ -96,6 +107,7 @@ SECTIONS = {
     "tunnel": TunnelSettings,
     "paths": PathSettings,
     "snapshot": SnapshotSettings,
+    "sessions": SessionSettings,
 }
 
 
@@ -110,6 +122,7 @@ class Settings:
     tunnel: TunnelSettings = field(default_factory=TunnelSettings)
     paths: PathSettings = field(default_factory=PathSettings)
     snapshot: SnapshotSettings = field(default_factory=SnapshotSettings)
+    sessions: SessionSettings = field(default_factory=SessionSettings)
 
 
 def _check(where: str, value, default):
