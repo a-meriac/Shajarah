@@ -11,7 +11,7 @@ browser → client proxy ══ QUIC tunnel (Wi-Fi / 5G / satellite) ══ serv
 ## Running it
 
 ```sh
-make venv && make test      # any OS, Python 3.11–3.13
+make venv && make test      # any OS, Python 3.11–3.14
 make test-netns             # Linux only: emulated networks, needs sudo
 ```
 
