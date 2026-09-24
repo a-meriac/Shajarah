@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shajarah</title>
+  <meta name="description" content="Keeping browsing smooth when your connection hops between Wi-Fi, 5G and satellite.">
+  <style>
+    :root {
+      --bg: #fbfaf7;
+      --fg: #1d1d1b;
+      --muted: #6b6a66;
+      --line: #e3e0d8;
+      --card: #ffffff;
+      --accent: #2f6f5e;
+      --accent-soft: #e4f0ec;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #161615;
+        --fg: #ecebe6;
+        --muted: #9d9b94;
+        --line: #2e2d2a;
+        --card: #1f1f1d;
+        --accent: #7cc4ad;
+        --accent-soft: #1f302b;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font: 17px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    main { max-width: 760px; margin: 0 auto; padding: 56px 16px 80px; }
+    h1 { font-size: 2.4rem; line-height: 1.15; margin: 0 0 12px; letter-spacing: -0.02em; }
+    h2 { font-size: 1.25rem; margin: 56px 0 12px; }
+    p { margin: 0 0 14px; }
+    .lede { font-size: 1.2rem; color: var(--muted); margin-bottom: 28px; }
+    .tag { display: inline-block; font-size: 0.8rem; color: var(--accent); background: var(--accent-soft);
+           padding: 3px 10px; border-radius: 999px; margin-bottom: 20px; }
+    a { color: var(--accent); }
+    .links { display: flex; flex-wrap: wrap; gap: 10px; }
+    .btn { display: inline-block; padding: 9px 16px; border-radius: 8px; border: 1px solid var(--line);
+           background: var(--card); color: var(--fg); text-decoration: none; font-size: 0.95rem; }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+
+    /* How it works: a row of boxes that stacks on phones */
+    .flow { display: flex; align-items: center; gap: 8px; margin: 20px 0 8px; }
+    .node { flex: 1; background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+            padding: 12px; text-align: center; font-size: 0.9rem; }
+    .node b { display: block; font-size: 0.95rem; }
+    .node span { color: var(--muted); font-size: 0.8rem; }
+    .node.tunnel { border-color: var(--accent); background: var(--accent-soft); }
+    .arrow { color: var(--muted); }
+    @media (max-width: 600px) {
+      .flow { flex-direction: column; align-items: stretch; }
+      .arrow { text-align: center; transform: rotate(90deg); }
+    }
+
+    ol.steps { padding-left: 20px; }
+    ol.steps li { margin-bottom: 10px; }
+
+    .placeholder { border: 1.5px dashed var(--line); border-radius: 10px; padding: 36px 16px;
+                   text-align: center; color: var(--muted); font-size: 0.95rem; }
+    figure { margin: 20px 0; }
+    figure img, video { width: 100%; border-radius: 10px; border: 1px solid var(--line); }
+    figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 6px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+    .stat { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+    .stat .num { font-size: 1.6rem; font-weight: 650; }
+    .stat .label { color: var(--muted); font-size: 0.85rem; }
+    footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line);
+             color: var(--muted); font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+<main>
+  <span class="tag">EDGE Challenge · ATP 2026</span>
+  <h1>No more dead zones while you browse</h1>
+  <p class="lede">
+    Your phone can usually tell a dropout is coming, because the signal fades first.
+    Shajarah uses that warning to switch networks early and download what you'll read next,
+    so a tunnel, a lift or a satellite gap doesn't interrupt you.
+  </p>
+  <div class="links">
+    <a class="btn primary" href="#demo">Watch the demo</a>
+    <a class="btn" href="https://github.com/a-meriac/Shajarah">Code on GitHub</a>
+    <!-- When the paper is ready: put it in site/media/ and uncomment.
+    <a class="btn" href="media/paper.pdf">Read the paper (PDF)</a> -->
+  </div>
+
+  <h2>The problem</h2>
+  <p>
+    Phones hop between Wi-Fi, 5G and satellite all the time. Every switch can break open connections,
+    and a real outage (a road tunnel, say) leaves you staring at a spinner. Existing fixes either
+    keep the connection alive but have nothing to show you offline, or download pages ahead of time
+    all the time and waste data.
+  </p>
+
+  <h2>How it works</h2>
+  <div class="flow" aria-label="Browser to client proxy, through a tunnel over Wi-Fi, 5G or satellite, to a server proxy, then websites">
+    <div class="node"><b>Browser</b><span>unchanged</span></div>
+    <div class="arrow">→</div>
+    <div class="node"><b>Client proxy</b><span>on your device</span></div>
+    <div class="arrow">→</div>
+    <div class="node tunnel"><b>Tunnel</b><span>Wi-Fi · 5G · satellite</span></div>
+    <div class="arrow">→</div>
+    <div class="node"><b>Server proxy</b><span>in the cloud</span></div>
+    <div class="arrow">→</div>
+    <div class="node"><b>Websites</b></div>
+  </div>
+  <ol class="steps">
+    <li><b>See it coming.</b> The device watches signal strength. When it's fading, it predicts a dropout a few seconds ahead.</li>
+    <li><b>Switch early.</b> The tunnel opens a connection on the next network before the current one dies, so nothing breaks.</li>
+    <li><b>Stock up.</b> The server guesses which links you'll click next and sends those pages ahead of time. It sends more when a dropout is near and less when things are fine.</li>
+    <li><b>Read offline.</b> During the gap, pages open instantly from the device's cache.</li>
+  </ol>
+
+  <h2 id="demo">Demo</h2>
+  <!-- Swap the placeholder for one of these:
+       Local file (keep under 100 MB):
+         <video src="media/demo.mp4" controls playsinline poster="media/demo-poster.jpg"></video>
+       YouTube:
+         <iframe style="width:100%;aspect-ratio:16/9;border:0;border-radius:10px"
+                 src="https://www.youtube-nocookie.com/embed/VIDEO_ID" allowfullscreen></iframe> -->
+  <div class="placeholder">Demo video coming soon</div>
+
+  <h2>Results</h2>
+  <p>
+    We compare five setups in an emulated network with scripted dropouts, from a plain proxy up to the full system,
+    and measure how long the user is stuck waiting and how much data is wasted.
+  </p>
+  <!-- Replace the "—" values once the experiments are done. -->
+  <div class="grid">
+    <div class="stat"><div class="num">—</div><div class="label">less waiting per dropout vs. plain proxy</div></div>
+    <div class="stat"><div class="num">—</div><div class="label">pages served offline during a 45 s outage</div></div>
+    <div class="stat"><div class="num">—</div><div class="label">extra data used</div></div>
+  </div>
+  <!-- Charts: save PNGs into site/media/ and replace the placeholder, e.g.
+  <figure>
+    <img src="media/stall_time.png" alt="Waiting time per dropout for each of the five setups">
+    <figcaption>Waiting time per dropout, five setups, five runs each.</figcaption>
+  </figure> -->
+  <figure><div class="placeholder">Charts coming soon</div></figure>
+
+  <h2>What's new here</h2>
+  <p>
+    Connection migration (QUIC) and link prefetching both exist already. What we add is linking them:
+    how aggressively we prefetch depends on how likely you are to lose your connection, and a
+    language model predicts which links you'll click.
+  </p>
+
+  <footer>
+    Built for the EDGE Challenge, ATP 2026.
+    <!-- Team: add names here. -->
+  </footer>
+</main>
+</body>
+</html>

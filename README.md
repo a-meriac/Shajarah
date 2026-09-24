@@ -20,6 +20,7 @@ make test-netns             # Linux only: emulated networks, needs sudo
 - `edgeproxy/`: the proxies, the tunnel, and the prediction code
 - `emulation/`: fake Wi-Fi/5G/satellite links and dropout scenarios
 - `experiments/`: measurement scripts
+- `site/`: the project page (GitHub Pages)
 - `docs/PLAN.md`: the full plan
 
 Work in progress. See [NEXT_STEPS.md](NEXT_STEPS.md) for where we left off.
