@@ -26,6 +26,7 @@ INSTRUCTIONS = "Which link on this page will the reader most likely click next?"
 # it sees is decided by `link_order` (see predictors/select.py).
 DEFAULT_MAX_OPTIONS = 40
 DEFAULT_LINK_ORDER = "content_first"
+DEFAULT_INCLUDE_CONTEXT = False
 
 
 class JevError(RuntimeError):
@@ -51,6 +52,7 @@ class JevPredictor:
         cache_dir: Path | None = None,
         max_options: int = DEFAULT_MAX_OPTIONS,
         link_order: str = DEFAULT_LINK_ORDER,
+        include_context: bool = DEFAULT_INCLUDE_CONTEXT,
         timeout_s: float = 30.0,
         client: httpx.AsyncClient | None = None,
     ) -> None:
@@ -59,6 +61,7 @@ class JevPredictor:
         self.cache_dir = cache_dir
         self.max_options = max_options
         self.link_order = link_order
+        self.include_context = include_context  # page summary + the text around each link
         self._client = client or httpx.AsyncClient(timeout=timeout_s)
         self.last_call: CallInfo | None = None
 
@@ -66,19 +69,27 @@ class JevPredictor:
         """Returns the request body and a map from option key back to link URL."""
         links = choose_links(state.candidates, self.max_options, self.link_order)
         keys = {f"link_{i}": link.url for i, link in enumerate(links)}
-        criteria = {
-            key: f"Link text: '{link.anchor or link.target}', goes to '{link.target}', "
-            f"link #{link.position + 1} on the page"
-            for key, link in zip(keys, links)
-        }
+        criteria = {key: self._describe(link) for key, link in zip(keys, links)}
+        page = {"current_page": state.title, "previous_pages": state.history[-5:]}
+        if self.include_context and state.summary:
+            page["page_summary"] = state.summary
         body = {
             "model": self.model,
-            "state": {"current_page": state.title, "previous_pages": state.history[-5:]},
+            "state": page,
             "questions": {
                 "next_click": {"type": "choice", "instructions": INSTRUCTIONS, "criteria": criteria}
             },
         }
         return body, keys
+
+    def _describe(self, link) -> str:
+        text = (
+            f"Link text: '{link.anchor or link.target}', goes to '{link.target}', "
+            f"link #{link.position + 1} on the page"
+        )
+        if self.include_context and link.context and link.context != link.anchor:
+            text += f", in: '{link.context}'"
+        return text
 
     async def predict(self, state: PageState) -> dict[str, float]:
         """Returns {link url: probability of being clicked next}."""

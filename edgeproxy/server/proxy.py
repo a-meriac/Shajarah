@@ -29,7 +29,7 @@ from edgeproxy.common.http import get_header
 from edgeproxy.common.protocol import Frame, MsgType
 from edgeproxy.predictors.base import PageState, Predictor
 from edgeproxy.server.fetcher import Fetcher
-from edgeproxy.server.links import extract_links
+from edgeproxy.server.links import extract_links, page_summary
 from edgeproxy.server.prefetch_policy import LinkOutlook, PrefetchPolicy
 from edgeproxy.tunnel.transport import ServerSession
 
@@ -117,7 +117,9 @@ class ServerProxy:
         links = extract_links(
             html, url, same_origin_only=self.same_origin_only, max_candidates=self.max_candidates
         )
-        state = PageState(url, title, links, history=list(client.history))
+        state = PageState(
+            url, title, links, history=list(client.history), summary=page_summary(html)
+        )
         client.history = [*client.history, title][-HISTORY_LEN:]
         if not links:
             return
@@ -171,6 +173,7 @@ def make_predictor(name: str, settings) -> Predictor | None:
             model=settings.jev.model,
             max_options=settings.jev.max_options,
             link_order=settings.jev.link_order,
+            include_context=settings.jev.include_context,
             timeout_s=settings.jev.timeout_s,
             cache_dir=Path(__file__).parents[2] / "data" / "cache" / "jev",
         )

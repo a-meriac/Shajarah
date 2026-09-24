@@ -64,3 +64,30 @@ def test_counts_repeats_and_flags_boilerplate():
     assert links["home"].occurrences == 2 and links["home"].boilerplate
     assert not links["news"].boilerplate  # also linked from the content
     assert links["sitemap"].boilerplate
+
+
+def test_skips_media_files_and_wiki_meta_pages():
+    html = """<body>
+      <a href="/wiki/File:Poster.jpg"><img src="p.jpg"></a>
+      <a href="/wiki/Help:IPA/English">/ˈiːən/</a>
+      <a href="/wiki/Talk:Page">talk</a>
+      <a href="/images/photo.PNG">photo</a>
+      <a href="/wiki/Sandra_Hüller">Sandra Hüller</a>
+      <a href="/gallery">gallery</a>
+    </body>"""
+    links = extract_links(html, "https://s/wiki/Page")
+    assert [link.url.rsplit("/", 1)[1] for link in links] == ["Sandra_Hüller", "gallery"]
+
+
+def test_link_context_and_page_summary():
+    from edgeproxy.server.links import page_summary
+
+    lead = "Law Roach is an American fashion stylist. " * 3
+    html = f"""<body><p>{lead}Roach is <a href="/wiki/Aromanticism">aromantic</a>.</p>
+      <ul><li><a href="/wiki/Zendaya">Zendaya</a> (since 2011)</li></ul></body>"""
+    links = extract_links(html, "https://s/wiki/Law_Roach")
+    assert len(links[0].context) <= 162 and "aromantic" in links[0].context
+    assert links[1].context == "Zendaya (since 2011)"
+    assert page_summary(html).startswith("Law Roach is an American fashion stylist.")
+    meta = '<head><meta name="description" content="A stylist."></head><body></body>'
+    assert page_summary(meta) == "A stylist."

@@ -31,7 +31,7 @@ from urllib.parse import quote
 from edgeproxy.common.settings import load_settings
 from edgeproxy.predictors.base import PageState, Predictor
 from edgeproxy.predictors.baselines import HistoryPredictor, PositionPredictor
-from edgeproxy.server.links import extract_links
+from edgeproxy.server.links import extract_links, page_summary
 
 ROOT = Path(__file__).parents[1]
 SNAPSHOT = ROOT / "data" / "snapshot"
@@ -57,7 +57,7 @@ def page_state(title: str, max_candidates: int) -> PageState:
     url = f"{ORIGIN}/wiki/{quote(title)}"
     html = (SNAPSHOT / "wiki" / f"{title}.html").read_text(encoding="utf-8")
     links = extract_links(html, url, max_candidates=max_candidates)
-    return PageState(url, title.replace("_", " "), links)
+    return PageState(url, title.replace("_", " "), links, summary=page_summary(html))
 
 
 def score_page(state: PageState, probs: dict[str, float], truth: Counter[str]) -> dict:
@@ -98,6 +98,7 @@ def make_predictor(name: str, settings) -> Predictor:
             model=settings.jev.model,
             max_options=settings.jev.max_options,
             link_order=settings.jev.link_order,
+            include_context=settings.jev.include_context,
             timeout_s=settings.jev.timeout_s,
             cache_dir=JEV_CACHE,
         )

@@ -90,3 +90,14 @@ def test_secret_from_env_file(tmp_path, monkeypatch):
     assert get_secret("OPENROUTER_API_KEY", f) == "sk-or-test"
     with pytest.raises(RuntimeError, match="not set"):
         get_secret("OPENROUTER_API_KEY", tmp_path / "missing")
+
+
+async def test_context_is_sent_only_when_enabled():
+    links = [Link("u/A", "A", 0, 0.0, target="A", context="Roach styles A for events.")]
+    state = PageState("u/P", "P", links, summary="P is a stylist.")
+    plain, _ = JevPredictor(api_key="k").build_request(state)
+    rich, _ = JevPredictor(api_key="k", include_context=True).build_request(state)
+    assert "page_summary" not in plain["state"]
+    assert "in: " not in plain["questions"]["next_click"]["criteria"]["link_0"]
+    assert rich["state"]["page_summary"] == "P is a stylist."
+    assert "Roach styles A" in rich["questions"]["next_click"]["criteria"]["link_0"]

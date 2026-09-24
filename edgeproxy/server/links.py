@@ -1,7 +1,8 @@
 """Extract prefetch candidates from an HTML page.
 
 Filters out links that must never be prefetched: anything that could change state on the origin
-(logout, add-to-cart, delete, ...) and non-navigational schemes.
+(logout, add-to-cart, delete, ...) and non-navigational schemes. Also drops links that aren't a
+next page to read: media files on any site, and Wikipedia's non-article pages.
 """
 
 from __future__ import annotations
@@ -24,6 +25,16 @@ SKIP_SCHEMES = ("mailto:", "javascript:", "tel:", "data:")
 # role="navigation" too).
 BOILERPLATE_TAGS = {"nav", "header", "footer", "aside"}
 BOILERPLATE_ROLES = {"navigation", "banner", "contentinfo", "complementary"}
+# Nearest enclosing element whose text is the link's context.
+BLOCK_TAGS = {"p", "li", "td", "th", "dd", "dt", "figcaption", "caption", "blockquote",
+              "h1", "h2", "h3", "h4", "h5", "h6"}  # fmt: skip
+CONTEXT_CHARS = 160
+SUMMARY_CHARS = 500
+# Links straight to a media file open a viewer, not a page to read next.
+MEDIA_SUFFIXES = (
+    ".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp", ".tif", ".tiff", ".bmp", ".ico",
+    ".mp3", ".ogg", ".oga", ".wav", ".flac", ".mp4", ".webm", ".ogv", ".mov",
+)  # fmt: skip
 # Wikipedia non-article namespaces (Special:, File:, Talk:, ...) — not in the clickstream as
 # article targets and mostly not what people click to read next.
 WIKI_NON_ARTICLE = re.compile(
@@ -34,6 +45,14 @@ WIKI_NON_ARTICLE = re.compile(
 
 def is_safe_to_prefetch(url: str) -> bool:
     return not UNSAFE_PATTERN.search(url)
+
+
+def is_reading_link(url: str) -> bool:
+    """False for links that aren't a next page to read (media files, wiki meta pages)."""
+    path = unquote(urlsplit(url).path)
+    if path.lower().endswith(MEDIA_SUFFIXES):
+        return False
+    return not ("/wiki/" in path and WIKI_NON_ARTICLE.match(path.split("/wiki/", 1)[1]))
 
 
 def wiki_title(url: str) -> str | None:
@@ -57,6 +76,38 @@ def _in_boilerplate(node) -> bool:
             return True
         node = node.parent
     return False
+
+
+def _shorten(text: str, around: str, limit: int) -> str:
+    """Collapse whitespace and cut `text` to `limit` chars, keeping `around` in view."""
+    text = " ".join(text.split())
+    if len(text) <= limit:
+        return text
+    at = max(0, text.find(around)) if around else 0
+    start = max(0, min(at - limit // 3, len(text) - limit))
+    return ("…" if start else "") + text[start : start + limit].strip() + "…"
+
+
+def _context(node, anchor: str) -> str:
+    block = node.parent
+    while block is not None and block.tag not in BLOCK_TAGS and block.tag != "body":
+        block = block.parent
+    if block is None or block.tag == "body":
+        return ""
+    return _shorten(block.text(deep=True, separator=" "), anchor, CONTEXT_CHARS)
+
+
+def page_summary(html: str | bytes) -> str:
+    """The page's meta description, or else its first substantial paragraph."""
+    tree = HTMLParser(html)
+    meta = tree.css_first('meta[name="description"]')
+    if meta is not None and (meta.attributes.get("content") or "").strip():
+        return _shorten(meta.attributes["content"], "", SUMMARY_CHARS)
+    for p in tree.css("p"):
+        text = " ".join(p.text(deep=True, separator=" ").split())
+        if len(text) >= 80:
+            return _shorten(text, "", SUMMARY_CHARS)
+    return ""
 
 
 def extract_links(
@@ -91,13 +142,15 @@ def extract_links(
         same_origin = parts.netloc == page.netloc
         if same_origin_only and not same_origin:
             continue
-        if not is_safe_to_prefetch(url):
+        if not is_safe_to_prefetch(url) or not is_reading_link(url):
             continue
         index[url] = len(raw)
+        anchor = " ".join(node.text(deep=True, separator=" ").split())
         raw.append(
             {
                 "url": url,
-                "anchor": " ".join(node.text(deep=True, separator=" ").split()),
+                "anchor": anchor,
+                "context": _context(node, anchor),
                 "same_origin": same_origin,
                 "target": wiki_title(url) or url,
                 "occurrences": 1,

@@ -9,6 +9,7 @@ jev:
                                # from ~67% to ~85% on Wikipedia; still to test Jev's accuracy at 100)
   link_order: content_first    # which links: page (first N) | content_first (skip nav/header/
                                # footer/aside) | repeats_first (links the page repeats first)
+  include_context: false       # also send the page's opening text and the sentence around each link
   timeout_s: 30
 
 links:

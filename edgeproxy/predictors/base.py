@@ -16,6 +16,7 @@ class Link:
     target: str = ""  # canonical key, e.g. Wikipedia article title (joins with the clickstream)
     occurrences: int = 1  # how many times the page links to this URL
     boilerplate: bool = False  # every occurrence is inside nav/header/footer/aside
+    context: str = ""  # text around the first occurrence (its sentence/list item/cell), shortened
 
 
 @dataclass
@@ -24,6 +25,7 @@ class PageState:
     title: str
     candidates: list[Link]
     history: list[str] = field(default_factory=list)  # previous page titles, oldest first
+    summary: str = ""  # the page's description or opening paragraph
 
 
 class Predictor(Protocol):
