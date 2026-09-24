@@ -45,13 +45,20 @@ def fetch(month: str) -> Path:
     return path
 
 
+def _unquote(title: str) -> str:
+    """Titles containing a double quote are wrapped in quotes, with inner quotes as \\"."""
+    if len(title) >= 2 and title[0] == title[-1] == '"':
+        return title[1:-1].replace('\\"', '"')
+    return title
+
+
 def iter_links(path: Path) -> Iterator[tuple[str, str, int]]:
     """Yields (prev, curr, n) for every link click row."""
     with gzip.open(path, "rt", encoding="utf-8", newline="\n") as fh:
         for line in fh:
             parts = line.rstrip("\n").split("\t")
             if len(parts) == 4 and parts[2] == "link":
-                yield parts[0], parts[1], int(parts[3])
+                yield _unquote(parts[0]), _unquote(parts[1]), int(parts[3])
 
 
 def outgoing_totals(path: Path) -> Counter[str]:

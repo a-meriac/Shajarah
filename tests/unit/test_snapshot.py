@@ -45,6 +45,12 @@ def test_clickstream_reader(tmp_path):
         fh.write("A\tC\tlink\t12\n")
         fh.write("B\tC\tlink\t20\n")
         fh.write("A\tD\tother\t15\n")
-    assert list(iter_links(path)) == [("A", "B", 30), ("A", "C", 12), ("B", "C", 20)]
-    assert outgoing_totals(path) == Counter({"A": 42, "B": 20})
-    assert transitions(path, {"A"}) == {"A": Counter({"B": 30, "C": 12})}
+        fh.write('A\t"Carl_\\"Alfalfa\\"_Switzer"\tlink\t11\n')
+    assert list(iter_links(path)) == [
+        ("A", "B", 30),
+        ("A", "C", 12),
+        ("B", "C", 20),
+        ("A", 'Carl_"Alfalfa"_Switzer', 11),
+    ]
+    assert outgoing_totals(path) == Counter({"A": 53, "B": 20})
+    assert transitions(path, {"B"}) == {"B": Counter({"C": 20})}
