@@ -50,3 +50,17 @@ def test_wiki_title():
     assert wiki_title("https://en.wikipedia.org/wiki/Caf%C3%A9") == "Café"
     assert wiki_title("https://en.wikipedia.org/wiki/File:X.png") is None
     assert wiki_title("https://en.wikipedia.org/w/index.php") is None
+
+
+def test_counts_repeats_and_flags_boilerplate():
+    html = """<body>
+      <header><a href="/home">Home</a><a href="/news">News</a></header>
+      <main><a href="/story">Story</a><a href="/news">more news</a><a href="/story">again</a></main>
+      <div role="navigation"><a href="/sitemap">Sitemap</a></div>
+      <footer><a href="/home">Home</a></footer>
+    </body>"""
+    links = {link.url.rsplit("/", 1)[1]: link for link in extract_links(html, "https://s/page")}
+    assert links["story"].occurrences == 2 and not links["story"].boilerplate
+    assert links["home"].occurrences == 2 and links["home"].boilerplate
+    assert not links["news"].boilerplate  # also linked from the content
+    assert links["sitemap"].boilerplate

@@ -20,6 +20,10 @@ UNSAFE_PATTERN = re.compile(
     re.IGNORECASE,
 )
 SKIP_SCHEMES = ("mailto:", "javascript:", "tel:", "data:")
+# Page chrome rather than content, in standard HTML any site can use (Wikipedia's navboxes carry
+# role="navigation" too).
+BOILERPLATE_TAGS = {"nav", "header", "footer", "aside"}
+BOILERPLATE_ROLES = {"navigation", "banner", "contentinfo", "complementary"}
 # Wikipedia non-article namespaces (Special:, File:, Talk:, ...) — not in the clickstream as
 # article targets and mostly not what people click to read next.
 WIKI_NON_ARTICLE = re.compile(
@@ -44,19 +48,30 @@ def wiki_title(url: str) -> str | None:
     return title
 
 
+def _in_boilerplate(node) -> bool:
+    node = node.parent
+    while node is not None:
+        if node.tag in BOILERPLATE_TAGS:
+            return True
+        if (node.attributes.get("role") or "") in BOILERPLATE_ROLES:
+            return True
+        node = node.parent
+    return False
+
+
 def extract_links(
     html: str | bytes,
     page_url: str,
     same_origin_only: bool = True,
-    max_candidates: int = 255,
+    max_candidates: int = 2000,
     content_selector: str | None = None,
 ) -> list[Link]:
     tree = HTMLParser(html)
     root = tree.css_first(content_selector) if content_selector else None
     root = root or tree.body or tree.root
     page = urlsplit(page_url)
-    seen: set[str] = set()
-    raw: list[tuple[str, str, bool, str]] = []
+    index: dict[str, int] = {}  # url -> position in raw
+    raw: list[dict] = []
     for node in root.css("a[href]"):
         href = node.attributes.get("href") or ""
         if not href or href.startswith("#") or href.lower().startswith(SKIP_SCHEMES):
@@ -66,20 +81,30 @@ def extract_links(
         if parts.scheme not in ("http", "https"):
             continue
         url = urlunsplit(parts._replace(fragment=""))
-        if url == urlunsplit(page._replace(fragment="")) or url in seen:
+        if url == urlunsplit(page._replace(fragment="")):
+            continue
+        if url in index:
+            seen_before = raw[index[url]]
+            seen_before["occurrences"] += 1
+            seen_before["boilerplate"] = seen_before["boilerplate"] and _in_boilerplate(node)
             continue
         same_origin = parts.netloc == page.netloc
         if same_origin_only and not same_origin:
             continue
         if not is_safe_to_prefetch(url):
             continue
-        seen.add(url)
-        anchor = " ".join(node.text(deep=True, separator=" ").split())
-        raw.append((url, anchor, same_origin, wiki_title(url) or url))
-    # Keep the earliest links when over the cap (Jev Choice questions allow at most 255 options).
+        index[url] = len(raw)
+        raw.append(
+            {
+                "url": url,
+                "anchor": " ".join(node.text(deep=True, separator=" ").split()),
+                "same_origin": same_origin,
+                "target": wiki_title(url) or url,
+                "occurrences": 1,
+                "boilerplate": _in_boilerplate(node),
+            }
+        )
+    # Keep the earliest links when over the cap.
     raw = raw[:max_candidates]
     n = len(raw)
-    return [
-        Link(url=u, anchor=a, position=i, rel_position=i / n, same_origin=s, target=t)
-        for i, (u, a, s, t) in enumerate(raw)
-    ]
+    return [Link(position=i, rel_position=i / n, **r) for i, r in enumerate(raw)]

@@ -17,13 +17,15 @@ import httpx
 
 from edgeproxy.common.env import get_secret
 from edgeproxy.predictors.base import PageState
+from edgeproxy.predictors.select import choose_links
 
 ENDPOINT = "https://openrouter.ai/api/alpha/decisions"
 MODEL = "typesafe/jev-1.13"
 INSTRUCTIONS = "Which link on this page will the reader most likely click next?"
-# Jev rounds probabilities to 2 decimals, so with hundreds of options most tie at 0. Links are
-# already in page order (earlier = more likely to be seen), so keep the first N.
+# Jev rounds probabilities to 2 decimals, so with hundreds of options most tie at 0. Which N links
+# it sees is decided by `link_order` (see predictors/select.py).
 DEFAULT_MAX_OPTIONS = 40
+DEFAULT_LINK_ORDER = "content_first"
 
 
 class JevError(RuntimeError):
@@ -48,6 +50,7 @@ class JevPredictor:
         model: str = MODEL,
         cache_dir: Path | None = None,
         max_options: int = DEFAULT_MAX_OPTIONS,
+        link_order: str = DEFAULT_LINK_ORDER,
         timeout_s: float = 30.0,
         client: httpx.AsyncClient | None = None,
     ) -> None:
@@ -55,12 +58,13 @@ class JevPredictor:
         self.model = model
         self.cache_dir = cache_dir
         self.max_options = max_options
+        self.link_order = link_order
         self._client = client or httpx.AsyncClient(timeout=timeout_s)
         self.last_call: CallInfo | None = None
 
     def build_request(self, state: PageState) -> tuple[dict, dict[str, str]]:
         """Returns the request body and a map from option key back to link URL."""
-        links = state.candidates[: self.max_options]
+        links = choose_links(state.candidates, self.max_options, self.link_order)
         keys = {f"link_{i}": link.url for i, link in enumerate(links)}
         criteria = {
             key: f"Link text: '{link.anchor or link.target}', goes to '{link.target}', "

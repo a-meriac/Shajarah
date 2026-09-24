@@ -13,6 +13,8 @@ class Link:
     rel_position: float  # position / number of candidates, in [0, 1)
     same_origin: bool = True
     target: str = ""  # canonical key, e.g. Wikipedia article title (joins with the clickstream)
+    occurrences: int = 1  # how many times the page links to this URL
+    boilerplate: bool = False  # every occurrence is inside nav/header/footer/aside
 
 
 @dataclass

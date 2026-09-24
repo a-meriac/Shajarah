@@ -5,11 +5,14 @@
 
 jev:
   model: typesafe/jev-1.13     # pin a dated version for experiments; never ~typesafe/jev-latest
-  max_options: 40              # links offered to Jev per page, in page order
+  max_options: 40              # links offered to Jev per page (40 -> 100 raised click coverage
+                               # from ~67% to ~85% on Wikipedia; still to test Jev's accuracy at 100)
+  link_order: content_first    # which links: page (first N) | content_first (skip nav/header/
+                               # footer/aside) | repeats_first (links the page repeats first)
   timeout_s: 30
 
 links:
-  max_candidates: 255          # links extracted per page (Jev accepts at most 255 options)
+  max_candidates: 2000         # links extracted per page; jev.link_order picks from these
   same_origin_only: true       # ignore links to other sites
 
 prefetch:                      # which predicted pages the server pushes

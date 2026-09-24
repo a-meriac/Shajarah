@@ -48,7 +48,8 @@ edgeproxy/
     mitm_addon.py         # (planned) demo only: mitmproxy in front of the client proxy for HTTPS
   predictors/
     base.py               # Link / PageState: what the predictor sees
-    jev.py                # Jev Choice question via OpenRouter; first 40 links; disk cache
+    select.py             # which N links a predictor sees (page order, content first, repeats first)
+    jev.py                # Jev Choice question via OpenRouter; disk cache
 emulation/
   netns_setup.sh          # client ns with wifi0/cell0/sat0 -> router ns -> server ns / origin ns,
                           # plus policy routing so a socket bound to an iface IP egresses there

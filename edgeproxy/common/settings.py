@@ -12,7 +12,7 @@ from pathlib import Path
 import yaml
 
 from edgeproxy.client.handover_predictor import PredictorConfig
-from edgeproxy.predictors.jev import DEFAULT_MAX_OPTIONS, MODEL
+from edgeproxy.predictors.jev import DEFAULT_LINK_ORDER, DEFAULT_MAX_OPTIONS, MODEL
 from edgeproxy.server.prefetch_policy import PolicyConfig
 from edgeproxy.tunnel.quic_tunnel import DEFAULT_IDLE_TIMEOUT
 
@@ -23,12 +23,13 @@ SETTINGS_FILE = Path(__file__).parents[2] / "settings.yaml"
 class JevSettings:
     model: str = MODEL
     max_options: int = DEFAULT_MAX_OPTIONS
+    link_order: str = DEFAULT_LINK_ORDER
     timeout_s: float = 30.0
 
 
 @dataclass
 class LinkSettings:
-    max_candidates: int = 255
+    max_candidates: int = 2000
     same_origin_only: bool = True
 
 
