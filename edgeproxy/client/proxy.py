@@ -31,7 +31,7 @@ from edgeproxy.common.http import (
     get_header,
     reason,
 )
-from edgeproxy.common.protocol import Frame, MsgType, set_compression
+from edgeproxy.common.protocol import HISTORY_LEN, Frame, MsgType, set_compression
 from edgeproxy.tunnel.transport import ClientTransport
 
 SOURCE_HEADER = "X-Edgeproxy-Source"
@@ -80,6 +80,9 @@ class ClientProxy:
         self.retry_delay = retry_delay
         self.port: int | None = None
         self._server: asyncio.Server | None = None
+        # Pages the reader visited, oldest first. Sent with every request so the server's view
+        # of the reader can't be scrambled by frames that arrive out of order after an outage.
+        self.page_history: list[str] = []
         transport.on_push = self._on_push
 
     # ------------------------------------------------------------------------------- tunnel side
@@ -102,11 +105,10 @@ class ClientProxy:
         )
         self.log.emit("push_recv", url=url, bytes=len(frame.body), prob=frame.headers.get("prob"))
 
-    async def _notify_viewed(self, url: str) -> None:
+    async def _notify_viewed(self, url: str, history: list[str]) -> None:
+        frame = Frame(MsgType.VIEWED, {"url": url, "history": history})
         try:
-            await asyncio.wait_for(
-                self.transport.send(Frame(MsgType.VIEWED, {"url": url})), self.request_timeout
-            )
+            await asyncio.wait_for(self.transport.send(frame), self.request_timeout)
         except (OSError, TimeoutError):
             self.log.emit("viewed_not_sent", url=url)
 
@@ -129,10 +131,19 @@ class ClientProxy:
         start = time.monotonic()
         prefetch = get_header(headers, PREFETCH_HEADER) is not None
         headers = [(k, v) for k, v in headers if k.lower() != PREFETCH_HEADER.lower()]
+        # A page visit, as opposed to an image or script: browsers ask for text/html when navigating.
+        visit = (
+            method == "GET"
+            and not prefetch
+            and "text/html" in (get_header(headers, "accept") or "")
+        )
+        history = self.page_history[-HISTORY_LEN:]
         self.log.emit("req_start", url=url, method=method, prefetch=prefetch)
         reply = await self._fetch(
-            method, url, filter_headers(headers, REQUEST_DROP), body, prefetch
+            method, url, filter_headers(headers, REQUEST_DROP), body, prefetch, history
         )
+        if visit:
+            self.page_history = [*history, url]
         self.log.emit(
             "req_done",
             url=url,
@@ -146,7 +157,13 @@ class ClientProxy:
         return reply
 
     async def _fetch(
-        self, method: str, url: str, headers: Headers, body: bytes, prefetch: bool = False
+        self,
+        method: str,
+        url: str,
+        headers: Headers,
+        body: bytes,
+        prefetch: bool = False,
+        history: list[str] = (),
     ) -> Reply:
         entry = self.cache.peek(url) if method in ("GET", "HEAD") else None
         if prefetch and entry is not None:
@@ -157,7 +174,7 @@ class ClientProxy:
             self.cache.get(url)
             # The server never saw this request; tell it, so it predicts from here (and in the
             # background, since the link may be down).
-            asyncio.ensure_future(self._notify_viewed(url))
+            asyncio.ensure_future(self._notify_viewed(url, list(history)))
             return Reply(200, _entry_headers(entry), entry.body, "push")
 
         timeout = self.request_timeout
@@ -168,7 +185,11 @@ class ClientProxy:
             if entry.last_modified and get_header(headers, "if-modified-since") is None:
                 headers = [*headers, ("If-Modified-Since", entry.last_modified)]
 
-        frame = Frame(MsgType.REQUEST, {"method": method, "url": url, "headers": headers}, body)
+        frame = Frame(
+            MsgType.REQUEST,
+            {"method": method, "url": url, "headers": headers, "history": list(history)},
+            body,
+        )
         try:
             answer = await self._roundtrip(frame, timeout)
         except (OSError, TimeoutError):

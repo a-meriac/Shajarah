@@ -15,8 +15,9 @@ import sys
 from pathlib import Path
 
 from data.build_snapshot import page_path
+from edgeproxy.common.protocol import HISTORY_LEN
 from edgeproxy.common.settings import load_settings
-from edgeproxy.server.proxy import HISTORY_LEN, build_page_state, make_predictor
+from edgeproxy.server.proxy import build_page_state, make_predictor
 from experiments.harness import load_sessions, page_url
 
 

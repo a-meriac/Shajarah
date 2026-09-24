@@ -89,7 +89,10 @@ class Stack:
         self.proxy = ClientProxy(self.transport, self.cache, **self.proxy_kwargs)
         await self.proxy.start("127.0.0.1", 0)
         self.browser = httpx.AsyncClient(
-            proxy=f"http://127.0.0.1:{self.proxy.port}", trust_env=False, timeout=10
+            proxy=f"http://127.0.0.1:{self.proxy.port}",
+            trust_env=False,
+            timeout=10,
+            headers={"Accept": "text/html"},  # page visits, as a browser navigating
         )
         return self
 
@@ -278,3 +281,29 @@ async def test_oracle_prefetch_is_served_instantly_later(kind, tunnel_certs, ori
         s.link_up.clear()
         r = await s.browser.get(url_b)
         assert r.content == PAGE_B and r.headers[SOURCE_HEADER] == "push"
+
+
+async def test_hint_replans_pushes_for_the_current_page(kind, tunnel_certs, origin):
+    predictor = FakePredictor({"B": 0.8, "C": 0.1})
+    async with Stack(kind, tunnel_certs, ServerProxy(predictor=predictor)) as s:
+        await s.browser.get(_url(origin, "/wiki/A"))
+        url_b, url_c = _url(origin, "/wiki/B"), _url(origin, "/wiki/C")
+        assert await _wait_for(lambda: s.cache.peek(url_b) is not None)
+        assert s.cache.peek(url_c) is None
+        # No new page: the warning alone makes the server push C for the page the reader is on.
+        await s.transport.send(Frame(MsgType.HANDOVER_HINT, {"active": True, "outage_s": 45.0}))
+        assert await _wait_for(lambda: s.cache.peek(url_c) is not None)
+
+
+async def test_history_comes_from_the_client_in_visit_order(kind, tunnel_certs, origin):
+    for page in ("B", "C"):
+        (origin.root / "wiki" / f"{page}.html").write_bytes(
+            f"<html><head><title>{page}</title></head><body><a href='/wiki/A'>A</a></body>".encode()
+        )
+    predictor = FakePredictor({})
+    async with Stack(kind, tunnel_certs, ServerProxy(predictor=predictor)) as s:
+        for page in ("A", "B", "C"):
+            await s.browser.get(_url(origin, f"/wiki/{page}"))
+            await asyncio.sleep(0.05)
+        assert await _wait_for(lambda: len(predictor.states) == 3)
+        assert [st.history for st in predictor.states] == [[], ["A"], ["A", "B"]]

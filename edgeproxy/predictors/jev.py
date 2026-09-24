@@ -32,6 +32,8 @@ INSTRUCTIONS = "Which link on this page will the reader most likely click next?"
 DEFAULT_MAX_OPTIONS = 40
 DEFAULT_LINK_ORDER = "content_first"
 DEFAULT_INCLUDE_CONTEXT = False
+# Answers cached before latencies were recorded replay with a typical measured delay.
+TYPICAL_LATENCY_MS = 700.0
 
 
 class JevError(RuntimeError):
@@ -108,7 +110,7 @@ class JevPredictor:
         cache_file = self._cache_file(body)
         if cache_file is not None and cache_file.exists():
             response = json.loads(cache_file.read_text())
-            latency_ms = response.get("_latency_ms", 0.0)
+            latency_ms = response.get("_latency_ms", TYPICAL_LATENCY_MS)
             if self.replay_latency:
                 await asyncio.sleep(latency_ms / 1000)
             self.last_call = CallInfo(

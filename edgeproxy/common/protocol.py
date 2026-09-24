@@ -17,6 +17,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 _LEN = struct.Struct("!I")
+HISTORY_LEN = 5  # pages of browsing history the client sends with each page view
 COMPRESS_MIN_BYTES = 1024  # smaller bodies aren't worth it
 COMPRESS_MIN_SAVING = 0.1  # send compressed only if it saves at least 10%
 COMPRESS_LEVEL = 6

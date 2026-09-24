@@ -5,12 +5,15 @@ likely each one is to be clicked next, and lets the prefetch policy choose which
 push within the byte budget. The page response is never held up by this, and a failing predictor
 only means nothing is pushed.
 
-Each client connection has its own state: pages it browsed (the predictor's history), URLs it
-already has, and its connectivity outlook. Pages the client opens from its cache never reach
-the server as requests, so the client reports them with VIEWED; the server then predicts from
-that page too (the reader is now there), and its history matches what the reader actually saw. A HANDOVER_HINT frame from the client ("dropout in
-eta_s seconds, lasting about outage_s") switches the policy to its lower threshold and bigger
-budget until the client clears it.
+Every page view carries the client's own list of recently visited pages, which becomes the
+predictor's history (frames can arrive out of order after an outage, so the server doesn't
+keep its own). Pages the client opens from its cache never reach the server as requests, so
+the client reports them with VIEWED, and the server predicts from there too.
+
+Per client connection the server keeps the URLs the client already has, the page it's on, and
+its connectivity outlook. A HANDOVER_HINT ("dropout in eta_s seconds, lasting about outage_s")
+switches the policy to its lower threshold and bigger budget and immediately re-plans pushes
+for the current page; clearing the hint switches back.
 
   python -m edgeproxy.server.proxy --transport quic --port 4433 --predictor jev
 """
@@ -28,19 +31,17 @@ from selectolax.parser import HTMLParser
 
 from edgeproxy.common.eventlog import NULL_LOG, EventLog
 from edgeproxy.common.http import get_header
-from edgeproxy.common.protocol import Frame, MsgType, set_compression
+from edgeproxy.common.protocol import HISTORY_LEN, Frame, MsgType, set_compression
 from edgeproxy.predictors.base import PageState, Predictor
 from edgeproxy.server.fetcher import Fetcher
 from edgeproxy.server.links import extract_links, page_summary
 from edgeproxy.server.prefetch_policy import LinkOutlook, PrefetchPolicy
 from edgeproxy.tunnel.transport import ServerSession
 
-HISTORY_LEN = 5
-
 
 @dataclass
 class _Client:
-    history: list[str] = field(default_factory=list)  # page titles, oldest first
+    current: tuple[str, list[str]] | None = None  # (page url, history urls) the reader is on
     sent: set[str] = field(default_factory=set)  # URLs the client already has a copy of
     outlook: LinkOutlook = field(default_factory=LinkOutlook)
     prefetch: asyncio.Task | None = None
@@ -86,6 +87,7 @@ class ServerProxy:
         self.max_candidates = max_candidates
         self.same_origin_only = same_origin_only
         self._clients: dict[ServerSession, _Client] = {}
+        self._titles: dict[str, str] = {}  # url -> page title, for history
 
     def _client(self, session: ServerSession) -> _Client:
         return self._clients.setdefault(session, _Client())
@@ -97,7 +99,7 @@ class ServerProxy:
             self._on_hint(frame, session)
             return None
         if frame.type is MsgType.VIEWED:
-            self._page_viewed(frame.headers["url"], session, None)
+            self._page_viewed(frame.headers["url"], session, None, frame.headers.get("history", []))
             return None
         if frame.type is not MsgType.REQUEST:
             return None
@@ -120,19 +122,25 @@ class ServerProxy:
         self._client(session).sent.add(url)
         is_html = (get_header(r.headers, "content-type") or "").startswith("text/html")
         if method == "GET" and is_html and r.status in (200, 304):
-            self._page_viewed(url, session, r.body if r.status == 200 else None)
+            html = r.body if r.status == 200 else None
+            self._page_viewed(url, session, html, frame.headers.get("history", []))
         if r.status == 304:
             return Frame(MsgType.NOT_MODIFIED, {"status": 304, "headers": r.headers})
         return Frame(MsgType.RESPONSE, {"status": r.status, "headers": r.headers}, r.body)
 
-    def _page_viewed(self, url: str, session: ServerSession, html: bytes | None) -> None:
+    def _page_viewed(
+        self, url: str, session: ServerSession, html: bytes | None, history: list[str]
+    ) -> None:
         """The reader is now on `url`: start predicting and pushing its likely next pages."""
         if self.predictor is None:
             return
         client = self._client(session)
+        client.current = (url, list(history)[-HISTORY_LEN:])
         if client.prefetch is not None:
             client.prefetch.cancel()  # the reader moved on; predictions for the old page are stale
-        client.prefetch = asyncio.ensure_future(self._prefetch(url, html, session, client))
+        client.prefetch = asyncio.ensure_future(
+            self._prefetch(url, html, client.current[1], session, client)
+        )
 
     def _on_hint(self, frame: Frame, session: ServerSession) -> None:
         h = frame.headers
@@ -141,9 +149,28 @@ class ServerProxy:
         outlook.predicted_outage_s = float(h.get("outage_s", 0.0))
         outlook.metered = bool(h.get("metered", outlook.metered))
         self.log.emit("handover_hint_recv", **{k: v for k, v in h.items() if k != "type"})
+        client = self._client(session)
+        if outlook.handover_imminent and client.current is not None:
+            # Re-plan for the page the reader is on now, with the outage budget.
+            url, history = client.current
+            self._page_viewed(url, session, None, history)
+
+    async def _title_of(self, url: str) -> str:
+        if url not in self._titles:
+            try:
+                r = await self.fetcher.fetch(url)
+                self._titles[url] = _title(r.body, url) if r.status == 200 else url
+            except httpx.HTTPError:
+                return url
+        return self._titles[url]
 
     async def _prefetch(
-        self, url: str, html: bytes | None, session: ServerSession, client: _Client
+        self,
+        url: str,
+        html: bytes | None,
+        history: list[str],
+        session: ServerSession,
+        client: _Client,
     ) -> None:
         if html is None:  # viewed from the client's cache, or revalidated: get the page ourselves
             try:
@@ -154,11 +181,10 @@ class ServerProxy:
             if r.status != 200:
                 return
             html = r.body
-        state = build_page_state(
-            url, html, client.history, self.max_candidates, self.same_origin_only
-        )
+        titles = [await self._title_of(u) for u in history]
+        state = build_page_state(url, html, titles, self.max_candidates, self.same_origin_only)
+        self._titles[url] = state.title
         links = state.candidates
-        client.history = [*client.history, state.title][-HISTORY_LEN:]
         if not links:
             return
         start = time.monotonic()

@@ -70,7 +70,7 @@ async def read_session(proxy_port: int, pages: list[dict], oracle: bool, t0: flo
             url = page_url(page["title"])
             start = time.monotonic()
             log.emit("click", t=start - t0, i=i, url=url)
-            r = await browser.get(url)
+            r = await browser.get(url, headers={"Accept": "text/html"})
             wait = time.monotonic() - start
             log.emit(
                 "view",
@@ -87,7 +87,9 @@ async def read_session(proxy_port: int, pages: list[dict], oracle: bool, t0: flo
             if oracle and nxt is not None and dwell > ORACLE_LEAD_S:
                 await asyncio.sleep(dwell - ORACLE_LEAD_S)
                 # Hovering: prefetch in the background, click 200 ms later regardless.
-                hover = browser.get(page_url(nxt["title"]), headers={PREFETCH_HEADER: "1"})
+                hover = browser.get(
+                    page_url(nxt["title"]), headers={PREFETCH_HEADER: "1", "Accept": "text/html"}
+                )
                 asyncio.ensure_future(hover)
                 await asyncio.sleep(ORACLE_LEAD_S)
             else:
