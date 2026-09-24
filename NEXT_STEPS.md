@@ -1,8 +1,7 @@
 # Next steps (on the Linux PC)
 
 Left on 24 Sep 2026. The code so far was written and tested on macOS. Everything below is the
-part that needs Linux. The full project plan (architecture, milestones, risks) is in `docs/PLAN.md`; the status
-checklist is in README.md.
+part that needs Linux. The full project plan (architecture, milestones, risks) is in `docs/PLAN.md`.
 
 ## 1. Get the repo and install
 
