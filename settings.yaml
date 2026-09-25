@@ -19,7 +19,8 @@ links:
 prefetch:                      # which predicted pages the server pushes
   threshold: 0.25              # normal: push links at least this likely...
   budget_bytes: 2000000        # ...up to this many bytes per page view
-  handover_threshold: 0.03     # dropout predicted: much lower bar...
+  handover_threshold: 0.01     # dropout predicted: much lower bar... (sweep, 25 Sep: next page
+                               # pushed 57% vs 39% at 0.03, for ~0.7 vs 0.3 MB per warning)
   handover_budget_bytes: 20000000   # ...and a bigger budget
   handover_budget_per_outage_s: 500000  # plus this much per second of predicted outage
   max_budget_bytes: 60000000   # hard cap
