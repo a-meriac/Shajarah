@@ -8,7 +8,7 @@ VENV_PY ?= python3.13
 endif
 PY ?= $(VENV)/bin/python
 
-.PHONY: venv test test-netns lint netns-up netns-down probe experiments-smoke experiments cutoff-sweep replay-export figures
+.PHONY: venv test test-netns lint netns-up netns-down experiments-smoke experiments cutoff-sweep replay-export figures
 
 venv:
 	$(VENV_PY) -m venv $(VENV) && $(VENV)/bin/pip install -e '.[dev]'

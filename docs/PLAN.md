@@ -59,24 +59,30 @@ emulation/
                           # (planned: replay bandwidth traces, `tc qdisc change` every 100 ms)
   scenarios/*.yaml        # wifi_to_5g_walk, car_tunnel_45s (planned: leo_gap_15s, geo_fallback)
 data/
-  origin_server.py        # serves the snapshot with ETag/Last-Modified and 304s
-                          # (planned: mutate X% of pages between runs)
-  clickstream.py          # download and read the monthly clickstream dumps (en, 2026-07 / 2026-08)
-  build_snapshot.py       # (planned) ~1000 pages stratified by popularity via Wikimedia REST
-                          # (UA + rate limit), links rewritten to the local origin, frozen to data/snapshot/
-  sessions.py             # (planned) random walks weighted by the month-M+1 clickstream, dwell times
+  origin_server.py        # serves the snapshot with ETag/Last-Modified and 304s, stand-ins for
+                          # linked articles outside it (planned: mutate X% of pages between runs)
+  clickstream.py          # download and read the monthly clickstream dumps (en, 2026-06..08)
+  build_snapshot.py       # ~2,000 pages stratified by popularity via Wikimedia REST, links rewritten
+                          # to the local origin, frozen to data/snapshot/ (manifest committed)
+  sessions.py             # readers following real August clicks, log-normal dwell -> sessions.json
 experiments/
+  harness.py              # addresses, the 7 configs, session loading (shared by the scripts below)
   tunnel_probe.py         # Day-4 gate: request every 50 ms across a Wi-Fi cut, reports the longest gap
-  predictor_eval.py       # (planned) precision@k, calibration (reliability + ECE), bytes-at-threshold
-  runner.py               # (planned) (config × scenario × seed) matrix inside netns -> results/<run_id>/
-  client_driver.py        # (planned) headless session replayer; "hover oracle" for config 4
-  voip_probe.py           # (planned) 50 pps over QUIC datagrams; gap/loss/jitter across handover
-  analyze.py              # (planned) JSONL -> pandas -> tables + figures in figures/
+  predictor_eval.py       # hit@k and calibration on July clicks, by popularity (Jev + 2 references)
+  cutoff_sweep.py         # offline: next page pushed vs data, per outage push cutoff
+  general_web.py          # link extraction + Jev on a few ordinary websites (sanity check)
+  warm_jev.py             # asks Jev about every page view ahead of time (the emulation has no internet)
+  client_run.py           # one run in ep-cli: netem timeline, tunnel, proxy, path manager, reader
+  runner.py               # (config × scenario × session) in the namespaces -> results/<batch>/
+  analyze.py              # event logs -> per-run metrics (runs.csv) + table
+  voip_probe.py           # 50 pps over QUIC datagrams across a switch: loss, longest silence
+  export_replay.py        # finished runs -> site/replays/ for the replay page
+  figures.py              # paper figures (to be redone with the 20-reader batch)
 tests/
   unit/                   # no network needed (run anywhere)
   integration/            # loopback: QUIC migration, proxies end to end over QUIC and TCP
   emulation/              # marked netns, need root on Linux (make test-netns)
-site/                     # project page, published by .github/workflows/pages.yml
+site/                     # project page and replay page, published by .github/workflows/pages.yml
 paper/                    # (planned) LaTeX, figures from figures/
 ```
 
