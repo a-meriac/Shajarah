@@ -82,37 +82,46 @@ Caveat: 5 readers with ~1 outage click each is too few for stable numbers.
 Reproduce: `python -m experiments.warm_jev` (needs the key), `make experiments`, then
 `python -m experiments.analyze main`.
 
+## Second system batch (`tunnel20`, 25 Sep: car tunnel, 20 readers, configs 1, 2, 3, 5)
+
+Settings: outage push cutoff 0.01 (from the offline sweep: next page already pushed 57% vs 39%
+at 0.03), two clicks deep on. Total waiting per reader:
+
+| config | mean (95% CI) | median | outage clicks from cache | pushed per run |
+|---|---|---|---|---|
+| 1 TCP+TLS | 31.7 s (22–41) | 28.5 s | 3 of 20 | 0 |
+| 2 QUIC migration | 21.6 s (14–29) | 16.8 s | 3 of 22 | 0 |
+| 3 fixed prefetch | 20.2 s (12–28) | 12.6 s | 5 of 23 | 0.24 MB |
+| 5 full (before the fix below) | 19.7 s (11–29) | 7.4 s | 15 of 27 | 6.6 MB, 0.6% read |
+
+**Finding: pushing into the outage backfires.** Config 5 served far more outage clicks from cache
+and halved the median, but 5 of 20 readers waited *longer* than with plain QUIC. The server
+didn't know when the link actually died and kept pushing (29 pushes during the outage in one
+run); the unacknowledged backlog stalled QUIC's loss recovery, and the first ping after the link
+returned was answered at 114 s instead of 85 s, so the reader's page queued behind it. Fixed
+(`213b8bc`): pushing stops at the warned dropout time (eta_s minus `push_stop_margin_s`, 1 s) and
+stays off until the warning is cleared. Worth a paragraph in the paper: prefetch must respect
+the predicted outage start, not just the budget. The old config-5 runs are kept in
+`results/tunnel20-before-push-stop/`.
+
 ## Next
 
-- **Replay page** (25 Sep): `site/replay.html` replays exported runs on GitHub Pages: coverage
-  along the way, signal, ping latency, every page wait, pushes, live stats, two setups side by
-  side. After a batch: `make replay-export` (writes `site/replays/`, ~20 KB per run), commit and
-  push. Runs from before 25 Sep have no ping/warning events; the page rebuilds their signal from
-  the scenario and says latency wasn't recorded. Rerun a few for the demo video.
-0. **Two clicks deep is built but not yet run in the emulation** (25 Sep). During a long predicted
-   outage (>= `prefetch.depth2_min_outage_s`, 20 s) the server also pushes the top 3 links
-   (`depth2_top_k`) of every page it pushes for the current one, because pages read from cache
-   offline can't ask the server for more. Offline estimate from the sweep: a reader's second
-   click in an outage goes from 0% to roughly 20-25% covered, for a few MB more per outage.
-   On the Linux PC: `git pull`, then `python -m experiments.warm_jev` (now also asks the ~1,600
-   two-clicks-deep questions, roughly $0.10-0.15; must run there, since stand-in pages depend on
-   the full snapshot), then rerun the car tunnel for configs 3 and 5. Push events now carry
-   `depth` (1 or 2) in the server log.
-1. **Choose the outage push cutoff offline** (free): script ready, run `make cutoff-sweep` on the
-   Linux PC (needs `data/snapshot` and `data/cache/jev`). It replays every page view in the
-   sessions against the cached Jev answers and prints, per cutoff (p >= 0.5 ... 0, and top 1 ... 40):
-   how often the next page was pushed (95% CI), pages and MB per warning, and the share of pushed
-   data that was read. It also shows how often a *second* click in an outage would be covered if
-   the server pushed two clicks deep (today it pushes one click ahead, so a reader's second page
-   in a tunnel always misses). Pick `prefetch.handover_threshold` from the table; if depth 2
-   looks worth it, that's a server change. Results: `results/cutoff_sweep.json`.
-2. **Re-run the car tunnel with ~20 readers**, configs 1, 2, 3 and 5 only (~80 runs, ~2.5 h).
-3. **Show switching early with continuous traffic** during the Wi-Fi walk (the VoIP probe:
-   50 packets/s over QUIC datagrams, gap and loss across the switch).
-4. **Figures** (`analyze.py` -> figures/), then more scenarios (LEO gap, GEO fallback).
-5. Smaller items: correct Jev's overconfidence before its probabilities set budgets; run link
-   extraction + Jev on a few ordinary websites as a sanity check and demo; origin modifying X%
-   of pages between runs to measure what revalidation saves.
+1. **Re-run config 5 with the fix** (20 runs, ~45 min):
+   `sudo .venv-linux/bin/python -m experiments.runner --batch tunnel20 --configs 5 --scenarios car_tunnel_45s --sessions 20`,
+   then `python -m experiments.analyze tunnel20`.
+2. **Voice-call probe** (written, not yet run; ~10 min): shows switching early during the Wi-Fi
+   walk, which page loads can't.
+   `sudo .venv-linux/bin/python -m experiments.voip_probe batch --scenario wifi_to_5g_walk --repeats 5`,
+   then `python -m experiments.voip_probe summary`.
+3. **Image-only links** reach Jev with no text (found by `experiments/general_web.py` on a shop):
+   use the image's alt text or the link's title. Changes Jev's questions for such links, so
+   re-warm (`python -m experiments.warm_jev`) afterwards.
+4. **Replay page** (`site/replay.html`, 25 Sep): after the re-run, `make replay-export`, commit
+   and push; rerun a few runs for the demo video.
+5. **Figures**, redone from `tunnel20` when the paper layout is known (`make figures BATCH=tunnel20`).
+6. More scenarios (LEO gap, GEO fallback); smaller items: Jev's overconfidence before its
+   probabilities set budgets; origin modifying X% of pages between runs (revalidation savings);
+   forums link mostly off-site, which `links.same_origin_only` drops.
 
 ## Still open outside the code
 
