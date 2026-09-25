@@ -92,3 +92,14 @@ async def test_car_tunnel_warns_server_before_the_outage_and_clears_after():
 async def test_no_hints_unless_enabled():
     _, transport = await replay("car_tunnel_45s", proactive=True, send_hints=False)
     assert transport.sent == []
+
+
+async def test_logs_signal_and_warnings_for_the_replay_viewer():
+    pm, _ = await replay("car_tunnel_45s", proactive=True, send_hints=True)
+    signals = [e for e in pm.log.events if e["event"] == "signal"]
+    assert 0.45 <= signals[1]["t"] - signals[0]["t"] <= 0.55  # every signal_log_s
+    assert set(signals[0]["dbm"]) == {"wifi0", "cell0", "sat0"}
+    assert signals[0]["active"] == "cell0"
+    cell = [e for e in pm.log.events if e["event"] == "warning" and e["iface"] == "cell0"]
+    assert cell[0]["on"] and cell[0]["t"] < 38  # warned before the tunnel
+    assert any(not e["on"] and e["t"] > 84 for e in cell)  # and cleared after it

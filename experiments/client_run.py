@@ -156,6 +156,7 @@ async def run(args) -> None:
         log.emit("netem", msg=msg)
 
     t0 = time.monotonic()
+    log.emit("clock", t=0.0)  # its `mono` is t=0: lines server events up with the client's
     tasks = [
         asyncio.ensure_future(run_scenario(scenario, profiles, log=netem_log)),
         asyncio.ensure_future(paths.run(duration)),

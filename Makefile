@@ -8,7 +8,7 @@ VENV_PY ?= python3.13
 endif
 PY ?= $(VENV)/bin/python
 
-.PHONY: venv test test-netns lint netns-up netns-down probe experiments-smoke experiments cutoff-sweep
+.PHONY: venv test test-netns lint netns-up netns-down probe experiments-smoke experiments cutoff-sweep replay-export
 
 venv:
 	$(VENV_PY) -m venv $(VENV) && $(VENV)/bin/pip install -e '.[dev]'
@@ -39,3 +39,6 @@ experiments:
 
 cutoff-sweep:  ## offline: how often the next page is pushed, per push cutoff (needs snapshot + Jev cache)
 	$(PY) -m experiments.cutoff_sweep
+
+replay-export:  ## copy finished runs of results/main into site/replays for the replay page
+	$(PY) -m experiments.export_replay main

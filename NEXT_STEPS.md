@@ -84,6 +84,20 @@ Reproduce: `python -m experiments.warm_jev` (needs the key), `make experiments`,
 
 ## Next
 
+- **Replay page** (25 Sep): `site/replay.html` replays exported runs on GitHub Pages: coverage
+  along the way, signal, ping latency, every page wait, pushes, live stats, two setups side by
+  side. After a batch: `make replay-export` (writes `site/replays/`, ~20 KB per run), commit and
+  push. Runs from before 25 Sep have no ping/warning events; the page rebuilds their signal from
+  the scenario and says latency wasn't recorded. Rerun a few for the demo video.
+0. **Two clicks deep is built but not yet run in the emulation** (25 Sep). During a long predicted
+   outage (>= `prefetch.depth2_min_outage_s`, 20 s) the server also pushes the top 3 links
+   (`depth2_top_k`) of every page it pushes for the current one, because pages read from cache
+   offline can't ask the server for more. Offline estimate from the sweep: a reader's second
+   click in an outage goes from 0% to roughly 20-25% covered, for a few MB more per outage.
+   On the Linux PC: `git pull`, then `python -m experiments.warm_jev` (now also asks the ~1,600
+   two-clicks-deep questions, roughly $0.10-0.15; must run there, since stand-in pages depend on
+   the full snapshot), then rerun the car tunnel for configs 3 and 5. Push events now carry
+   `depth` (1 or 2) in the server log.
 1. **Choose the outage push cutoff offline** (free): script ready, run `make cutoff-sweep` on the
    Linux PC (needs `data/snapshot` and `data/cache/jev`). It replays every page view in the
    sessions against the cached Jev answers and prints, per cutoff (p >= 0.5 ... 0, and top 1 ... 40):

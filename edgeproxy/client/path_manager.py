@@ -12,6 +12,9 @@ Every tick it reads each interface's signal and feeds that interface's handover 
 
 An interface is "healthy" if its signal is above its usable threshold plus a margin and its own
 predictor isn't warning.
+
+For the replay viewer it logs every interface's signal (`signal`, every `signal_log_s`), each
+predictor warning starting or ending (`warning`), and every ping's round-trip time (`ping`).
 """
 
 from __future__ import annotations
@@ -48,6 +51,7 @@ class PathManager:
         ping_interval_s: float = 0.2,
         tick_s: float = 0.1,
         log: EventLog = NULL_LOG,
+        signal_log_s: float = 0.5,
     ) -> None:
         config = predictor_config or PredictorConfig()
         self.transport = transport
@@ -70,6 +74,9 @@ class PathManager:
         self.hint_sent = False
         self.last_pong = time.monotonic()
         self.switches: list[tuple[float, str, str, str]] = []  # (t, from, to, reason)
+        self.signal_log_s = signal_log_s
+        self._next_signal_log = 0.0
+        self._t0 = time.monotonic()  # scenario t=0; reset by run()
 
     # ------------------------------------------------------------------------------ decisions
 
@@ -89,7 +96,20 @@ class PathManager:
         """One decision at scenario time t. `link_alive`: has a ping been answered recently?"""
         for name, iface in self.interfaces.items():
             self.levels[name] = iface.signal.sample(t)
+            was_warning = self.hints.get(name) is not None
             self.hints[name] = self.predictors[name].update(t, self.levels[name])
+            if (self.hints[name] is not None) != was_warning:
+                hint = self.hints[name]
+                self.log.emit(
+                    "warning", t=t, iface=name, on=not was_warning,
+                    eta_s=hint.eta_s if hint is not None else None,
+                )  # fmt: skip
+        if t >= self._next_signal_log:
+            self.log.emit(
+                "signal", t=t, active=self.active,
+                dbm={n: round(v, 1) for n, v in self.levels.items()},
+            )  # fmt: skip
+            self._next_signal_log = t + self.signal_log_s
 
         warned = self.hints[self.active] is not None
         best = self._best_alternative()
@@ -134,19 +154,22 @@ class PathManager:
 
     async def _pinger(self) -> None:
         while True:
+            iface, sent = self.active, time.monotonic()
             try:
                 await asyncio.wait_for(
                     self.transport.request(Frame(MsgType.PING)), self.dead_after_s
                 )
                 self.last_pong = time.monotonic()
+                rtt_ms = (self.last_pong - sent) * 1000
             except (OSError, TimeoutError):
-                pass
+                rtt_ms = None  # unanswered within dead_after_s
+            self.log.emit("ping", t=sent - self._t0, iface=iface, rtt_ms=rtt_ms)
             await asyncio.sleep(self.ping_interval_s)
 
     async def run(self, duration_s: float) -> None:
         """Run for `duration_s` seconds of scenario time, starting now."""
+        start = self._t0 = time.monotonic()
         pinger = asyncio.ensure_future(self._pinger())
-        start = time.monotonic()
         try:
             while (t := time.monotonic() - start) < duration_s:
                 alive = time.monotonic() - self.last_pong < self.dead_after_s
