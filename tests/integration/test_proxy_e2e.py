@@ -307,3 +307,36 @@ async def test_history_comes_from_the_client_in_visit_order(kind, tunnel_certs, 
             await asyncio.sleep(0.05)
         assert await _wait_for(lambda: len(predictor.states) == 3)
         assert [st.history for st in predictor.states] == [[], ["A"], ["A", "B"]]
+
+
+def _link_page(title, *targets):
+    links = " ".join(f"<a href='/wiki/{t}'>{t}</a>" for t in targets)
+    return f"<html><head><title>{title}</title></head><body>{links}</body></html>".encode()
+
+
+@pytest.mark.parametrize("outage_s", [45.0, 5.0])
+async def test_long_outage_pushes_two_clicks_deep(kind, tunnel_certs, origin, outage_s):
+    """A -> {B, C}; B -> D; C -> E. During a long outage the reader can't ask for more, so the
+    server also pushes the likely links of B and C. A short outage stays one click deep."""
+    wiki = origin.root / "wiki"
+    wiki.joinpath("B.html").write_bytes(_link_page("B", "D"))
+    wiki.joinpath("C.html").write_bytes(_link_page("C", "E"))
+    wiki.joinpath("D.html").write_bytes(_link_page("D"))
+    wiki.joinpath("E.html").write_bytes(_link_page("E"))
+    predictor = FakePredictor({"B": 0.8, "C": 0.1, "D": 0.9, "E": 0.05})
+    async with Stack(kind, tunnel_certs, ServerProxy(predictor=predictor)) as s:
+        hint = Frame(MsgType.HANDOVER_HINT, {"active": True, "outage_s": outage_s})
+        await s.transport.send(hint)
+        await asyncio.sleep(0.1)
+        await s.browser.get(_url(origin, "/wiki/A"))
+        url = {t: _url(origin, f"/wiki/{t}") for t in "BCDE"}
+        assert await _wait_for(lambda: s.cache.peek(url["C"]) is not None)
+        if outage_s == 45.0:
+            assert await _wait_for(
+                lambda: s.cache.peek(url["D"]) is not None and s.cache.peek(url["E"]) is not None
+            )
+            deep = {st.title: st.history for st in predictor.states[1:]}
+            assert deep == {"B": ["A"], "C": ["A"]}  # asked as if the reader had opened them
+        else:
+            await asyncio.sleep(0.3)
+            assert s.cache.peek(url["D"]) is None and len(predictor.states) == 1

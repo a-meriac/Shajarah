@@ -3,6 +3,11 @@
 Normal operation: push only confident predictions within a small byte budget.
 Handover/outage predicted: lower the threshold and raise the budget so the cache can carry the
 user through the gap. The budget scales with the predicted outage length.
+
+Two clicks deep: pages opened from the cache during an outage can't be reported to the server, so
+without help a reader's second click in a long outage always misses. When the predicted outage
+is longer than a typical page view, the server also pushes the top few links of every page it
+pushed for the current one (`depth2_top_k`), within the same budget.
 """
 
 from __future__ import annotations
@@ -21,6 +26,8 @@ class PolicyConfig:
     max_budget_bytes: int = 60_000_000
     metered_factor: float = 0.25  # guideline: prefetch aggressively only on unmetered links
     default_size: int = 60_000  # wire-size guess for an unfetched page (~250 KB HTML, compressed)
+    depth2_top_k: int = 3  # outage: also push this many links of each pushed page (0 = off)
+    depth2_min_outage_s: float = 20.0  # ...only if the outage outlasts a typical page view
 
 
 @dataclass
@@ -55,6 +62,17 @@ class PrefetchPolicy:
         if outlook.metered:
             budget = int(budget * c.metered_factor)
         return threshold, min(budget, c.max_budget_bytes)
+
+    def depth2_k(self, outlook: LinkOutlook) -> int:
+        """How many links of each pushed page to push as well (0 = one click deep only)."""
+        c = self.config
+        if (
+            self.adaptive
+            and outlook.handover_imminent
+            and outlook.predicted_outage_s >= c.depth2_min_outage_s
+        ):
+            return c.depth2_top_k
+        return 0
 
     def decide(
         self,

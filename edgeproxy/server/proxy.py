@@ -184,30 +184,85 @@ class ServerProxy:
         titles = [await self._title_of(u) for u in history]
         state = build_page_state(url, html, titles, self.max_candidates, self.same_origin_only)
         self._titles[url] = state.title
-        links = state.candidates
-        if not links:
-            return
-        start = time.monotonic()
-        try:
-            probs = await self.predictor.predict(state)
-        except Exception as e:  # noqa: BLE001 -- a failing predictor must never break browsing
-            self.log.emit("predict_error", url=url, error=f"{type(e).__name__}: {e}")
+        probs = await self._predict(state, depth=1)
+        if probs is None:
             return
         decision = self.policy.decide(probs, client.outlook, already_cached=client.sent)
         self.log.emit(
-            "predict",
+            "decide",
             url=url,
-            links=len(links),
-            scored=len(probs),
             chosen=len(decision.urls),
             threshold=decision.threshold,
             budget_bytes=decision.budget_bytes,
             handover=client.outlook.handover_imminent,
+        )
+        budget = _Budget(decision.budget_bytes)
+        bodies = await self._push(decision.urls, url, 1, budget, session, client)
+
+        k = self.policy.depth2_k(client.outlook)
+        if not k:
+            return
+        # Expand every page the reader is likely to open next, including ones it already has.
+        # Ask about them all at once: the warning comes only seconds before the link dies.
+        children = []
+        for parent in depth2_parents(self.policy, probs, client.outlook):
+            body = bodies.get(parent)
+            if body is None:
+                try:
+                    r = await self.fetcher.fetch(parent)
+                except httpx.HTTPError as e:
+                    self.log.emit("origin_error", url=parent, error=type(e).__name__)
+                    continue
+                if r.status != 200:
+                    continue
+                body = r.body
+            child = child_state(parent, body, state, self.max_candidates, self.same_origin_only)
+            self._titles[parent] = child.title
+            children.append(child)
+        answers = await asyncio.gather(*(self._predict(c, depth=2) for c in children))
+        for child, child_probs in zip(children, answers, strict=True):  # most likely parent first
+            if budget.spent >= budget.limit:
+                break
+            if not child_probs:
+                continue
+            ranked = sorted(child_probs.items(), key=lambda kv: kv[1], reverse=True)
+            picks = [(u, p) for u, p in ranked if u not in client.sent][:k]
+            await self._push(picks, child.url, 2, budget, session, client)
+
+    async def _predict(self, state: PageState, depth: int) -> dict[str, float] | None:
+        if not state.candidates:
+            return None
+        start = time.monotonic()
+        try:
+            probs = await self.predictor.predict(state)
+        except Exception as e:  # noqa: BLE001 -- a failing predictor must never break browsing
+            self.log.emit(
+                "predict_error", url=state.url, depth=depth, error=f"{type(e).__name__}: {e}"
+            )
+            return None
+        self.log.emit(
+            "predict",
+            url=state.url,
+            depth=depth,
+            links=len(state.candidates),
+            scored=len(probs),
             dur_s=time.monotonic() - start,
         )
-        spent = 0
-        for target, prob in decision.urls:  # most likely first
-            if spent >= decision.budget_bytes:
+        return probs
+
+    async def _push(
+        self,
+        targets: list[tuple[str, float]],
+        source_url: str,
+        depth: int,
+        budget: _Budget,
+        session: ServerSession,
+        client: _Client,
+    ) -> dict[str, bytes]:
+        """Push targets in order until the budget runs out. Returns the pushed pages' bodies."""
+        pushed: dict[str, bytes] = {}
+        for target, prob in targets:  # most likely first
+            if budget.spent >= budget.limit:
                 break
             try:
                 r = await self.fetcher.fetch(target)
@@ -219,14 +274,43 @@ class ServerProxy:
             headers = {"url": target, "prob": prob, "status": 200, "headers": r.headers}
             frame = Frame(MsgType.PUSH, headers, r.body)
             wire = len(frame.encode())  # the budget is about bytes on the network
-            if spent + wire > decision.budget_bytes:
+            if budget.spent + wire > budget.limit:
                 continue
-            spent += wire
+            budget.spent += wire
             client.sent.add(target)
+            pushed[target] = r.body
             await session.push(frame)
             self.log.emit(
-                "push", url=target, prob=prob, bytes=len(r.body), wire_bytes=wire, source_url=url
+                "push",
+                url=target,
+                prob=prob,
+                bytes=len(r.body),
+                wire_bytes=wire,
+                source_url=source_url,
+                depth=depth,
             )
+        return pushed
+
+
+@dataclass
+class _Budget:
+    limit: int
+    spent: int = 0
+
+
+def depth2_parents(policy: PrefetchPolicy, probs: dict[str, float], outlook: LinkOutlook):
+    """Pages whose links get pushed two clicks deep: everything likely enough to push at depth 1,
+    whether or not the client already has it. Shared with the Jev warm-up."""
+    return [url for url, _ in policy.decide(probs, outlook).urls]
+
+
+def child_state(
+    url: str, html: bytes, parent: PageState, max_candidates: int, same_origin_only: bool
+) -> PageState:
+    """The predictor question for a page one click beyond `parent`, as if the reader opened it.
+    Shared with the Jev warm-up, so the emulation finds these answers cached."""
+    history = [*parent.history, parent.title][-HISTORY_LEN:]
+    return build_page_state(url, html, history, max_candidates, same_origin_only)
 
 
 def make_predictor(name: str, settings, offline: bool = False) -> Predictor | None:

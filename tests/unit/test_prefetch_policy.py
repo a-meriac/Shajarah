@@ -47,3 +47,12 @@ def test_skips_cached_and_packs_smaller_items():
 
 def test_metered_shrinks_budget():
     assert PrefetchPolicy(CFG).limits(LinkOutlook(metered=True))[1] == 250
+
+
+def test_depth2_only_for_long_outages_with_adaptive_policy():
+    p = PrefetchPolicy(PolicyConfig(depth2_top_k=3, depth2_min_outage_s=20))
+    assert p.depth2_k(LinkOutlook()) == 0
+    assert p.depth2_k(LinkOutlook(handover_imminent=True, predicted_outage_s=10)) == 0
+    assert p.depth2_k(LinkOutlook(handover_imminent=True, predicted_outage_s=30)) == 3
+    fixed = PrefetchPolicy(PolicyConfig(depth2_top_k=3), adaptive=False)
+    assert fixed.depth2_k(LinkOutlook(handover_imminent=True, predicted_outage_s=30)) == 0

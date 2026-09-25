@@ -25,6 +25,9 @@ prefetch:                      # which predicted pages the server pushes
   max_budget_bytes: 60000000   # hard cap
   metered_factor: 0.25         # budget multiplier on metered links (e.g. mobile data)
   default_size: 60000          # size guess (bytes on the wire) for a page not fetched yet
+  depth2_top_k: 3              # outage: also push this many links of every pushed page, since
+                               # pages read from cache offline can't ask for more (0 = off)
+  depth2_min_outage_s: 20      # ...only if the predicted outage outlasts a typical page view
 
 handover:                      # client-side dropout prediction from signal strength
   threshold_dbm: -110          # cellular/satellite signal below this is unusable (RSRP)

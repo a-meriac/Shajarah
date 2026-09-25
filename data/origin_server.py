@@ -32,7 +32,7 @@ class OriginServer(ThreadingHTTPServer):
         super().__init__(addr, _Handler)
         self.root = root.resolve()
         self.log: list[tuple[str, int]] = []  # (path, status), for tests
-        self.standins = sorted((self.root / "wiki").rglob("*.html")) if standins else []
+        self.standins = standin_files(self.root) if standins else []
 
     def handle_error(self, request, client_address) -> None:
         # A client hanging up mid-response (e.g. a cancelled prefetch) is normal, not an error.
@@ -41,18 +41,38 @@ class OriginServer(ThreadingHTTPServer):
         super().handle_error(request, client_address)
 
     def resolve(self, url_path: str) -> Path | None:
-        rel = unquote(url_path).lstrip("/")
-        for candidate in (rel, rel + ".html", f"{rel.rstrip('/')}/index.html".lstrip("/")):
-            path = (self.root / candidate).resolve()
-            if path.is_relative_to(self.root) and path.is_file():
-                return path
-        return None
+        return resolve_file(self.root, url_path)
 
     def standin(self, url_path: str) -> Path | None:
-        if not self.standins or not url_path.startswith("/wiki/"):
-            return None
-        digest = hashlib.sha256(unquote(url_path).encode()).digest()
-        return self.standins[int.from_bytes(digest[:8], "big") % len(self.standins)]
+        return standin_file(self.standins, url_path)
+
+
+def resolve_file(root: Path, url_path: str) -> Path | None:
+    """The snapshot file for a URL path, if there is one."""
+    root = root.resolve()
+    rel = unquote(url_path).lstrip("/")
+    for candidate in (rel, rel + ".html", f"{rel.rstrip('/')}/index.html".lstrip("/")):
+        path = (root / candidate).resolve()
+        if path.is_relative_to(root) and path.is_file():
+            return path
+    return None
+
+
+def standin_files(root: Path) -> list[Path]:
+    return sorted((root.resolve() / "wiki").rglob("*.html"))
+
+
+def standin_file(standins: list[Path], url_path: str) -> Path | None:
+    """The page served in place of a missing article: picked from the URL, so always the same."""
+    if not standins or not url_path.startswith("/wiki/"):
+        return None
+    digest = hashlib.sha256(unquote(url_path).encode()).digest()
+    return standins[int.from_bytes(digest[:8], "big") % len(standins)]
+
+
+def served_file(root: Path, url_path: str, standins: list[Path]) -> Path | None:
+    """What the origin (run with --standins) answers for a URL path."""
+    return resolve_file(root, url_path) or standin_file(standins, url_path)
 
 
 class _Handler(BaseHTTPRequestHandler):
