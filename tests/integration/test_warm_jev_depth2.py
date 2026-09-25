@@ -19,6 +19,7 @@ def test_depth2_questions_follow_the_server(tmp_path, monkeypatch):
         (wiki / f"{title}.html").write_text(_page(title, *targets))
     monkeypatch.setattr(build_snapshot, "SNAPSHOT_DIR", tmp_path)
     settings = load_settings(None)
+    settings.prefetch.handover_threshold = 0.03  # independent of whatever settings.yaml says
 
     state = build_page_state(page_url("A"), (wiki / "A.html").read_text(), ["Z"], 2000, True)
     by_target = {"B": 0.5, "Missing": 0.2, "C": 0.01}  # C is below the outage threshold
