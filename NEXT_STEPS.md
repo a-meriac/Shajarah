@@ -84,9 +84,14 @@ Reproduce: `python -m experiments.warm_jev` (needs the key), `make experiments`,
 
 ## Next
 
-1. **Choose the outage push cutoff offline** (free): replay the sessions against the cached Jev
-   answers and measure how often the next page would have been pushed, and at what data cost,
-   for `prefetch.handover_threshold` from 0.03 (now; ~4 pages) down to all 40 offered links.
+1. **Choose the outage push cutoff offline** (free): script ready, run `make cutoff-sweep` on the
+   Linux PC (needs `data/snapshot` and `data/cache/jev`). It replays every page view in the
+   sessions against the cached Jev answers and prints, per cutoff (p >= 0.5 ... 0, and top 1 ... 40):
+   how often the next page was pushed (95% CI), pages and MB per warning, and the share of pushed
+   data that was read. It also shows how often a *second* click in an outage would be covered if
+   the server pushed two clicks deep (today it pushes one click ahead, so a reader's second page
+   in a tunnel always misses). Pick `prefetch.handover_threshold` from the table; if depth 2
+   looks worth it, that's a server change. Results: `results/cutoff_sweep.json`.
 2. **Re-run the car tunnel with ~20 readers**, configs 1, 2, 3 and 5 only (~80 runs, ~2.5 h).
 3. **Show switching early with continuous traffic** during the Wi-Fi walk (the VoIP probe:
    50 packets/s over QUIC datagrams, gap and loss across the switch).

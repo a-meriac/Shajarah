@@ -8,7 +8,7 @@ VENV_PY ?= python3.13
 endif
 PY ?= $(VENV)/bin/python
 
-.PHONY: venv test test-netns lint netns-up netns-down probe experiments-smoke experiments
+.PHONY: venv test test-netns lint netns-up netns-down probe experiments-smoke experiments cutoff-sweep
 
 venv:
 	$(VENV_PY) -m venv $(VENV) && $(VENV)/bin/pip install -e '.[dev]'
@@ -36,3 +36,6 @@ experiments-smoke:
 # The full matrix: 7 configs x scenarios x 5 sessions, ~2 h. Resumes if interrupted.
 experiments:
 	sudo $(PY) -m experiments.runner --batch main
+
+cutoff-sweep:  ## offline: how often the next page is pushed, per push cutoff (needs snapshot + Jev cache)
+	$(PY) -m experiments.cutoff_sweep
