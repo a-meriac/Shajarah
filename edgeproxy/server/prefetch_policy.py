@@ -28,6 +28,10 @@ class PolicyConfig:
     default_size: int = 60_000  # wire-size guess for an unfetched page (~250 KB HTML, compressed)
     depth2_top_k: int = 3  # outage: also push this many links of each pushed page (0 = off)
     depth2_min_outage_s: float = 20.0  # ...only if the outage outlasts a typical page view
+    # Stop pushing this long before the warned dropout. Data sent into a dead link piles up
+    # unacknowledged, and QUIC's loss recovery then holds back even the reader's own requests
+    # for tens of seconds after the link returns (batch tunnel20, 25 Sep).
+    push_stop_margin_s: float = 1.0
 
 
 @dataclass

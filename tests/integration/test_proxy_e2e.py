@@ -340,3 +340,23 @@ async def test_long_outage_pushes_two_clicks_deep(kind, tunnel_certs, origin, ou
         else:
             await asyncio.sleep(0.3)
             assert s.cache.peek(url["D"]) is None and len(predictor.states) == 1
+
+
+async def test_no_pushes_once_the_warned_dropout_is_due(kind, tunnel_certs, origin):
+    """Pushes sent into a dead link jam the connection after it returns, so they stop in time."""
+    predictor = FakePredictor({"B": 0.8, "C": 0.1})
+    async with Stack(kind, tunnel_certs, ServerProxy(predictor=predictor)) as s:
+        # The link is about to drop right now (eta 0): nothing may be pushed any more.
+        hint = {"active": True, "eta_s": 0.0, "outage_s": 45.0}
+        await s.transport.send(Frame(MsgType.HANDOVER_HINT, hint))
+        await asyncio.sleep(0.1)
+        await s.browser.get(_url(origin, "/wiki/A"))
+        await asyncio.sleep(0.3)
+        assert len(s.cache) == 1  # only the page itself
+
+        # Warning cleared (link back): pushing resumes, with the normal threshold again.
+        await s.transport.send(Frame(MsgType.HANDOVER_HINT, {"active": False}))
+        await asyncio.sleep(0.1)
+        await s.browser.get(_url(origin, "/wiki/A"))
+        assert await _wait_for(lambda: s.cache.peek(_url(origin, "/wiki/B")) is not None)
+        assert s.cache.peek(_url(origin, "/wiki/C")) is None

@@ -13,7 +13,10 @@ the client reports them with VIEWED, and the server predicts from there too.
 Per client connection the server keeps the URLs the client already has, the page it's on, and
 its connectivity outlook. A HANDOVER_HINT ("dropout in eta_s seconds, lasting about outage_s")
 switches the policy to its lower threshold and bigger budget and immediately re-plans pushes
-for the current page; clearing the hint switches back.
+for the current page. Pushing stops shortly before the warned dropout (eta_s minus
+prefetch.push_stop_margin_s) and stays off until the client clears the hint: anything sent into
+the outage only jams the connection when it comes back. Clearing the hint switches back to the
+normal policy.
 
   python -m edgeproxy.server.proxy --transport quic --port 4433 --predictor jev
 """
@@ -45,6 +48,10 @@ class _Client:
     sent: set[str] = field(default_factory=set)  # URLs the client already has a copy of
     outlook: LinkOutlook = field(default_factory=LinkOutlook)
     prefetch: asyncio.Task | None = None
+    offline_from: float | None = None  # monotonic time the warned dropout is due; no pushes after
+
+    def offline(self) -> bool:
+        return self.offline_from is not None and time.monotonic() >= self.offline_from
 
 
 def _title(html: bytes, url: str) -> str:
@@ -136,6 +143,8 @@ class ServerProxy:
             return
         client = self._client(session)
         client.current = (url, list(history)[-HISTORY_LEN:])
+        if client.offline():
+            return  # the client is expected to be unreachable; this view arrived before the drop
         if client.prefetch is not None:
             client.prefetch.cancel()  # the reader moved on; predictions for the old page are stale
         client.prefetch = asyncio.ensure_future(
@@ -150,6 +159,12 @@ class ServerProxy:
         outlook.metered = bool(h.get("metered", outlook.metered))
         self.log.emit("handover_hint_recv", **{k: v for k, v in h.items() if k != "type"})
         client = self._client(session)
+        eta = h.get("eta_s")
+        if not outlook.handover_imminent:
+            client.offline_from = None
+        elif eta is not None:
+            margin = self.policy.config.push_stop_margin_s
+            client.offline_from = time.monotonic() + max(0.0, float(eta) - margin)
         if outlook.handover_imminent and client.current is not None:
             # Re-plan for the page the reader is on now, with the outage budget.
             url, history = client.current
@@ -221,7 +236,7 @@ class ServerProxy:
             children.append(child)
         answers = await asyncio.gather(*(self._predict(c, depth=2) for c in children))
         for child, child_probs in zip(children, answers, strict=True):  # most likely parent first
-            if budget.spent >= budget.limit:
+            if budget.spent >= budget.limit or client.offline():
                 break
             if not child_probs:
                 continue
@@ -263,6 +278,9 @@ class ServerProxy:
         pushed: dict[str, bytes] = {}
         for target, prob in targets:  # most likely first
             if budget.spent >= budget.limit:
+                break
+            if client.offline():
+                self.log.emit("push_stopped", reason="dropout due", source_url=source_url)
                 break
             try:
                 r = await self.fetcher.fetch(target)

@@ -36,7 +36,6 @@ class MsgType(str, Enum):
     NOT_MODIFIED = "not_modified"  # server -> client: origin said 304, keep your cached copy
     PUSH = "push"  # server -> client: predicted page/asset, unsolicited
     HANDOVER_HINT = "handover_hint"  # client -> server: outage predicted in eta_s seconds
-    BUDGET = "budget"  # client -> server: current prefetch byte budget / threshold
     PING = "ping"  # client -> server: liveness check, answered with an empty RESPONSE
     VIEWED = "viewed"  # client -> server: the reader opened this page from the cache
 

@@ -26,7 +26,7 @@ class ClientTransport(ABC):
 
     @abstractmethod
     async def send(self, frame: Frame) -> None:
-        """Fire-and-forget control frame (HANDOVER_HINT, BUDGET)."""
+        """Fire-and-forget control frame (HANDOVER_HINT, VIEWED)."""
 
     def send_datagram(self, data: bytes) -> None:
         raise NotImplementedError("this transport has no unreliable datagrams")

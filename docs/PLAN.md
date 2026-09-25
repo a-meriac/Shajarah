@@ -24,7 +24,7 @@ Makefile                  # make venv | test | lint | netns-up | netns-down | te
                           # (planned: exp-predictor | exp-system | figures | paper)
 edgeproxy/
   common/
-    protocol.py           # tunnel framing: REQUEST, RESPONSE, PUSH, NOT_MODIFIED, HANDOVER_HINT, BUDGET
+    protocol.py           # tunnel framing: REQUEST, RESPONSE, PUSH, NOT_MODIFIED, HANDOVER_HINT, VIEWED, PING
     http.py               # header handling shared by both proxies
     eventlog.py           # structured JSONL event log (ts, event, fields): single source for all metrics
     env.py                # secrets from the environment or .env
