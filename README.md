@@ -2,7 +2,7 @@
 
 Our entry for the EDGE Challenge (ATP 2026): keep browsing smooth when your connection hops between Wi-Fi, 5G and satellite.
 
-The idea: your device can usually tell a dropout is coming because the signal fades first. When it does, we switch the connection to the next network early and download the pages you're likely to open next, so there's something to read while you're offline.
+The idea: your device can usually tell a dropout is coming because the signal fades first. When it does, we download the pages you're likely to open next, so there's something to read while you're offline, and move the connection to another network early if one is available.
 
 ```
 browser → client proxy ══ QUIC tunnel (Wi-Fi / 5G / satellite) ══ server proxy → websites

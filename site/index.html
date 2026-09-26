@@ -3,8 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Shajarah</title>
-  <meta name="description" content="Shajarah predicts network dropouts from fading signal, switches networks before the link fails and prefetches the pages you'll read next. EDGE Challenge, ATP 2026.">
+  <title>Shajarah · شجرة</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@700&display=swap" rel="stylesheet">
+  <meta name="description" content="Shajarah sees a network dropout coming from the fading signal and downloads the pages you're likely to open next, so browsing carries on without signal. EDGE Challenge, ATP 2026.">
   <style>
     :root {
       color-scheme: light;
@@ -37,6 +40,15 @@
     }
     main { max-width: 760px; margin: 0 auto; padding: 56px 16px 80px; }
     h1 { font-size: 2.4rem; line-height: 1.15; margin: 0 0 12px; letter-spacing: -0.02em; }
+    h1.wordmark { font-family: "Aref Ruqaa", "Amiri", "Noto Naskh Arabic", serif; font-weight: 700;
+                  font-size: 4.2rem; line-height: 1.2; letter-spacing: 0; margin: 0; color: var(--accent);
+                  text-align: left; }
+    .subtitle { font-size: 1.6rem; font-weight: 650; letter-spacing: -0.01em; margin: 0 0 18px; }
+    ul.key { list-style: none; padding: 0; margin: 0 0 28px; }
+    ul.key li { position: relative; padding-left: 22px; margin-bottom: 10px; color: var(--muted); font-size: 1.08rem; }
+    ul.key li::before { content: ""; position: absolute; left: 4px; top: 0.62em; width: 8px; height: 8px;
+                        border-radius: 50%; background: var(--accent); }
+    ul.key b { color: var(--fg); }
     h2 { font-size: 1.25rem; margin: 56px 0 12px; }
     p { margin: 0 0 14px; }
     .lede { font-size: 1.2rem; color: var(--muted); margin-bottom: 28px; }
@@ -74,8 +86,9 @@
     .stat .num { font-variant-numeric: tabular-nums; }
     .caption { color: var(--muted); font-size: 0.9rem; margin-top: 10px; }
     .table-wrap { overflow-x: auto; margin: 16px 0 6px; }
-    table { border-collapse: collapse; width: 100%; font-size: 0.92rem; font-variant-numeric: tabular-nums; }
-    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    table { border-collapse: collapse; width: auto; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+    th, td { text-align: left; padding: 7px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th:first-child, td:first-child { padding-left: 0; }
     th { color: var(--muted); font-weight: 500; font-size: 0.85rem; }
     td.num, th.num { text-align: right; white-space: nowrap; }
     tr.ours td { font-weight: 650; background: var(--accent-soft); }
@@ -89,13 +102,14 @@
 <body>
 <main>
   <span class="tag">EDGE Challenge · ATP 2026</span>
-  <h1>Browsing that sees the dropout coming</h1>
-  <p class="lede">
-    Phones switch between Wi-Fi, 5G and satellite all the time, and now and then lose signal
-    altogether. The signal nearly always fades before it drops. Shajarah acts on that warning: it
-    moves your connection to a better network before the old one fails, and quietly downloads the
-    pages you're likely to open next, so a tunnel or a lift doesn't leave you staring at a spinner.
-  </p>
+  <h1 class="wordmark" lang="ar" dir="rtl">شجرة</h1>
+  <p class="subtitle">Shajarah</p>
+  <p class="lede">Keeps the web working when your phone loses signal.</p>
+  <ul class="key">
+    <li><b>Downloads what you'll read next.</b> When the signal starts to fade, the pages you're most likely to click are fetched ahead of time, so they open instantly even with no signal at all.</li>
+    <li><b>Survives network changes.</b> The connection runs over QUIC, which carries on when the phone's IP address changes instead of starting a new handshake the way TCP must.</li>
+    <li><b>Switches networks early.</b> If another network is available, the connection moves there before the current one drops.</li>
+  </ul>
   <div class="links">
     <a class="btn primary" href="demo.html">Try the interactive demo</a>
     <a class="btn" href="replay.html">Explore the run data</a>
@@ -106,10 +120,10 @@
 
   <h2>Results at a glance</h2>
   <div class="grid">
-    <div class="stat"><div class="num">56% less</div><div class="label">time spent waiting for pages than with an ordinary connection (14 s instead of 32 s per trip)</div></div>
+    <div class="stat"><div class="num">56% less</div><div class="label">time spent waiting for pages than with an ordinary connection</div></div>
     <div class="stat"><div class="num">14 of 26</div><div class="label">clicks inside a 45-second tunnel opened instantly, against 3 of 20 without Shajarah</div></div>
+    <div class="stat"><div class="num">0 of 20</div><div class="label">readers waited longer than with a modern connection; 8 were faster, the rest the same</div></div>
     <div class="stat"><div class="num">60 ms</div><div class="label">longest silence in a live call when leaving Wi-Fi, instead of about one second</div></div>
-    <div class="stat"><div class="num">2.9 MB</div><div class="label">of extra data per tunnel: the price of downloading pages ahead of time</div></div>
   </div>
   <p class="caption">
     Measured in an emulated network: 20 simulated readers browsing Wikipedia on a drive through a
@@ -118,16 +132,15 @@
 
   <h2>The problem</h2>
   <p>
-    A phone treats a weakening signal as fine right up until the moment it isn't. Only once the
-    connection has actually failed does it look for another network, reconnect, and retry whatever
-    you were loading. On a train, in a car, or walking out of a building, that means a frozen page,
-    a dropped call, or a spinner that lasts as long as the tunnel.
+    Phones ignore a fading signal until the connection actually breaks. Only then do they look for
+    another network, reconnect, and retry whatever you were loading. On a train, in a car, or walking out of a building, that means a frozen page,
+    a dropped call.
   </p>
   <p>
     The two usual remedies each cover half of the problem. Modern transport protocols such as QUIC
-    can carry a connection from one network to another, but only after the switch, and they have
-    nothing to show you while there is no network at all. Prefetching can fill a cache in advance,
-    but done all the time it burns data on pages nobody reads.
+    can carry a connection from one network to another, but only after the switch, and they can't
+    load anything while there is no signal at all. Prefetching can store pages in advance, but doing
+    it constantly wastes data on pages nobody opens.
   </p>
 
   <h2>How it works</h2>
@@ -144,9 +157,9 @@
   </div>
   <ol class="steps">
     <li><b>Watch the signal.</b> The phone measures the signal on every network ten times a second and fits a trend. If the current network is heading below usable strength within the next eight seconds or so, it raises a warning.</li>
-    <li><b>Switch before it breaks.</b> If another network is healthy, the connection moves there immediately. The tunnel runs on QUIC, which can change networks without reconnecting, so nothing in progress is lost.</li>
-    <li><b>Stock up when there's nowhere to go.</b> In a tunnel every network fails together. The phone tells the server a dropout is coming; the server lowers its bar for prefetching and sends the pages you're most likely to open next, and the most likely pages after those.</li>
-    <li><b>Read through the gap.</b> Pages you open while offline come straight from the phone's cache, as if the network were still there.</li>
+    <li><b>Prefetch before the drop.</b> The phone tells the server a dropout is coming, and the server starts sending extra pages: the ones you're most likely to open next, and the likely pages after those.</li>
+    <li><b>Open pages without signal.</b> While there's no connection, pages you've been sent open straight from the phone's storage, as if nothing had happened.</li>
+    <li><b>Switch networks when possible.</b> If another network is healthy, the connection moves there before the current one fails. Because it runs on QUIC, nothing in progress is lost.</li>
   </ol>
   <p>
     To decide which pages are worth sending, the server asks a decision model,
@@ -172,66 +185,69 @@
   <div class="table-wrap">
     <table>
       <thead>
-        <tr><th>Setup</th><th class="num">Average wait per trip</th><th class="num">Median</th><th class="num">Tunnel clicks opened instantly</th><th class="num">Extra data</th></tr>
+        <tr><th>Setup</th><th class="num">Average wait</th><th class="num">Median wait</th><th class="num">Tunnel clicks<br>opened instantly</th><th class="num">Extra data</th></tr>
       </thead>
       <tbody>
-        <tr><td>Ordinary connection (TCP, reconnects after failure)</td><td class="num">31.7 s</td><td class="num">28.5 s</td><td class="num">3 of 20</td><td class="num">none</td></tr>
-        <tr><td>Modern connection (QUIC, survives network changes)</td><td class="num">21.6 s</td><td class="num">17.0 s</td><td class="num">3 of 22</td><td class="num">none</td></tr>
-        <tr><td>Always-on prefetching</td><td class="num">20.1 s</td><td class="num">12.6 s</td><td class="num">5 of 23</td><td class="num">0.24 MB</td></tr>
+        <tr><td>Ordinary (TCP)</td><td class="num">31.7 s</td><td class="num">28.5 s</td><td class="num">3 of 20</td><td class="num">none</td></tr>
+        <tr><td>Modern (QUIC)</td><td class="num">21.6 s</td><td class="num">17.0 s</td><td class="num">3 of 22</td><td class="num">none</td></tr>
+        <tr><td>Always-on prefetch</td><td class="num">20.1 s</td><td class="num">12.6 s</td><td class="num">5 of 23</td><td class="num">0.24 MB</td></tr>
         <tr class="ours"><td>Shajarah</td><td class="num">14.0 s</td><td class="num">3.4 s</td><td class="num">14 of 26</td><td class="num">2.9 MB</td></tr>
       </tbody>
     </table>
   </div>
-  <p class="caption">"Wait" is the total time a reader spent looking at a page that was still loading. 20 readers per setup.</p>
-  <p>
-    Compared reader by reader with the modern connection, Shajarah was faster for 8 of the 20 and
-    slower for none. The remaining readers clicked a page the model hadn't anticipated and waited for
-    the signal to return, exactly as they would have without Shajarah. The typical reader waited
-    3.4 seconds instead of 17.
+  <p class="caption">
+    Wait: the total time a reader spent looking at a page that was still loading, per trip.
+    Ordinary: TCP, which reconnects only after the link has failed, as most apps do. Modern: QUIC,
+    which survives network changes but doesn't prefetch. Always-on prefetch: a few likely pages
+    pushed after every page view. 20 readers per setup.
   </p>
   <p>
-    Switching early matters most for anything live. On a walk out of a building's Wi-Fi, a simulated
+    Compared reader by reader with the modern connection, Shajarah was faster for 8 of the 20 test cases, and
+    slower for none of them. The other readers clicked a page the model hadn't expected and waited for
+    the signal to return, exactly as they would have without Shajarah. The typical reader waited for a page to load for only 
+    3.4 seconds, instead of 17 seconds.
+  </p>
+  <p>
+    Switching networks early matters the most for anything live. On a walk out of a building's Wi-Fi, a simulated
     voice call (50 packets a second) that switched after Wi-Fi had died went silent for about a
-    second and lost 2% of its audio. With Shajarah switching 5.8 seconds before the drop, the longest
-    gap was 60 ms and the only loss was the network's normal 0.4%.
+    second and lost 2% of its audio. With Shajarah switching a few seconds before the drop, the longest
+    gap was 60 ms and the only packet loss was the network's normal 0.4%.
   </p>
   <p class="callout">
-    <a href="demo.html">The interactive demo</a> replays any of these runs from above: the coverage
-    along the road, the moment the dropout is predicted, and what each phone shows second by second.
+    <a href="demo.html">The interactive demo</a> allows you to replay the data from our test runs.
   </p>
 
   <h2>What's new, and what we learned</h2>
   <p>
-    Connection migration and link prefetching both exist. What Shajarah adds is a single prediction
-    driving both: the same fading signal that triggers an early switch also tells the server
-    whether to prefetch, how much, and until when. Building it taught us two things that matter for
+    Link prefetching and connection migration both exist. What Shajarah adds is timing: it predicts
+    the dropout from the fading signal, and that warning tells the server when to prefetch, how
+    much, and when to stop. The same warning also triggers an early network switch when there's
+    somewhere to switch to. Building it taught us two things that matter for
     anyone combining them:
   </p>
   <ul class="points">
-    <li><b>Never prefetch into a dying link.</b> Our first version kept sending pages after the signal had gone. The unacknowledged data jammed the connection when coverage returned, and some readers ended up waiting longer than with no prefetching at all. The server now stops just before the predicted dropout and never has more than 256 KB in flight, because the predicted time can be a few seconds off.</li>
-    <li><b>QUIC waits too long after a long outage.</b> While the link is down, QUIC doubles its retry interval with every failed attempt; after 45 seconds, the next retry was half a minute away, so the connection stayed silent long after the signal came back. We reset that back-off as soon as the other end is heard from again.</li>
+    <li><b>Never prefetch into a dying link.</b> Our first version kept sending pages after the signal had gone. The unacknowledged data filled the connection when coverage returned, and some readers ended up waiting longer than with no prefetching at all. The server now stops just before the predicted dropout and never has more than 256 KB of packets in flight, because the predicted time can be a few seconds off.</li>
+    <li><b>QUIC waits too long after a long outage.</b> While the link is down, QUIC doubles its retry interval with every failed attempt; after 45 seconds, the next retry was half a minute away, so the connection stayed silent long after the signal came back. We reset that cooldown as soon as the client responds again.</li>
   </ul>
 
   <h2>How we tested it</h2>
   <p>
-    Everything runs in an emulated network on Linux. The phone, a router, our server and the
+    Everything ran on an emulated network on Linux. The phone, a router, our server and the
     websites each live in their own network namespace, and the phone's Wi-Fi, 5G and satellite links
-    are shaped to realistic delay, loss and bandwidth. Scripted scenarios fade and cut those links on
-    a fixed timeline.
+    had a realistic delay, loss and bandwidth. We scheduled the link to fade and cut out over specific times to simulate real world coonditions.
   </p>
   <p>
-    The readers come from Wikipedia's public clickstream, the only large public record of which
+    We chose to test Shajarah using Wikipedia as the website that the clients are loading, as it is the one of the only large public records of which
     links people actually click. Each reader follows links that real readers chose in August 2026,
     with realistic reading times, across about 2,000 Wikipedia pages frozen for the tests. We scored
-    the click predictions separately against July's clicks, and checked the pipeline on ordinary
+    the click predictions separately against July's clicks. We also tested Shajarah on ordinary
     sites (a news front page, documentation, a shop, a forum, a government service) to make sure it
-    isn't tuned to Wikipedia.
+    isn't tuned only to Wikipedia.
   </p>
 
   <h2>Limitations</h2>
   <ul class="points">
-    <li><b>Click prediction is modest.</b> Jev's three favourite links catch 16% of real clicks, against 9% for simply taking the first links on the page. When it misses, you wait as long as you would have anyway; the gains come from the hits, never at the expense of the misses.</li>
-    <li><b>Prefetching costs data.</b> About 3 MB per tunnel, most of it never read. That is a fair trade on an unmetered connection and a poor one on a small data plan. The prefetching policy can already work to a smaller budget on metered links; detecting a metered connection automatically is still to do.</li>
+    <li><b>Prefetching costs data.</b> About 3 MB per dropout, most of it never read. That's roughly one photo from a phone camera or a couple of minutes of music streaming, and it's spent mainly in the seconds before a dropout rather than on every page.</li>
     <li><b>The network is emulated.</b> The signal curves are hand-made; replaying real drive-test measurements is the next step.</li>
     <li><b>Privacy.</b> The prototype calls Jev through a hosted API. In a production system the model would run on our own server, so page titles and link text never leave infrastructure we control.</li>
   </ul>

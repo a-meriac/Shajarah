@@ -15,7 +15,7 @@ const SETUPS = {
   "2": { name: "Modern connection", sub: "QUIC: survives network changes, but doesn't see dropouts coming" },
   "3": { name: "Always-on prefetch", sub: "QUIC plus a few likely pages pushed all the time" },
   "4": { name: "Hover prefetch", sub: "QUIC plus the clicked page fetched 200 ms before the click" },
-  "5": { name: "Shajarah", sub: "Sees the dropout coming: switches network early, prefetches what you'll read next" },
+  "5": { name: "Shajarah", sub: "Sees the dropout coming and prefetches what you'll read next; switches network early when it can" },
   "5a": { name: "Shajarah, switching only", sub: "Switches network early, no prefetching" },
   "5b": { name: "Shajarah, prefetch only", sub: "Prefetches on a dropout warning, no early switching" },
 };
@@ -31,11 +31,11 @@ const SCENARIOS = {
 const SCENARIO = "car_tunnel_45s";
 const LEFT = "1", RIGHT = "5";
 const EXAMPLES = [
-  { session: 5, title: "The page that never came",
+  { session: 5,
     blurb: "One click in the middle of the tunnel. The ordinary phone gives up after a minute without loading the page; Shajarah had already delivered it." },
-  { session: 20, title: "Reading on through the tunnel",
+  { session: 20,
     blurb: "Three pages in a row with no signal: two open instantly because they were prefetched before the tunnel (the second one two clicks ahead), and a page read earlier comes back from the phone's cache after a 2-second check. The ordinary phone waits 54 s for the first." },
-  { session: 0, title: "Two clicks in the tunnel",
+  { session: 0,
     blurb: "The reader moves on twice inside the tunnel. Shajarah has the next page ready instantly, and shows a saved copy of the page before it after a 2-second check; the ordinary phone waits 44 s for its first click." },
 ];
 const SPEEDS = [2, 5, 10, 20];
@@ -234,8 +234,8 @@ function writeHash() {
 
 function build() {
   app.innerHTML = `
-    <div class="examples" role="tablist" aria-label="Examples">
-      ${EXAMPLES.map((ex, i) => `<button type="button" role="tab" class="example" data-example="${i}" aria-selected="${i === S.example}"><span class="n">Example ${i + 1}</span>${esc(ex.title)}</button>`).join("")}
+    <div class="examples" role="tablist" aria-label="Tests">
+      ${EXAMPLES.map((ex, i) => `<button type="button" role="tab" class="example" data-example="${i}" aria-selected="${i === S.example}">Test ${i + 1}</button>`).join("")}
     </div>
     <p class="blurb" id="blurb"></p>
     <div class="card controls">
