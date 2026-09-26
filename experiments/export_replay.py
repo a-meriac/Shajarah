@@ -217,6 +217,19 @@ def main() -> None:
     index_file.write_text(json.dumps(index, indent=1) + "\n")
     size = sum((args.out / r["file"]).stat().st_size for r in runs)
     print(f"{len(runs)} runs exported to {args.out} ({size / 1e6:.1f} MB)", file=sys.stderr)
+    export_voip(args.out)
+
+
+def export_voip(out: Path) -> None:
+    """Voice-call probe results (experiments/voip_probe.py), for the demo's live-call panel."""
+    runs = [json.loads(p.read_text()) for p in sorted((ROOT / "results" / "voip").glob("*.json"))]
+    if not runs:
+        return
+    keep = ("scenario", "mode", "lost_pct", "longest_silence_s", "rtt_ms_median", "switches")
+    (out / "voip.json").write_text(
+        json.dumps({"runs": [{k: r[k] for k in keep} for r in runs]}, separators=(",", ":"))
+    )
+    print(f"{len(runs)} voice-call runs exported to {out / 'voip.json'}", file=sys.stderr)
 
 
 if __name__ == "__main__":
