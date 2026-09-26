@@ -29,7 +29,7 @@ netns-down:
 test-netns:
 	sudo -E $(PY) -m pytest -q -m netns tests/emulation
 
-# One short run (config 5, car tunnel, one session) to check the whole pipeline, ~2 min.
+# One short run (config 5, 45 s outage, one session) to check the whole pipeline, ~2 min.
 experiments-smoke:
 	sudo $(PY) -m experiments.runner --batch smoke --configs 5 --scenarios car_tunnel_45s --sessions 1
 

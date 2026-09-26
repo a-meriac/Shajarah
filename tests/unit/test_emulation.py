@@ -26,7 +26,7 @@ def test_profiles_and_scenarios_are_consistent():
             assert name in profiles, (f.name, name)
 
 
-def test_car_tunnel_hint_precedes_outage():
+def test_outage_hint_precedes_the_drop():
     """The scenario is only useful if the fade is predictable before the link dies."""
     s = yaml.safe_load((SCEN / "car_tunnel_45s.yaml").read_text())
     outage_t = min(e["t"] for e in s["events"] if e["profile"] == "dead")

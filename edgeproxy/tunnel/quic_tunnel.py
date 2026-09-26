@@ -42,7 +42,7 @@ log = logging.getLogger(__name__)
 
 ALPN = "edgeproxy/1"
 SERVER_NAME = "edgeproxy"
-# Must outlast the longest outage we emulate (car tunnel, satellite gap), or the connection dies
+# Must outlast the longest outage we emulate (45 s, satellite gaps), or the connection dies
 # during the gap and "migration" silently turns into a reconnect.
 DEFAULT_IDLE_TIMEOUT = 120.0
 MAX_DATAGRAM = 65536

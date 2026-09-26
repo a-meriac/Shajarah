@@ -78,15 +78,15 @@ async def test_walk_switches_only_after_failure_when_reactive():
     assert 28.5 + DEAD_AFTER <= t < 28.5 + DEAD_AFTER + 0.2
 
 
-async def test_car_tunnel_warns_server_before_the_outage_and_clears_after():
+async def test_outage_warns_server_before_the_drop_and_clears_after():
     pm, transport = await replay("car_tunnel_45s", proactive=True, send_hints=True)
-    assert pm.switches == []  # nowhere to switch to in the tunnel
+    assert pm.switches == []  # nowhere to switch to: every network drops
     hints = [(f.headers["active"], f.headers["outage_s"]) for f in transport.sent]
     assert [h[0] for h in hints] == [True, False]
     assert all(f.type is MsgType.HANDOVER_HINT for f in transport.sent)
     assert hints[0][1] > 0
     first = next(e for e in pm.log.events if e["event"] == "hint_sent")
-    assert first["t"] <= 38 - 3  # the server gets 3+ s to prefetch before the tunnel at 38 s
+    assert first["t"] <= 38 - 3  # the server gets 3+ s to prefetch before the drop at 38 s
 
 
 async def test_no_hints_unless_enabled():
@@ -101,5 +101,5 @@ async def test_logs_signal_and_warnings_for_the_replay_viewer():
     assert set(signals[0]["dbm"]) == {"wifi0", "cell0", "sat0"}
     assert signals[0]["active"] == "cell0"
     cell = [e for e in pm.log.events if e["event"] == "warning" and e["iface"] == "cell0"]
-    assert cell[0]["on"] and cell[0]["t"] < 38  # warned before the tunnel
+    assert cell[0]["on"] and cell[0]["t"] < 38  # warned before the drop
     assert any(not e["on"] and e["t"] > 84 for e in cell)  # and cleared after it

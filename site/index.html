@@ -161,12 +161,12 @@
   <div class="grid">
     <div class="stat"><div class="num">60 ms</div><div class="label">longest silence in a live call when leaving Wi-Fi, instead of about one second</div></div>
     <div class="stat"><div class="num">56% less</div><div class="label">time spent waiting for pages than with an ordinary connection</div></div>
-    <div class="stat"><div class="num">14 of 26</div><div class="label">clicks inside a 45-second tunnel opened instantly, against 3 of 20 without Shajarah</div></div>
+    <div class="stat"><div class="num">14 of 26</div><div class="label">clicks during a 45-second outage opened instantly, against 3 of 20 without Shajarah</div></div>
     <div class="stat"><div class="num">0 of 20</div><div class="label">readers waited longer than with a modern connection; 8 were faster, the rest the same</div></div>
   </div>
   <p class="caption">
-    Measured in an emulated network: 20 simulated readers browsing Wikipedia on a drive through a
-    45-second tunnel, and a voice call on a walk out of Wi-Fi range. Details below.
+    Measured in an emulated network: 20 simulated readers browsing Wikipedia through a sudden
+    45-second network outage, and a voice call on a walk out of Wi-Fi range. Details below.
   </p>
 
   <h2 id="problem">The problem</h2>
@@ -197,7 +197,7 @@
   <ol class="steps">
     <li><b>Watch the signal.</b> The phone measures the signal on every network ten times a second and fits a trend. If the current network is heading below usable strength within the next eight seconds or so, it raises a warning.</li>
     <li><b>Switch networks before the drop.</b> If another network is healthy, the connection moves there before the current one fails. Because it runs on QUIC, there's no new handshake and nothing in progress is lost.</li>
-    <li><b>Prefetch when there's nowhere to go.</b> In a tunnel every network fails together, so the phone tells the server a dropout is coming and the server starts sending extra pages: the ones you're most likely to open next, and the likely pages after those.</li>
+    <li><b>Prefetch when there's nowhere to go.</b> When every network drops at once, the phone tells the server a dropout is coming and the server starts sending extra pages: the ones you're most likely to open next, and the likely pages after those.</li>
     <li><b>Open pages without signal.</b> While there's no connection, pages you've been sent open straight from the phone's storage, as if nothing had happened.</li>
   </ol>
   <p>
@@ -217,14 +217,15 @@
 
   <h2 id="results">Results</h2>
   <p>
-    Our main test is a drive through a 45-second tunnel with no signal on any network. Twenty
+    Our main test is a sudden network outage: the cellular signal fades, then there is no signal on
+    any network for 45 seconds. Twenty
     simulated readers each browse along their own path of real Wikipedia clicks; every setup replays
     exactly the same readers and clicks, so the only difference is the connection.
   </p>
   <div class="table-wrap">
     <table>
       <thead>
-        <tr><th>Setup</th><th class="num">Average wait</th><th class="num">Median wait</th><th class="num">Tunnel clicks<br>opened instantly</th><th class="num">Extra data</th></tr>
+        <tr><th>Setup</th><th class="num">Average wait</th><th class="num">Median wait</th><th class="num">Clicks during the<br>outage opened instantly</th><th class="num">Extra data</th></tr>
       </thead>
       <tbody>
         <tr><td>Ordinary (TCP)</td><td class="num">31.7 s</td><td class="num">28.5 s</td><td class="num">3 of 20</td><td class="num">none</td></tr>

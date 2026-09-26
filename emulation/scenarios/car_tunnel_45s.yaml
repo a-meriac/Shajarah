@@ -1,6 +1,6 @@
-# Driving on 5G, entering a 45 s road tunnel with no coverage, Wi-Fi unavailable, LEO satellite
-# unusable inside the tunnel too. Signal fades over ~8 s before the entrance (predictable),
-# then the link is dead until the exit.
+# A sudden 45 s network outage: on 5G with Wi-Fi and satellite unavailable, the cellular signal
+# fades over ~8 s (predictable), then there is no signal on any network until it returns.
+# (The id says "tunnel" for historical reasons; recorded results use it.)
 name: car_tunnel_45s
 duration_s: 120
 initial:

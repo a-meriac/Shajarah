@@ -1,5 +1,5 @@
 // Replay viewer for exported test runs (experiments/export_replay.py -> site/replays/).
-// Five hand-picked car-tunnel tests (the readers Shajarah saved the most waiting for), each
+// Five hand-picked tests of the 45 s outage (the readers Shajarah saved the most waiting for), each
 // comparable across the three setups in the home page's results table. The page's language
 // (replay.html in English, replay-ar.html in Arabic) picks the strings; charts stay left to right.
 // Plain JS + SVG, no dependencies. State lives in the URL hash so a view can be shared.
@@ -28,7 +28,7 @@ const SETUPS = {
   "2": { name: L("Modern (QUIC)", "حديث (QUIC)"), about: L("Existing protocol that removes the need for a new TCP handshake", "بروتوكول قائم يستغني عن مصافحة TCP جديدة") },
 };
 const SCENARIO = "car_tunnel_45s";
-// Hand-picked: the five tunnel readers (session ids) with the largest saving against the
+// Hand-picked: the five readers (session ids) with the largest saving against the
 // ordinary connection, largest first.
 const TESTS = ["5", "20", "0", "14", "1"];
 const DEFAULT = { a: "5", b: "1" };
