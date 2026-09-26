@@ -26,6 +26,7 @@ from pathlib import Path
 from experiments.harness import CONFIGS, ROOT
 
 AFTER_RECOVERY_S = 10.0
+SUSPEND_SLACK_S = 5.0  # wall clock running this far ahead of the monotonic clock = machine slept
 NETEM = re.compile(r"t=([\d.]+) (\w+) -> (\w+)")
 
 
@@ -43,6 +44,16 @@ def outage_window(client: list[dict], end: float) -> tuple[float, float] | None:
         return None
     recoveries = [t for t, profile in changes if profile != "dead" and t > deaths[0]]
     return deaths[0], (max(recoveries) if recoveries else end) + AFTER_RECOVERY_S
+
+
+def slept(events: list[dict]) -> bool:
+    """True if the machine was suspended during the run: the monotonic clock stops while
+    suspended and the wall clock doesn't, so the two drift apart. Such a run is meaningless."""
+    if len(events) < 2:
+        return False
+    wall = events[-1]["ts"] - events[0]["ts"]
+    mono = events[-1]["mono"] - events[0]["mono"]
+    return wall - mono > SUSPEND_SLACK_S
 
 
 def run_metrics(run_dir: Path) -> dict | None:
@@ -91,7 +102,12 @@ def main() -> None:
     ap.add_argument("batch", help="results/<batch>/")
     args = ap.parse_args()
     batch = ROOT / "results" / args.batch
-    rows = [m for d in sorted(batch.glob("*/*/s*")) if (m := run_metrics(d))]
+    runs = sorted(batch.glob("*/*/s*"))
+    asleep = [d for d in runs if slept(_events(d / "client.jsonl"))]
+    for d in asleep:
+        print(f"skipped {d.relative_to(batch)}: the machine slept during this run; delete it "
+              "and run the batch again to redo it")  # fmt: skip
+    rows = [m for d in runs if d not in asleep and (m := run_metrics(d))]
     if not rows:
         raise SystemExit(f"no finished runs in {batch}")
     with (batch / "runs.csv").open("w", newline="") as fh:
