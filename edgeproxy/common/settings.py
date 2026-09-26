@@ -42,6 +42,7 @@ class LinkSettings:
 @dataclass
 class ClientSettings:
     cache_mb: int = 200
+    push_ttl_s: float = 900.0  # unread prefetched pages expire after this (0 = never)
     request_timeout_s: float = 60.0
     revalidate_timeout_s: float = 2.0
     retry_delay_s: float = 0.2

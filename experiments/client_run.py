@@ -119,7 +119,7 @@ async def run(args) -> None:
     c = settings.client
     proxy = ClientProxy(
         transport,
-        Cache(c.cache_mb * 1_000_000),
+        Cache(c.cache_mb * 1_000_000, push_ttl_s=c.push_ttl_s),
         log,
         request_timeout=c.request_timeout_s,
         revalidate_timeout=c.revalidate_timeout_s,

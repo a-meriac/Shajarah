@@ -303,7 +303,7 @@ async def _run(args) -> None:
     await transport.connect()
     proxy = ClientProxy(
         transport,
-        Cache(s.client.cache_mb * 1_000_000),
+        Cache(s.client.cache_mb * 1_000_000, push_ttl_s=s.client.push_ttl_s),
         EventLog(args.log, "client", args.run_id),
         request_timeout=s.client.request_timeout_s,
         revalidate_timeout=s.client.revalidate_timeout_s,

@@ -52,7 +52,8 @@ paths:                         # client: which interface the tunnel uses (path_m
   tick_s: 0.1                  # how often signals are read and decisions made
 
 client:
-  cache_mb: 200
+  cache_mb: 200                # the cache drops the least recently used pages beyond this
+  push_ttl_s: 900              # prefetched pages never opened are dropped after 15 minutes (0 = never)
   request_timeout_s: 60        # give up on a page that isn't cached
   revalidate_timeout_s: 2      # serve the cached copy if the tunnel doesn't answer in time
   retry_delay_s: 0.2           # wait before retrying on a broken connection (TCP baseline)
