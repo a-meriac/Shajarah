@@ -36,6 +36,7 @@ const LANE_Y = { sat0: 16, cell0: 48, wifi0: 80 }, LANE_H = 24;
 const ROAD_Y = 136, ROAD_H = 30;
 const INSTANT = new Set(["push", "stale", "revalidated"]);
 const RECENT_S = 3; // how long an "opened instantly" badge stays up
+const LONG_WAIT_S = 1; // a wait worth marking (the same bar as the "Waits over 1 s" tile)
 
 const app = document.getElementById("app");
 const tooltip = document.getElementById("tooltip");
@@ -121,13 +122,17 @@ function stateAt(run, t) {
     const w = Math.min(p.wait, t - p.t);
     waited += w;
     if (t >= p.t + p.wait) opened++;
-    if (w > 1) stuck++;
+    if (w > LONG_WAIT_S) stuck++;
   }
   const idx = lastAtOrBefore(pages, t, (p) => p.t);
   const cur = idx >= 0 ? pages[idx] : null;
   let screen;
   if (!cur) screen = { kind: "start" };
-  else if (t < cur.t + cur.wait) screen = { kind: "wait", elapsed: t - cur.t };
+  else if (t < cur.t + cur.wait) {
+    // Clicked while there was no signal, and still loading although the signal is back.
+    const recovering = gaps(run).some(([a, b]) => cur.t >= a && cur.t < b && t >= b);
+    screen = { kind: "wait", elapsed: t - cur.t, recovering };
+  }
   else if (t - (cur.t + cur.wait) < RECENT_S && (INSTANT.has(cur.source) || cur.wait > 1)) screen = { kind: "opened", page: cur };
   else screen = { kind: "read" };
   const pushed = run.pushes.filter((p) => p.t <= t);
@@ -267,7 +272,7 @@ function build() {
     <div class="phones">${["left", "right"].map(phoneHTML).join("")}</div>
     <div class="card timeline section">
       <h2>Waiting for pages</h2>
-      <p class="small muted" id="tl-sub">Red bars: the reader waiting for a page. Green marks: a page opened from the phone's cache. Click to jump.</p>
+      <p class="small muted" id="tl-sub">Red bars: the reader waiting more than a second for a page. Green marks: a page opened from the phone's cache. Click to jump.</p>
       <div class="scroll"><svg id="timeline" viewBox="0 0 ${W} 118" role="img" aria-label="Timeline of page waits for both phones"></svg></div>
     </div>
     <div class="card summary section">
@@ -487,7 +492,7 @@ function renderPhone(side) {
   r.title.textContent = st.cur ? st.cur.title : "";
   const s = st.screen;
   r.state.innerHTML = s.kind === "start" ? `<span class="muted">Opening the first page…</span>`
-    : s.kind === "wait" ? `<span class="badge wait"><span class="spinner" aria-hidden="true"></span>Loading… ${fmtS(s.elapsed)}</span>`
+    : s.kind === "wait" ? `<span class="badge wait"><span class="spinner" aria-hidden="true"></span>Loading… ${fmtS(s.elapsed)}</span>${s.recovering ? `<span class="small muted">Signal is back, but the connection is still recovering</span>` : ""}`
     : s.kind === "opened" ? openedBadge(s.page)
     : `<span class="badge read"><span class="ico" aria-hidden="true">●</span>Reading</span>`;
   r.offline.textContent = st.pushedN ? `${st.pushedN} page${st.pushedN > 1 ? "s" : ""} saved on the phone for offline reading` : "";
@@ -525,7 +530,7 @@ function drawTimeline() {
     el.append(svg("line", { x1: X0, x2: X1, y1: y + 9, y2: y + 9, stroke: "var(--grid)" }));
     for (const p of r.pages) {
       const end = Math.min(p.t + p.wait, dur);
-      if (p.wait > 0.5) {
+      if (p.wait > LONG_WAIT_S) {
         const bar = svg("rect", { x: xOf(p.t), y, width: Math.max(2, xOf(end) - xOf(p.t)), height: 18, rx: 4, fill: "var(--critical)" });
         bar.append(svg("title", {}, `${setupName(r.config)}: waited ${fmtS(p.wait)} for "${p.title}" (clicked at ${fmtT(p.t)})`));
         el.append(bar);
