@@ -136,22 +136,34 @@ unanswered probe, and after a 45 s outage the next probe was ~30 s away, with no
 out before it. Both tunnel ends now reset that backoff when a packet arrives after >1 s of
 silence. It changes every QUIC config, so configs 2, 3 and 5 are being re-run together.
 
+## Final car-tunnel results (`tunnel20`, 26 Sep, all fixes, 20 readers per config)
+
+| config | mean wait (95% CI) | median | outage clicks from cache | pushed per run |
+|---|---|---|---|---|
+| 1 TCP+TLS | 31.7 s (22–41) | 28.5 s | 3 of 20 | 0 |
+| 2 QUIC migration | 21.6 s (14–29) | 17.0 s | 3 of 22 | 0 |
+| 3 fixed prefetch | 20.1 s (12–28) | 12.6 s | 5 of 23 | 0.24 MB |
+| 5 full system | 14.0 s (7.5–21) | 3.4 s | 14 of 26 | 2.9 MB, <1% read |
+
+Per reader, config 5 vs QUIC: better for 8 of 20, worse for none, mean saving 7.6 s (the rest
+clicked a page that wasn't predicted and waited for the link like QUIC). Vs fixed prefetch:
+better for 7, worse for 2, mean saving 6.1 s. The cost to report: ~2.9 MB pushed per tunnel.
+Superseded runs, for the paper's "what went wrong" paragraph: `results/tunnel20-before-push-stop/`,
+`-eta-stop-only/`, `-before-pto-reset/`.
+
 ## Next
 
-1. **Re-run configs 2, 3 and 5** (60 runs, ~2.3 h):
-   `sudo systemd-inhibit --what=sleep:idle sh -c '.venv-linux/bin/python -m experiments.runner --batch tunnel20 --configs 2 3 5 --scenarios car_tunnel_45s --sessions 20'`,
-   then `python -m experiments.analyze tunnel20`. Check that no reader waits longer with config 5
-   than with config 2 any more. Rerun the voice probe too if the walk results matter for the
-   paper (the reset only matters after long silences, so it should be unchanged).
-2. **Image-only links** reach Jev with no text (found by `experiments/general_web.py` on a shop):
+1. **Image-only links** reach Jev with no text (found by `experiments/general_web.py` on a shop):
    use the image's alt text or the link's title. Changes Jev's questions for such links, so
    re-warm (`python -m experiments.warm_jev`) afterwards.
-3. **Replay page** (`site/replay.html`): `make replay-export`, commit and push; rerun a few runs
+2. **Replay page** (`site/replay.html`): `make replay-export`, commit and push; rerun a few runs
    for the demo video.
-4. **Figures**, redone from `tunnel20` and the voice probe when the paper layout is known.
-5. More scenarios (LEO gap, GEO fallback); smaller items: Jev's overconfidence before its
+3. **Figures**, redone from `tunnel20` and the voice probe when the paper layout is known.
+4. More scenarios (LEO gap, GEO fallback); smaller items: Jev's overconfidence before its
    probabilities set budgets; origin modifying X% of pages between runs (revalidation savings);
    forums link mostly off-site, which `links.same_origin_only` drops.
+5. Optional: rerun the voice probe on the final code (the probe-backoff reset only matters
+   after long silences, so the walk results should be unchanged).
 
 ## Still open outside the code
 
