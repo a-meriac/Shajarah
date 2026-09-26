@@ -11,9 +11,14 @@ The link counts as alive while bytes arrive on the active interface. Pings alone
 to TCP: its ping replies queue behind the download on the one connection, so it would look dead
 while working.
 
+The run continues past the scenario's end (`--duration`), with every link as the scenario left
+it, so a restarted download can still finish over 5G.
+
 Reported per run: time to finish, how many times the download restarted, bytes received in
 total (vs the file size), the longest stretch with nothing arriving, and every interface's
-received bytes over time (for a chart).
+received bytes over time (for a chart). Time to finish also reflects each implementation's speed
+(the kernel's TCP is faster than aioquic's QUIC on these lossy links); the extra bytes received
+and the longest stall are what the switch itself costs.
 
 Linux, root. `batch` builds the namespaces and runs every mode N times:
 
@@ -109,11 +114,12 @@ def make_transport(kind: str, local_ip: str, settings):
     )
 
 
-async def download(scenario_name: str, mode: str, size: int, start_s: float) -> dict:
+async def download(
+    scenario_name: str, mode: str, size: int, start_s: float, duration: float
+) -> dict:
     kind, early = MODES[mode]
     settings = load_settings()
     scenario = yaml.safe_load((SCENARIOS / f"{scenario_name}.yaml").read_text())
-    duration = scenario["duration_s"]
     profiles = load_profiles()
     for iface, name in scenario["initial"].items():
         apply(iface, profiles[name])
@@ -216,7 +222,7 @@ def _ns(ns: str, *cmd: str, **kw) -> subprocess.Popen:
     return subprocess.Popen(["ip", "netns", "exec", ns, *cmd], cwd=ROOT, **kw)
 
 
-def batch(scenario: str, repeats: int, size_mb: float, start_s: float) -> None:
+def batch(scenario: str, repeats: int, size_mb: float, start_s: float, duration: float) -> None:
     if os.geteuid() != 0:
         sys.exit("needs root: sudo .venv-linux/bin/python -m experiments.download_probe batch ...")
     netns = str(ROOT / "emulation" / "netns_setup.sh")
@@ -235,6 +241,7 @@ def batch(scenario: str, repeats: int, size_mb: float, start_s: float) -> None:
                     server.stdout.readline()  # "download server ..."
                     client = _ns("ep-cli", *me, "client", "--scenario", scenario, "--mode", mode,
                                  "--size-mb", str(size_mb), "--start-s", str(start_s),
+                                 "--duration", str(duration),
                                  stdout=subprocess.PIPE, text=True)  # fmt: skip
                     result, _ = client.communicate(timeout=600)
                     out.write_text(result)
@@ -278,8 +285,9 @@ def main() -> None:
     c.add_argument("--scenario", required=True)
     c.add_argument("--mode", choices=list(MODES), required=True)
     for p in (c, b := sub.add_parser("batch")):
-        p.add_argument("--size-mb", type=float, default=100)
-        p.add_argument("--start-s", type=float, default=18, help="scenario time to start at")
+        p.add_argument("--size-mb", type=float, default=150)
+        p.add_argument("--start-s", type=float, default=20, help="scenario time to start at")
+        p.add_argument("--duration", type=float, default=150, help="seconds; past the scenario")
     b.add_argument("--scenario", default="wifi_to_5g_walk")
     b.add_argument("--repeats", type=int, default=3)
     sub.add_parser("summary")
@@ -288,9 +296,10 @@ def main() -> None:
         asyncio.run(serve(args.transport))
     elif args.cmd == "client":
         size = int(args.size_mb * 1_000_000)
-        print(json.dumps(asyncio.run(download(args.scenario, args.mode, size, args.start_s))))
+        run = download(args.scenario, args.mode, size, args.start_s, args.duration)
+        print(json.dumps(asyncio.run(run)))
     elif args.cmd == "batch":
-        batch(args.scenario, args.repeats, args.size_mb, args.start_s)
+        batch(args.scenario, args.repeats, args.size_mb, args.start_s, args.duration)
     else:
         summary()
 
