@@ -1,14 +1,14 @@
 <!doctype html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Shajarah · replay the data</title>
+  <title>شجرة · إعادة عرض البيانات</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Beiruti:wght@400;600;800&display=swap" rel="stylesheet">
-  <link rel="alternate" hreflang="ar" href="replay-ar.html">
-  <meta name="description" content="Replay recorded test runs: a reader moving in and out of network coverage, second by second.">
+  <link rel="alternate" hreflang="en" href="replay.html">
+  <meta name="description" content="خمس رحلات اختبار مسجّلة عبر نفق مدته 45 ثانية، ثانيةً بثانية، مع شجرة ومن دونها.">
   <style>
     :root {
       color-scheme: light;
@@ -71,7 +71,7 @@
       margin: 0;
       background: var(--bg);
       color: var(--fg);
-      font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+      font: 17.5px/1.6 "Beiruti", "Noto Naskh Arabic", system-ui, sans-serif;
     }
     main { max-width: 1100px; margin: 0 auto; padding: 32px 16px 64px; }
     select { max-width: 100%; }
@@ -160,18 +160,18 @@
 <body>
 <main>
   <div class="topbar">
-    <a class="back" href="./">← Shajarah</a>
-    <a class="lang" href="replay-ar.html" lang="ar" hreflang="ar" data-keep-hash>العربية</a>
+    <a class="back" href="ar.html">→ شجرة</a>
+    <a class="lang" href="replay.html" lang="en" hreflang="en" data-keep-hash>English</a>
   </div>
-  <h1>Replay the data</h1>
+  <h1>إعادة عرض البيانات</h1>
   <p class="lede">
-    Five recorded test drives through a 45-second tunnel, second by second. In each, a simulated
-    reader browses Wikipedia, and you can compare how Shajarah, an ordinary connection and a modern
-    one handle exactly the same clicks. These five are the clearest of the 20 readers we tested;
-    the averages over all of them are on the <a href="./#results">home page</a>.
+    خمس رحلات اختبار مسجّلة عبر نفق مدته 45 ثانية، ثانيةً بثانية. في كل منها يتصفح قارئ افتراضي
+    ويكيبيديا، ويمكنك مقارنة كيف تتعامل شجرة والاتصال العادي والاتصال الحديث مع النقرات نفسها تمامًا.
+    هذه الخمس هي الأوضح من بين القرّاء العشرين الذين اختبرناهم؛ أما المتوسطات عبرهم جميعًا ففي
+    <a href="ar.html#results">الصفحة الرئيسية</a>.
   </p>
 
-  <div id="app"><p class="lede">Loading runs…</p></div>
+  <div id="app"><p class="lede">جارٍ تحميل التشغيلات…</p></div>
 </main>
 <div class="tooltip" id="tooltip" role="tooltip"></div>
 <script src="replay.js"></script>

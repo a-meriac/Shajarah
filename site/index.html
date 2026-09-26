@@ -6,7 +6,8 @@
   <title>Shajarah · شجرة</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Beiruti:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="alternate" hreflang="ar" href="ar.html">
   <meta name="description" content="Shajarah sees a network dropout coming from the fading signal and downloads the pages you're likely to open next, so browsing carries on without signal. EDGE Challenge, ATP 2026.">
   <style>
     :root {
@@ -40,13 +41,18 @@
     }
     main { max-width: 760px; margin: 0 auto; padding: 56px 16px 80px; }
     h1 { font-size: 2.4rem; line-height: 1.15; margin: 0 0 12px; letter-spacing: -0.02em; }
-    h1.wordmark { font-family: "Aref Ruqaa", "Amiri", "Noto Naskh Arabic", serif; font-weight: 700;
-                  font-size: 4.2rem; line-height: 1.2; letter-spacing: 0; margin: 0; color: var(--accent);
-                  text-align: left; }
+    h1.wordmark { font-family: "Beiruti", "Noto Naskh Arabic", "Segoe UI", sans-serif; font-weight: 800;
+                  font-size: 4.4rem; line-height: 1.1; letter-spacing: 0; margin: 0; color: var(--accent);
+                  text-align: start; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .topbar .tag { margin-bottom: 0; }
+    .lang { font-size: 0.95rem; text-decoration: none; border: 1px solid var(--line); border-radius: 999px;
+            padding: 3px 12px; color: var(--fg); background: var(--card); }
+    .lang:lang(ar) { font-family: "Beiruti", "Noto Naskh Arabic", sans-serif; font-size: 1.05rem; }
     .subtitle { font-size: 1.6rem; font-weight: 650; letter-spacing: -0.01em; margin: 0 0 18px; }
     ul.key { list-style: none; padding: 0; margin: 0 0 28px; }
-    ul.key li { position: relative; padding-left: 22px; margin-bottom: 10px; color: var(--muted); font-size: 1.08rem; }
-    ul.key li::before { content: ""; position: absolute; left: 4px; top: 0.62em; width: 8px; height: 8px;
+    ul.key li { position: relative; padding-inline-start: 22px; margin-bottom: 10px; color: var(--muted); font-size: 1.08rem; }
+    ul.key li::before { content: ""; position: absolute; inset-inline-start: 4px; top: 0.62em; width: 8px; height: 8px;
                         border-radius: 50%; background: var(--accent); }
     ul.key b { color: var(--fg); }
     h2 { font-size: 1.25rem; margin: 56px 0 12px; }
@@ -73,7 +79,7 @@
       .arrow { text-align: center; transform: rotate(90deg); }
     }
 
-    ol.steps { padding-left: 20px; }
+    ol.steps { padding-inline-start: 20px; }
     ol.steps li { margin-bottom: 10px; }
 
     figure { margin: 20px 0; }
@@ -87,22 +93,33 @@
     .caption { color: var(--muted); font-size: 0.9rem; margin-top: 10px; }
     .table-wrap { overflow-x: auto; margin: 16px 0 6px; }
     table { border-collapse: collapse; width: auto; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
-    th, td { text-align: left; padding: 7px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
-    th:first-child, td:first-child { padding-left: 0; }
+    th, td { text-align: start; padding: 7px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th:first-child, td:first-child { padding-inline-start: 0; }
     th { color: var(--muted); font-weight: 500; font-size: 0.85rem; }
-    td.num, th.num { text-align: right; white-space: nowrap; }
+    td.num, th.num { text-align: end; white-space: nowrap; }
     tr.ours td { font-weight: 650; background: var(--accent-soft); }
-    ul.points { padding-left: 20px; }
+    ul.points { padding-inline-start: 20px; }
     ul.points li { margin-bottom: 10px; }
-    .callout { border-left: 3px solid var(--accent); padding: 2px 0 2px 16px; margin: 20px 0; }
+    .callout { border-inline-start: 3px solid var(--accent); padding-block: 2px; padding-inline: 16px 0; margin: 20px 0; }
+    /* Section links: stick to the top while scrolling. */
+    nav.toc { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+              margin: 28px -16px 0; padding: 10px 16px; border-bottom: 1px solid var(--line);
+              display: flex; flex-wrap: wrap; gap: 6px 8px; font-size: 0.88rem; }
+    nav.toc a { text-decoration: none; color: var(--fg); border: 1px solid var(--line); border-radius: 999px;
+                padding: 3px 11px; background: var(--card); white-space: nowrap; }
+    nav.toc a:hover { border-color: var(--accent); color: var(--accent); }
+    h2 { scroll-margin-top: 110px; }
     footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line);
              color: var(--muted); font-size: 0.9rem; }
   </style>
 </head>
 <body>
 <main>
-  <span class="tag">EDGE Challenge · ATP 2026</span>
-  <h1 class="wordmark" lang="ar" dir="rtl">شجرة</h1>
+  <div class="topbar">
+    <span class="tag">EDGE Challenge · ATP 2026</span>
+    <a class="lang" href="ar.html" lang="ar" hreflang="ar">العربية</a>
+  </div>
+  <h1 class="wordmark" lang="ar">شجرة</h1>
   <p class="subtitle">Shajarah</p>
   <p class="lede">Keeps the web working when your phone loses signal.</p>
   <ul class="key">
@@ -116,8 +133,17 @@
     <!-- When the paper is ready: put it in site/media/ and uncomment.
     <a class="btn" href="media/paper.pdf">Read the paper (PDF)</a> -->
   </div>
+  <nav class="toc" aria-label="On this page">
+    <a href="#glance">At a glance</a>
+    <a href="#problem">The problem</a>
+    <a href="#how">How it works</a>
+    <a href="#results">Results</a>
+    <a href="#learned">What we learned</a>
+    <a href="#testing">How we tested</a>
+    <a href="#limits">Limitations</a>
+  </nav>
 
-  <h2>Results at a glance</h2>
+  <h2 id="glance">Results at a glance</h2>
   <div class="grid">
     <div class="stat"><div class="num">56% less</div><div class="label">time spent waiting for pages than with an ordinary connection</div></div>
     <div class="stat"><div class="num">14 of 26</div><div class="label">clicks inside a 45-second tunnel opened instantly, against 3 of 20 without Shajarah</div></div>
@@ -129,7 +155,7 @@
     45-second tunnel, and a voice call on a walk out of Wi-Fi range. Details below.
   </p>
 
-  <h2>The problem</h2>
+  <h2 id="problem">The problem</h2>
   <p>
     Phones ignore a fading signal until the connection actually breaks. Only then do they look for
     another network, reconnect, and retry whatever you were loading. On a train, in a car, or walking out of a building, that means a frozen page,
@@ -142,7 +168,7 @@
     it constantly wastes data on pages nobody opens.
   </p>
 
-  <h2>How it works</h2>
+  <h2 id="how">How it works</h2>
   <div class="flow" aria-label="Browser to client proxy, through a tunnel over Wi-Fi, 5G or satellite, to a server proxy, then websites">
     <div class="node"><b>Browser</b><span>unchanged</span></div>
     <div class="arrow">→</div>
@@ -189,7 +215,6 @@
       <tbody>
         <tr><td>Ordinary (TCP)</td><td class="num">31.7 s</td><td class="num">28.5 s</td><td class="num">3 of 20</td><td class="num">none</td></tr>
         <tr><td>Modern (QUIC)</td><td class="num">21.6 s</td><td class="num">17.0 s</td><td class="num">3 of 22</td><td class="num">none</td></tr>
-        <tr><td>Always-on prefetch</td><td class="num">20.1 s</td><td class="num">12.6 s</td><td class="num">5 of 23</td><td class="num">0.24 MB</td></tr>
         <tr class="ours"><td>Shajarah</td><td class="num">14.0 s</td><td class="num">3.4 s</td><td class="num">14 of 26</td><td class="num">2.9 MB</td></tr>
       </tbody>
     </table>
@@ -197,13 +222,12 @@
   <p class="caption">
     Wait: the total time a reader spent looking at a page that was still loading, per trip.
     Ordinary: TCP, which reconnects only after the link has failed, as most apps do. Modern: QUIC,
-    which survives network changes but doesn't prefetch. Always-on prefetch: a few likely pages
-    pushed after every page view. 20 readers per setup.
+    which survives network changes but doesn't prefetch. 20 readers per setup.
   </p>
   <p>
     Compared reader by reader with the modern connection, Shajarah was faster for 8 of the 20 test cases, and
     slower for none of them. The other readers clicked a page the model hadn't expected and waited for
-    the signal to return, exactly as they would have without Shajarah. The typical reader waited for a page to load for only 
+    the signal to return, exactly as they would have without Shajarah. The typical reader waited for a page to load for only
     3.4 seconds, instead of 17 seconds.
   </p>
   <p>
@@ -217,7 +241,7 @@
     the moment the dropout is predicted, and every page each setup loaded or waited for.
   </p>
 
-  <h2>What's new, and what we learned</h2>
+  <h2 id="learned">What's new, and what we learned</h2>
   <p>
     Link prefetching and connection migration both exist. What Shajarah adds is timing: it predicts
     the dropout from the fading signal, and that warning tells the server when to prefetch, how
@@ -230,14 +254,14 @@
     <li><b>QUIC waits too long after a long outage.</b> While the link is down, QUIC doubles its retry interval with every failed attempt; after 45 seconds, the next retry was half a minute away, so the connection stayed silent long after the signal came back. We reset that cooldown as soon as the client responds again.</li>
   </ul>
 
-  <h2>How we tested it</h2>
+  <h2 id="testing">How we tested it</h2>
   <p>
     Everything ran on an emulated network on Linux. The phone, a router, our server and the
     websites each live in their own network namespace, and the phone's Wi-Fi, 5G and satellite links
-    had a realistic delay, loss and bandwidth. We scheduled the link to fade and cut out over specific times to simulate real world coonditions.
+    had a realistic delay, loss and bandwidth. We scheduled the link to fade and cut out over specific times to simulate real-world conditions.
   </p>
   <p>
-    We chose to test Shajarah using Wikipedia as the website that the clients are loading, as it is the one of the only large public records of which
+    We chose to test Shajarah using Wikipedia as the website that the clients are loading, as it is one of the only large public records of which
     links people actually click. Each reader follows links that real readers chose in August 2026,
     with realistic reading times, across about 2,000 Wikipedia pages frozen for the tests. We scored
     the click predictions separately against July's clicks. We also tested Shajarah on ordinary
@@ -245,7 +269,7 @@
     isn't tuned only to Wikipedia.
   </p>
 
-  <h2>Limitations</h2>
+  <h2 id="limits">Limitations</h2>
   <ul class="points">
     <li><b>Prefetching costs data.</b> About 3 MB per dropout, most of it never read. That's roughly one photo from a phone camera or a couple of minutes of music streaming, and it's spent mainly in the seconds before a dropout rather than on every page.</li>
     <li><b>The network is emulated.</b> The signal curves are hand-made; replaying real drive-test measurements is the next step.</li>

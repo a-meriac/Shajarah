@@ -4,6 +4,9 @@ Our entry for the EDGE Challenge (ATP 2026): keep browsing smooth when your conn
 
 The idea: your device can usually tell a dropout is coming because the signal fades first. When it does, we download the pages you're likely to open next, so there's something to read while you're offline, and move the connection to another network early if one is available.
 
+**Project page:** https://a-meriac.github.io/Shajarah/ (English and Arabic), with a
+[replay of the test runs](https://a-meriac.github.io/Shajarah/replay.html).
+
 ```
 browser → client proxy ══ QUIC tunnel (Wi-Fi / 5G / satellite) ══ server proxy → websites
 ```
@@ -35,5 +38,3 @@ python -m experiments.analyze main
 - `experiments/`: measurement scripts
 - `site/`: the project page and the run replay (`replay.html`), published on GitHub Pages
 - `docs/PLAN.md`: the full plan
-
-Work in progress. See [NEXT_STEPS.md](NEXT_STEPS.md) for where we left off.
