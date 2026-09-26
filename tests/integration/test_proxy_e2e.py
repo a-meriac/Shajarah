@@ -10,6 +10,7 @@ from data.origin_server import OriginServer
 from edgeproxy.client.cache import Cache
 from edgeproxy.client.proxy import SOURCE_HEADER, ClientProxy
 from edgeproxy.common.protocol import Frame, MsgType
+from edgeproxy.server.prefetch_policy import PolicyConfig, PrefetchPolicy
 from edgeproxy.server.proxy import ServerProxy
 from edgeproxy.tunnel.quic_tunnel import (
     QuicClientTransport,
@@ -233,6 +234,20 @@ async def test_handover_hint_pushes_more(kind, tunnel_certs, origin):
         await s.browser.get(_url(origin, "/wiki/A"))
         assert await _wait_for(lambda: s.cache.peek(_url(origin, "/wiki/C")) is not None)
         assert s.cache.peek(_url(origin, "/wiki/B")) is not None
+
+
+async def test_satellite_prefetches_nothing_until_an_outage_is_coming(kind, tunnel_certs, origin):
+    predictor = FakePredictor({"B": 0.8})
+    policy = PrefetchPolicy(PolicyConfig(network_factor={"satellite": 0.0}))
+    async with Stack(kind, tunnel_certs, ServerProxy(predictor=predictor, policy=policy)) as s:
+        await s.transport.send(Frame(MsgType.NETWORK, {"kind": "satellite"}))
+        await asyncio.sleep(0.1)
+        await s.browser.get(_url(origin, "/wiki/A"))
+        await asyncio.sleep(0.3)
+        assert s.cache.peek(_url(origin, "/wiki/B")) is None
+        hint = Frame(MsgType.HANDOVER_HINT, {"active": True, "eta_s": 4.0, "outage_s": 45.0})
+        await s.transport.send(hint)
+        assert await _wait_for(lambda: s.cache.peek(_url(origin, "/wiki/B")) is not None)
 
 
 async def test_failing_predictor_does_not_break_browsing(kind, tunnel_certs, origin):

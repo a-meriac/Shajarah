@@ -17,8 +17,9 @@ for the current page. Pushing stops shortly before the warned dropout (eta_s min
 prefetch.push_stop_margin_s) and stays off until the client clears the hint: anything sent into
 the outage only jams the connection when it comes back. Since that time is only an estimate, at
 most prefetch.max_push_backlog_bytes of pushes are ever unacknowledged, so a link that dies early
-strands little. Clearing the hint switches back to the
-normal policy.
+strands little. Clearing the hint switches back to the normal policy. A NETWORK frame says which
+kind of network the client is on, which scales the normal budget (less on mobile data and
+satellite).
 
   python -m edgeproxy.server.proxy --transport quic --port 4433 --predictor jev
 """
@@ -107,6 +108,10 @@ class ServerProxy:
         if frame.type is MsgType.HANDOVER_HINT:
             self._on_hint(frame, session)
             return None
+        if frame.type is MsgType.NETWORK:
+            self._client(session).outlook.network = str(frame.headers.get("kind", ""))
+            self.log.emit("network_recv", kind=frame.headers.get("kind"))
+            return None
         if frame.type is MsgType.VIEWED:
             self._page_viewed(frame.headers["url"], session, None, frame.headers.get("history", []))
             return None
@@ -158,7 +163,6 @@ class ServerProxy:
         outlook = self._client(session).outlook
         outlook.handover_imminent = bool(h.get("active", True))
         outlook.predicted_outage_s = float(h.get("outage_s", 0.0))
-        outlook.metered = bool(h.get("metered", outlook.metered))
         self.log.emit("handover_hint_recv", **{k: v for k, v in h.items() if k != "type"})
         client = self._client(session)
         eta = h.get("eta_s")

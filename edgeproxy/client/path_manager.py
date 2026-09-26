@@ -7,11 +7,15 @@ Every tick it reads each interface's signal and feeds that interface's handover 
   interface. This is how a system without prediction notices an outage.
 - Proactive switch (`proactive`, config 5): if the active interface's signal is predicted to
   fail soon and another interface is healthy, move before the link dies.
+- Cheaper network back (every config, as phones do): if a cheaper interface (Wi-Fi before
+  cellular before satellite) has been healthy for `return_after_s`, move the tunnel to it.
 - Hints (`send_hints`, config 5): if a dropout is predicted and no other interface is healthy,
   send HANDOVER_HINT so the server prefetches more; clear it once the outlook is good again.
+  Also tell the server which kind of network the tunnel is on (NETWORK), so it prefetches less
+  on mobile data and satellite.
 
 An interface is "healthy" if its signal is above its usable threshold plus a margin and its own
-predictor isn't warning.
+predictor isn't warning. Among healthy interfaces the cheapest kind wins, then the strongest.
 
 For the replay viewer it logs every interface's signal (`signal`, every `signal_log_s`), each
 predictor warning starting or ending (`warning`), and every ping's round-trip time (`ping`).
@@ -28,6 +32,17 @@ from edgeproxy.common.eventlog import NULL_LOG, EventLog
 from edgeproxy.common.protocol import Frame, MsgType
 from edgeproxy.tunnel.transport import ClientTransport
 
+KINDS = ("wifi", "cellular", "satellite")  # cheapest first
+
+
+def kind_of(name: str) -> str:
+    """Kind of network from the interface name (wifi0, cell0, sat0; wlan0, rmnet0, ...)."""
+    if name.startswith(("wifi", "wlan", "wl")):
+        return "wifi"
+    if name.startswith("sat"):
+        return "satellite"
+    return "cellular"
+
 
 @dataclass
 class Interface:
@@ -35,6 +50,14 @@ class Interface:
     local_ip: str
     signal: object  # anything with sample(t) -> dBm, e.g. signal_monitor.TraceSignal
     threshold_dbm: float  # below this the link is unusable
+    kind: str = ""  # wifi | cellular | satellite; guessed from the name if left out
+
+    def __post_init__(self) -> None:
+        self.kind = self.kind or kind_of(self.name)
+
+    @property
+    def cost(self) -> int:
+        return KINDS.index(self.kind) if self.kind in KINDS else len(KINDS)
 
 
 class PathManager:
@@ -50,6 +73,7 @@ class PathManager:
         dead_after_s: float = 1.0,
         ping_interval_s: float = 0.2,
         tick_s: float = 0.1,
+        return_after_s: float = 3.0,
         log: EventLog = NULL_LOG,
         signal_log_s: float = 0.5,
     ) -> None:
@@ -63,6 +87,7 @@ class PathManager:
         self.dead_after_s = dead_after_s
         self.ping_interval_s = ping_interval_s
         self.tick_s = tick_s
+        self.return_after_s = return_after_s
         self.margin_db = config.clear_margin_db
         self.log = log
         self.predictors = {
@@ -72,6 +97,8 @@ class PathManager:
         self.levels: dict[str, float] = {}
         self.hints: dict[str, HandoverHint | None] = {}
         self.hint_sent = False
+        self.network_sent: str | None = None  # kind last reported to the server
+        self.healthy_since: dict[str, float] = {}
         self.last_pong = time.monotonic()
         self.switches: list[tuple[float, str, str, str]] = []  # (t, from, to, reason)
         self.signal_log_s = signal_log_s
@@ -86,11 +113,21 @@ class PathManager:
 
     def _best_alternative(self) -> str | None:
         options = [n for n in self.interfaces if n != self.active and self._healthy(n)]
-        return max(
+        return min(
             options,
-            key=lambda n: self.levels[n] - self.interfaces[n].threshold_dbm,
+            key=lambda n: (
+                self.interfaces[n].cost,
+                self.interfaces[n].threshold_dbm - self.levels[n],
+            ),
             default=None,
         )
+
+    def _cheaper(self, t: float) -> str | None:
+        """A cheaper interface than the active one that has been healthy for return_after_s."""
+        best = self._best_alternative()
+        if best is None or self.interfaces[best].cost >= self.interfaces[self.active].cost:
+            return None
+        return best if t - self.healthy_since[best] >= self.return_after_s else None
 
     async def step(self, t: float, link_alive: bool) -> None:
         """One decision at scenario time t. `link_alive`: has a ping been answered recently?"""
@@ -98,6 +135,10 @@ class PathManager:
             self.levels[name] = iface.signal.sample(t)
             was_warning = self.hints.get(name) is not None
             self.hints[name] = self.predictors[name].update(t, self.levels[name])
+            if not self._healthy(name):
+                self.healthy_since.pop(name, None)
+            else:
+                self.healthy_since.setdefault(name, t)
             if (self.hints[name] is not None) != was_warning:
                 hint = self.hints[name]
                 self.log.emit(
@@ -117,11 +158,15 @@ class PathManager:
             await self._switch(t, best, "reactive")
         elif warned and self.proactive and best is not None:
             await self._switch(t, best, "proactive")
+        elif link_alive and (cheaper := self._cheaper(t)) is not None:
+            await self._switch(t, cheaper, "cheaper")
 
         warned = self.hints[self.active] is not None  # the active interface may have changed
         outage_coming = (warned or not link_alive) and self._best_alternative() is None
         if self.send_hints and outage_coming != self.hint_sent:
             await self._send_hint(t, outage_coming)
+        if self.send_hints and self.network_sent != self.interfaces[self.active].kind:
+            await self._send_network(t)
 
     async def _switch(self, t: float, to: str, reason: str) -> None:
         old = self.active
@@ -149,6 +194,15 @@ class PathManager:
             return  # link already gone; try again next tick
         self.hint_sent = active
         self.log.emit("hint_sent", t=t, **headers)
+
+    async def _send_network(self, t: float) -> None:
+        kind = self.interfaces[self.active].kind
+        try:
+            await asyncio.wait_for(self.transport.send(Frame(MsgType.NETWORK, {"kind": kind})), 1.0)
+        except (OSError, TimeoutError):
+            return  # try again next tick
+        self.network_sent = kind
+        self.log.emit("network_sent", t=t, kind=kind)
 
     # ---------------------------------------------------------------------------------- loops
 

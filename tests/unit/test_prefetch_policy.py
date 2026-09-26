@@ -45,8 +45,13 @@ def test_skips_cached_and_packs_smaller_items():
     assert [u for u, _ in d.urls] == ["b", "c"]
 
 
-def test_metered_shrinks_budget():
-    assert PrefetchPolicy(CFG).limits(LinkOutlook(metered=True))[1] == 250
+def test_network_scales_the_normal_budget_but_not_the_outage_budget():
+    p = PrefetchPolicy(CFG)
+    assert p.limits(LinkOutlook(network="wifi"))[1] == 1000
+    assert p.limits(LinkOutlook(network="cellular"))[1] == 250
+    assert p.limits(LinkOutlook(network="satellite"))[1] == 50
+    assert p.limits(LinkOutlook(network=""))[1] == 1000  # not reported yet
+    assert p.limits(LinkOutlook(True, network="satellite"))[1] == 2500
 
 
 def test_depth2_only_for_long_outages_with_adaptive_policy():

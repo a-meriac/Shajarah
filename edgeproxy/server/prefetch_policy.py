@@ -4,6 +4,10 @@ Normal operation: push only confident predictions within a small byte budget.
 Handover/outage predicted: lower the threshold and raise the budget so the cache can carry the
 user through the gap. The budget scales with the predicted outage length.
 
+Network cost: the normal budget is scaled by the kind of network the client is on (full on Wi-Fi,
+less on mobile data, very little on satellite). Before an outage it isn't: the whole point is to
+fill the cache while any link is still up.
+
 Two clicks deep: pages opened from the cache during an outage can't be reported to the server, so
 without help a reader's second click in a long outage always misses. When the predicted outage
 is longer than a typical page view, the server also pushes the top few links of every page it
@@ -12,7 +16,7 @@ pushed for the current one (`depth2_top_k`), within the same budget.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -24,7 +28,10 @@ class PolicyConfig:
     # Extra budget per second of predicted outage (assumes one click every ~15-30 s of reading).
     handover_budget_per_outage_s: int = 500_000
     max_budget_bytes: int = 60_000_000
-    metered_factor: float = 0.25  # guideline: prefetch aggressively only on unmetered links
+    # Normal budget multiplier per kind of network (unknown kinds: 1). Not applied before an outage.
+    network_factor: dict = field(
+        default_factory=lambda: {"wifi": 1.0, "cellular": 0.25, "satellite": 0.05}
+    )
     default_size: int = 60_000  # wire-size guess for an unfetched page (~250 KB HTML, compressed)
     depth2_top_k: int = 3  # outage: also push this many links of each pushed page (0 = off)
     depth2_min_outage_s: float = 20.0  # ...only if the outage outlasts a typical page view
@@ -41,7 +48,7 @@ class PolicyConfig:
 class LinkOutlook:
     handover_imminent: bool = False
     predicted_outage_s: float = 0.0
-    metered: bool = False
+    network: str = ""  # wifi | cellular | satellite, as reported by the client ("" = unknown)
 
 
 @dataclass
@@ -66,8 +73,8 @@ class PrefetchPolicy:
             )
         else:
             threshold, budget = c.threshold, c.budget_bytes
-        if outlook.metered:
-            budget = int(budget * c.metered_factor)
+            if self.adaptive:
+                budget = int(budget * c.network_factor.get(outlook.network, 1.0))
         return threshold, min(budget, c.max_budget_bytes)
 
     def depth2_k(self, outlook: LinkOutlook) -> int:

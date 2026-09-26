@@ -38,6 +38,7 @@ class MsgType(str, Enum):
     HANDOVER_HINT = "handover_hint"  # client -> server: outage predicted in eta_s seconds
     PING = "ping"  # client -> server: liveness check, answered with an empty RESPONSE
     VIEWED = "viewed"  # client -> server: the reader opened this page from the cache
+    NETWORK = "network"  # client -> server: the tunnel now runs over this kind of network
 
 
 @dataclass

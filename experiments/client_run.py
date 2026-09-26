@@ -149,6 +149,7 @@ async def run(args) -> None:
         dead_after_s=p.dead_after_s,
         ping_interval_s=p.ping_interval_s,
         tick_s=p.tick_s,
+        return_after_s=p.return_after_s,
         log=log,
     )
 

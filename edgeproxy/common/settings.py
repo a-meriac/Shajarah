@@ -67,6 +67,7 @@ class PathSettings:
     dead_after_s: float = 1.0
     ping_interval_s: float = 0.2
     tick_s: float = 0.1
+    return_after_s: float = 3.0  # a cheaper network must stay healthy this long before moving back
 
 
 @dataclass

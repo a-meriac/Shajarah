@@ -24,7 +24,10 @@ prefetch:                      # which predicted pages the server pushes
   handover_budget_bytes: 20000000   # ...and a bigger budget
   handover_budget_per_outage_s: 500000  # plus this much per second of predicted outage
   max_budget_bytes: 60000000   # hard cap
-  metered_factor: 0.25         # budget multiplier on metered links (e.g. mobile data)
+  network_factor:              # normal budget multiplier by the client's network (not applied
+    wifi: 1.0                  # when an outage is coming: then filling the cache comes first)
+    cellular: 0.25
+    satellite: 0.05
   default_size: 60000          # size guess (bytes on the wire) for a page not fetched yet
   depth2_top_k: 3              # outage: also push this many links of every pushed page, since
                                # pages read from cache offline can't ask for more (0 = off)
@@ -50,6 +53,8 @@ paths:                         # client: which interface the tunnel uses (path_m
   dead_after_s: 1              # no ping answered for this long = link dead (reactive switch)
   ping_interval_s: 0.2
   tick_s: 0.1                  # how often signals are read and decisions made
+  return_after_s: 3            # move back to a cheaper network (Wi-Fi < cellular < satellite)
+                               # once it has been healthy this long
 
 client:
   cache_mb: 200                # the cache drops the least recently used pages beyond this
