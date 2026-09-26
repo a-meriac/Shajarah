@@ -184,8 +184,8 @@ Superseded runs, for the paper's "what went wrong" paragraph: `results/tunnel20-
   `python -m experiments.download_probe summary`; adjust `--size-mb` so a download spans the
   Wi-Fi cut (default 100 MB, starting at 18 s of the walk).
 
-Later (the user may want these): send live traffic over both networks during a switch;
-remembering dead zones; satellite scenarios; full-page prefetch (images).
+Kept for later: send live traffic over both networks during a switch. Not chosen on 27 Sep:
+satellite scenarios, full-page prefetch (images), real signal recordings, remembering dead zones.
 
 
 - [ ] Fill in the unknowns at the bottom of `docs/jev_notes.md` (rate limits, data retention)
