@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Beiruti:wght@400;600;800&display=swap" rel="stylesheet">
   <link rel="alternate" hreflang="ar" href="ar.html">
-  <meta name="description" content="Shajarah sees a network dropout coming from the fading signal and downloads the pages you're likely to open next, so browsing carries on without signal. EDGE Challenge, ATP 2026.">
+  <meta name="description" content="Shajarah keeps your connection alive when your phone switches networks: no new handshake, and a switch made before the signal drops. Likely pages are prefetched too. EDGE Challenge, ATP 2026.">
   <style>
     :root {
       color-scheme: light;
@@ -134,11 +134,11 @@
   </div>
   <h1 class="wordmark" lang="ar">شجرة</h1>
   <p class="subtitle">Shajarah</p>
-  <p class="lede">Keeps the web working when your phone loses signal.</p>
+  <p class="lede">Keeps your connection alive when your phone switches networks.</p>
   <ul class="key">
-    <li><b>Downloads what you'll read next.</b> When the signal starts to fade, the pages you're most likely to click are fetched ahead of time, so they open instantly even with no signal at all.</li>
-    <li><b>Survives network changes.</b> The connection runs over QUIC, which carries on when the phone's IP address changes instead of starting a new handshake the way TCP must.</li>
-    <li><b>Switches networks early.</b> If another network is available, the connection moves there before the current one drops.</li>
+    <li><b>No reconnecting.</b> The connection runs over QUIC, which carries on when the phone's IP address changes instead of starting a new handshake the way TCP must. Pages, downloads and calls keep going.</li>
+    <li><b>Switches networks early.</b> When the signal starts to fade and another network is available, the connection moves there before the current one drops.</li>
+    <li><b>Plus: downloads what you'll read next.</b> If there's nowhere to switch to, an AI model picks the pages you're most likely to click and fetches them ahead of time, so they open even with no signal at all.</li>
   </ul>
   <div class="links">
     <a class="btn primary" href="replay.html">Replay the data</a>
@@ -159,10 +159,10 @@
 
   <h2 id="glance">Results at a glance</h2>
   <div class="grid">
+    <div class="stat"><div class="num">60 ms</div><div class="label">longest silence in a live call when leaving Wi-Fi, instead of about one second</div></div>
     <div class="stat"><div class="num">56% less</div><div class="label">time spent waiting for pages than with an ordinary connection</div></div>
     <div class="stat"><div class="num">14 of 26</div><div class="label">clicks inside a 45-second tunnel opened instantly, against 3 of 20 without Shajarah</div></div>
     <div class="stat"><div class="num">0 of 20</div><div class="label">readers waited longer than with a modern connection; 8 were faster, the rest the same</div></div>
-    <div class="stat"><div class="num">60 ms</div><div class="label">longest silence in a live call when leaving Wi-Fi, instead of about one second</div></div>
   </div>
   <p class="caption">
     Measured in an emulated network: 20 simulated readers browsing Wikipedia on a drive through a
@@ -196,9 +196,9 @@
   </div>
   <ol class="steps">
     <li><b>Watch the signal.</b> The phone measures the signal on every network ten times a second and fits a trend. If the current network is heading below usable strength within the next eight seconds or so, it raises a warning.</li>
-    <li><b>Prefetch before the drop.</b> The phone tells the server a dropout is coming, and the server starts sending extra pages: the ones you're most likely to open next, and the likely pages after those.</li>
+    <li><b>Switch networks before the drop.</b> If another network is healthy, the connection moves there before the current one fails. Because it runs on QUIC, there's no new handshake and nothing in progress is lost.</li>
+    <li><b>Prefetch when there's nowhere to go.</b> In a tunnel every network fails together, so the phone tells the server a dropout is coming and the server starts sending extra pages: the ones you're most likely to open next, and the likely pages after those.</li>
     <li><b>Open pages without signal.</b> While there's no connection, pages you've been sent open straight from the phone's storage, as if nothing had happened.</li>
-    <li><b>Switch networks when possible.</b> If another network is healthy, the connection moves there before the current one fails. Because it runs on QUIC, nothing in progress is lost.</li>
   </ol>
   <p>
     To decide which pages are worth sending, the server asks a decision model,
@@ -257,10 +257,10 @@
 
   <h2 id="learned">What's new, and what we learned</h2>
   <p>
-    Link prefetching and connection migration both exist. What Shajarah adds is timing: it predicts
-    the dropout from the fading signal, and that warning tells the server when to prefetch, how
-    much, and when to stop. The same warning also triggers an early network switch when there's
-    somewhere to switch to. Building it taught us two things that matter for
+    Connection migration and link prefetching both exist. What Shajarah adds is timing: it predicts
+    the dropout from the fading signal and moves the connection to another network before the old
+    one fails, without a new handshake. When there's nowhere to switch to, the same warning tells
+    the server when to prefetch, how much, and when to stop. Building it taught us two things that matter for
     anyone combining them:
   </p>
   <ul class="points">

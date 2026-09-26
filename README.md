@@ -2,7 +2,7 @@
 
 Our entry for the EDGE Challenge (ATP 2026): keep browsing smooth when your connection hops between Wi-Fi, 5G and satellite.
 
-The idea: your device can usually tell a dropout is coming because the signal fades first. When it does, we download the pages you're likely to open next, so there's something to read while you're offline, and move the connection to another network early if one is available.
+The idea: the connection runs over QUIC, so it survives a network change without a new handshake. Your device can usually tell a dropout is coming because the signal fades first, so we move the connection to another network before the old one fails. When there's nowhere to go, an AI model picks the pages you're likely to open next and they're downloaded ahead of time, so there's something to read while you're offline.
 
 **Project page:** https://a-meriac.github.io/Shajarah/
 
