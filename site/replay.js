@@ -23,9 +23,9 @@ const SOURCES = {
 const FROM_PHONE = new Set(["push", "stale", "revalidated"]);
 // The same names and descriptions as on the home page.
 const SETUPS = {
-  "5": { name: L("Shajarah", "شجرة"), about: L("Predicts the dropout and prefetches ahead of it; switches network early when it can", "تتنبأ بالانقطاع وتجلب الصفحات مسبقًا قبله؛ وتنتقل إلى شبكة أخرى مبكرًا عندما تستطيع") },
-  "1": { name: L("Ordinary (TCP)", "عادي (TCP)"), about: L("Reconnects only after the link has failed, as most apps do", "لا يعيد الاتصال إلا بعد انقطاع الرابط، كما تفعل معظم التطبيقات") },
-  "2": { name: L("Modern (QUIC)", "حديث (QUIC)"), about: L("Survives network changes, but doesn't prefetch", "يصمد عند تغيّر الشبكة، لكنه لا يجلب الصفحات مسبقًا") },
+  "5": { name: L("Shajarah", "شجرة"), about: L("No reconnecting, switches networks early, and prefetches likely pages", "لا إعادة اتصال، وانتقال مبكر إلى شبكة أخرى، وجلب مسبق للصفحات المرجّحة") },
+  "1": { name: L("Ordinary (TCP)", "عادي (TCP)"), about: L("Reconnects from scratch after a dropout, like most apps", "يعيد الاتصال من البداية بعد كل انقطاع، كمعظم التطبيقات") },
+  "2": { name: L("Modern (QUIC)", "حديث (QUIC)"), about: L("Existing protocol that removes the need for a new TCP handshake", "بروتوكول قائم يستغني عن مصافحة TCP جديدة") },
 };
 const SCENARIO = "car_tunnel_45s";
 // Hand-picked: the five tunnel readers (session ids) with the largest saving against the
