@@ -394,11 +394,13 @@ function outcome(p) {
 }
 
 // Prefetched pages arrive in bursts; one bar per burst reads far better than one line per page.
+// Bursts a few seconds apart (a warning, then pushes for the pages after those) count as one.
+const BURST_GAP_S = 4;
 function pushBursts(run) {
   const out = [];
   for (const p of run.pushes) {
     const b = out[out.length - 1];
-    if (b && p.t - b.end < 1.5) { b.end = p.t; b.n += 1; b.kb += p.kb; if (p.opened) b.opened += 1; continue; }
+    if (b && p.t - b.end < BURST_GAP_S) { b.end = p.t; b.n += 1; b.kb += p.kb; if (p.opened) b.opened += 1; continue; }
     out.push({ start: p.t, end: p.t, n: 1, kb: p.kb, opened: p.opened ? 1 : 0 });
   }
   return out;
@@ -421,11 +423,16 @@ function pagesSvg(run, x, W) {
       s += `<text x="${inside ? x0 + 6 : x0 + w + 4}" y="${rowA + 17}" style="fill:${inside ? "#fff" : "var(--fg)"};font-weight:600">${label}</text>`;
     }
   }
+  let labelEnd = -Infinity; // x where the previous burst label ends, to avoid overlaps
   for (const b of pushBursts(run)) {
     const x0 = x(b.start), w = Math.max(4, x(b.end) - x0);
     const tip = `${L("Server sent", "أرسل الخادم")} ${b.n} ${L(b.n > 1 ? "pages ahead" : "page ahead", "صفحة مسبقًا")} (${(b.kb / 1000).toFixed(1)} MB), ${fmtT(b.start)}–${fmtT(b.end)}<br>${L(`${b.opened} of them opened by the reader`, `فتح القارئ ${b.opened} منها`)}`;
     s += `<g class="hit" data-tip="${esc(tip)}"><rect x="${x0}" y="${rowB}" width="${w}" height="${hB}" rx="3" fill="var(--push-burst)"/><rect x="${x0 - 3}" y="${rowB - 2}" width="${w + 6}" height="${hB + 4}" fill="transparent"/></g>`;
-    if (b.n >= 3) s += `<text x="${x0 + w + 4}" y="${rowB + 15}" class="ink">${words(String(b.n), L("pages", "صفحة"))}</text>`;
+    const label = words(String(b.n), L("pages", "صفحة"));
+    if (b.n >= 3 && x0 + w + 4 > labelEnd + 6) {
+      s += `<text x="${x0 + w + 4}" y="${rowB + 15}" class="ink">${label}</text>`;
+      labelEnd = x0 + w + 4 + label.length * 6.5;
+    }
   }
   return `<svg viewBox="0 0 ${W} ${H}" height="${H}">${s}${cursor(H - 16)}</svg>`;
 }

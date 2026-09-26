@@ -99,7 +99,7 @@
     .lanes { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
     .lane { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px; min-width: 0; }
     .lane h2 { font-size: 1.05rem; margin: 0 0 2px; }
-    .lane .sub { color: var(--muted); font-size: 0.85rem; margin: 0 0 10px; min-height: 2.6em; } /* same height in both panels */
+    .lane .sub { color: var(--muted); font-size: 0.85rem; margin: 0 0 10px; min-height: 3.1em; } /* room for two lines, so both panels line up */
 
     /* Fixed-size tiles: values change every frame during playback and must never reflow the page. */
     .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
