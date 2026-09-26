@@ -87,3 +87,26 @@ async def test_push_and_datagrams_after_migration(tunnel_certs):
     finally:
         await client.close()
         server.close()
+
+
+async def test_probe_backoff_resets_when_the_peer_is_heard_again(tunnel_certs):
+    """After an outage the probe timeout has backed off to tens of seconds; the first packet
+    from the peer afterwards must reset it on both ends."""
+
+    async def handler(frame, session):
+        return Frame(MsgType.RESPONSE, {"status": 200}, b"ok")
+
+    server, client = await _start(tunnel_certs, handler)
+    await client.connect()
+    try:
+        await client.request(Frame(MsgType.REQUEST, {}))
+        (session,) = server.sessions
+        for proto in (client._protocol, session):
+            proto._quic._loss._pto_count = 9  # as after ~45 s of unanswered probes
+            proto._last_heard -= 5  # and silence
+        await client.request(Frame(MsgType.REQUEST, {}))
+        assert session._quic._loss._pto_count == 0
+        assert client._protocol._quic._loss._pto_count == 0
+    finally:
+        await client.close()
+        server.close()

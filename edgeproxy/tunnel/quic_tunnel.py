@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from functools import partial
 from pathlib import Path
 
@@ -45,6 +46,8 @@ SERVER_NAME = "edgeproxy"
 # during the gap and "migration" silently turns into a reconnect.
 DEFAULT_IDLE_TIMEOUT = 120.0
 MAX_DATAGRAM = 65536
+# Silence after which a packet from the peer means "reachable again" (see _ReachabilityMixin).
+REACHABLE_AGAIN_S = 1.0
 
 
 def _is_client_initiated(stream_id: int) -> bool:
@@ -72,7 +75,30 @@ class _StreamAssembler:
 # ---------------------------------------------------------------------------------------- client
 
 
-class _ClientProtocol(QuicConnectionProtocol):
+class _ReachabilityMixin:
+    """Probe at once when the peer is heard from again after an outage.
+
+    With data unacknowledged, QUIC waits one probe timeout before probing, doubling the wait after
+    every unanswered probe (RFC 9002 6.2.1). After a 45 s outage that wait has grown to ~30 s,
+    and nothing new may be sent until a probe is acknowledged, so the connection stays silent
+    long after the link is back. The RFC resets the doubling on an acknowledgement; we also reset
+    it when any packet arrives after a second of silence, since the peer is evidently reachable.
+    aioquic has no API for this: _loss._pto_count is internal (checked against 1.3).
+    """
+
+    _last_heard = 0.0
+
+    def datagram_received(self, data, addr) -> None:
+        now = time.monotonic()
+        loss = self._quic._loss
+        if now - self._last_heard > REACHABLE_AGAIN_S and loss._pto_count:
+            log.info("peer reachable again: probe timeout backoff %d reset", loss._pto_count)
+            loss._pto_count = 0  # the timer is re-armed by transmit() after receiving
+        self._last_heard = now
+        super().datagram_received(data, addr)
+
+
+class _ClientProtocol(_ReachabilityMixin, QuicConnectionProtocol):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._assembler = _StreamAssembler()
@@ -213,7 +239,7 @@ class QuicClientTransport(ClientTransport):
 # ---------------------------------------------------------------------------------------- server
 
 
-class _ServerProtocol(QuicConnectionProtocol, ServerSession):
+class _ServerProtocol(_ReachabilityMixin, QuicConnectionProtocol, ServerSession):
     def __init__(
         self, *args, handler: RequestHandler, on_datagram: DatagramHandler | None, **kwargs
     ) -> None:
