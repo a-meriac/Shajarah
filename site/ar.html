@@ -295,6 +295,9 @@
     const mark = () => {
       let current = heads[0];
       for (const h of heads) if (h.getBoundingClientRect().top < innerHeight * 0.3) current = h;
+      // The last sections are too short to scroll their heading that far up: at the bottom of
+      // the page, the last one is being read.
+      if (innerHeight + scrollY >= document.documentElement.scrollHeight - 4) current = heads[heads.length - 1];
       const active = byId.get(current.id);
       if (active.classList.contains("active")) return;
       for (const a of links) a.classList.toggle("active", a === active);
