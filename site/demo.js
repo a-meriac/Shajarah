@@ -321,6 +321,7 @@ function phoneHTML(side) {
       <div class="small muted" id="${side}-sub"></div>
       <div class="screen" aria-live="off">
         <div class="statusbar"><span class="net" id="${side}-net"></span><span class="flag" id="${side}-flag"></span></div>
+        <div class="page-kind">Wikipedia article</div>
         <div class="page-title" id="${side}-title"></div>
         <div class="state" id="${side}-state"></div>
         <div class="offline" id="${side}-offline"></div>
