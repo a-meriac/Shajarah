@@ -52,7 +52,7 @@ matters much more than the selection rule on Wikipedia. This caps what Jev can r
   and `experiments/analyze.py`. The origin serves stand-ins for linked articles outside the
   snapshot, so pushes cost what real pages would.
 
-Tests: `make test` -> 117 passed (unit + loopback, any OS). `make test-netns` -> 2 passed (Linux).
+Tests: `make test` -> 118 passed (unit + loopback, any OS). `make test-netns` -> 2 passed (Linux).
 
 ## First system results (batch `main`, 24 Sep, 70 runs: 7 configs × 2 scenarios × 5 readers)
 
@@ -128,12 +128,21 @@ Switching early costs a call nothing beyond the 5G link's normal loss (0.2% each
 means a one-second dropout. This is the evidence for the "switch early" half of the claim, which
 page loads in the walk couldn't show. `python -m experiments.voip_probe summary`.
 
+**Third fix** (`d7d88e6`): with the backlog cap (re-run 26 Sep, kept in
+`results/tunnel20-before-pto-reset/`), config 5's median dropped to 3.1 s, but 5 readers still
+waited longer than with QUIC. Only ~265 KB went into the dead link now, yet the server's replies
+left ~30 s after it received the reader's request: QUIC doubles its probe timeout after every
+unanswered probe, and after a 45 s outage the next probe was ~30 s away, with nothing new allowed
+out before it. Both tunnel ends now reset that backoff when a packet arrives after >1 s of
+silence. It changes every QUIC config, so configs 2, 3 and 5 are being re-run together.
+
 ## Next
 
-1. **Re-run config 5 with the backlog cap** (20 runs, ~45 min):
-   `sudo systemd-inhibit --what=sleep:idle sh -c '.venv-linux/bin/python -m experiments.runner --batch tunnel20 --configs 5 --scenarios car_tunnel_45s --sessions 20'`,
-   then `python -m experiments.analyze tunnel20`. Check that no reader waits longer than with
-   plain QUIC any more.
+1. **Re-run configs 2, 3 and 5** (60 runs, ~2.3 h):
+   `sudo systemd-inhibit --what=sleep:idle sh -c '.venv-linux/bin/python -m experiments.runner --batch tunnel20 --configs 2 3 5 --scenarios car_tunnel_45s --sessions 20'`,
+   then `python -m experiments.analyze tunnel20`. Check that no reader waits longer with config 5
+   than with config 2 any more. Rerun the voice probe too if the walk results matter for the
+   paper (the reset only matters after long silences, so it should be unchanged).
 2. **Image-only links** reach Jev with no text (found by `experiments/general_web.py` on a shop):
    use the image's alt text or the link's title. Changes Jev's questions for such links, so
    re-warm (`python -m experiments.warm_jev`) afterwards.
