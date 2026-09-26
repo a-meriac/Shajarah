@@ -36,4 +36,3 @@ python -m experiments.analyze main
 - `data/`: the local origin server, the Wikipedia snapshot and clickstream tools, the browsing sessions
 - `experiments/`: measurement scripts
 - `site/`: the project page and the run replay (`replay.html`), published on GitHub Pages
-- `docs/PLAN.md`: the full plan
