@@ -165,7 +165,28 @@ Superseded runs, for the paper's "what went wrong" paragraph: `results/tunnel20-
 5. Optional: rerun the voice probe on the final code (the probe-backoff reset only matters
    after long silences, so the walk results should be unchanged).
 
-## Still open outside the code
+## Added 27 Sep
+
+- **Cost-aware networks** (`90433c1`): healthy networks are ranked Wi-Fi, cellular, satellite;
+  the tunnel moves back to a cheaper one once it has been healthy for `paths.return_after_s`
+  (3 s), and the client reports its network kind (NETWORK frame). The server scales its
+  normal prefetch budget by `prefetch.network_factor` (1 / 0.25 / 0.05); before an outage it
+  still uses the full budget. Recorded runs predate this (config 5 on 5G would now push less in
+  normal times, same during a warning). No scenario shows it off yet.
+- **Warning-horizon sweep** (`python -m experiments.warning_sweep`, figure `warning`): synthetic
+  traces, 20 h each for walking and driving. At the 8 s horizon in use: walking, 70% of outages
+  warned 2+ s ahead (median 2.9 s) at 57 false alarms/h; driving, 51% at 136/h. Longer
+  horizons add false alarms and no warning time; 6 s is nearly as good with fewer false alarms.
+  The warning is capped by the 5 s trend window, and false alarms are real dips, not flapping
+  (12% of warnings restart within 5 s). Synthetic traces: real drive-test data would firm it up.
+- **Download probe** (`experiments/download_probe.py`): not run yet (needs sudo). First run:
+  `sudo .venv-linux/bin/python -m experiments.download_probe batch --repeats 1`, then
+  `python -m experiments.download_probe summary`; adjust `--size-mb` so a download spans the
+  Wi-Fi cut (default 100 MB, starting at 18 s of the walk).
+
+Later (the user may want these): send live traffic over both networks during a switch;
+remembering dead zones; satellite scenarios; full-page prefetch (images).
+
 
 - [ ] Fill in the unknowns at the bottom of `docs/jev_notes.md` (rate limits, data retention)
 - [ ] Find public drive-test signal traces (e.g. the Raca et al. 4G/5G datasets, Lumos5G) to
