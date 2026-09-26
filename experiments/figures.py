@@ -4,6 +4,8 @@
   (results/predictor_eval/{jev,position,history}.json)
 - calibration: Jev's probability vs the real share of clicks, per bin (same files)
 - cutoff: next page already pushed vs data per dropout warning (results/cutoff_sweep.json)
+- warning: outages warned 2+ s ahead vs false alarms per hour, per warning horizon
+  (results/warning_sweep.json)
 - waiting, data: per-reader waiting and pushed/wasted data per config for one scenario of a
   system batch (results/<batch>/runs.csv)
 
@@ -160,6 +162,34 @@ def fig_cutoff() -> None:
     save(fig, "cutoff")
 
 
+def fig_warning() -> None:
+    path = RESULTS / "warning_sweep.json"
+    if not path.exists():
+        return
+    sweep = json.loads(path.read_text())
+    current = sweep["current_horizon_s"]
+    fig, ax = plt.subplots(figsize=SINGLE)
+    for mobility, color in (("walking", BLUE), ("driving", ORANGE)):
+        rows = [r for r in sweep["rows"] if r["mobility"] == mobility]
+        xs = [r["false_alarms_per_hour"] for r in rows]
+        ys = [r["warned_2s_pct"] / 100 for r in rows]
+        ax.plot(xs, ys, color=color, marker="o", label=mobility.capitalize())
+        for r, x, y in zip(rows, xs, ys, strict=True):
+            if r["horizon_s"] == current:
+                ax.plot(x, y, marker="o", markersize=9, mfc="none", color=INK, lw=0)
+            if r["horizon_s"] in (2, current, 15):
+                ax.annotate(f"{r['horizon_s']:g} s", (x, y), xytext=(4, -9),
+                            textcoords="offset points", color=INK_2, fontsize=6.5)  # fmt: skip
+    ax.set_xlabel("false alarms per hour")
+    ax.set_ylabel("outages warned 2+ s ahead")
+    ax.yaxis.set_major_formatter(PercentFormatter(1, decimals=0))
+    ax.set_ylim(0, 1)
+    ax.set_xlim(left=0)
+    ax.set_title(f"Warning horizon (circled: {current:g} s, in use)", loc="left")
+    ax.legend(loc="lower right")
+    save(fig, "warning")
+
+
 def _runs(batch: str) -> list[dict]:
     path = RESULTS / batch / "runs.csv"
     return list(csv.DictReader(path.open())) if path.exists() else []
@@ -229,6 +259,7 @@ def main() -> None:
     fig_predictors()
     fig_calibration()
     fig_cutoff()
+    fig_warning()
     fig_waiting(args.batch, args.scenario)
     fig_data(args.batch, args.scenario)
 
