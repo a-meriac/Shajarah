@@ -4,9 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Shajarah</title>
-  <meta name="description" content="Keeping browsing smooth when your connection hops between Wi-Fi, 5G and satellite.">
+  <meta name="description" content="Shajarah predicts network dropouts from fading signal, switches networks before the link fails and prefetches the pages you'll read next. EDGE Challenge, ATP 2026.">
   <style>
     :root {
+      color-scheme: light;
       --bg: #fbfaf7;
       --fg: #1d1d1b;
       --muted: #6b6a66;
@@ -17,6 +18,7 @@
     }
     @media (prefers-color-scheme: dark) {
       :root {
+        color-scheme: dark;
         --bg: #161615;
         --fg: #ecebe6;
         --muted: #9d9b94;
@@ -62,15 +64,24 @@
     ol.steps { padding-left: 20px; }
     ol.steps li { margin-bottom: 10px; }
 
-    .placeholder { border: 1.5px dashed var(--line); border-radius: 10px; padding: 36px 16px;
-                   text-align: center; color: var(--muted); font-size: 0.95rem; }
     figure { margin: 20px 0; }
     figure img, video { width: 100%; border-radius: 10px; border: 1px solid var(--line); }
     figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 6px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
     .stat { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
     .stat .num { font-size: 1.6rem; font-weight: 650; }
     .stat .label { color: var(--muted); font-size: 0.85rem; }
+    .stat .num { font-variant-numeric: tabular-nums; }
+    .caption { color: var(--muted); font-size: 0.9rem; margin-top: 10px; }
+    .table-wrap { overflow-x: auto; margin: 16px 0 6px; }
+    table { border-collapse: collapse; width: 100%; font-size: 0.92rem; font-variant-numeric: tabular-nums; }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); font-weight: 500; font-size: 0.85rem; }
+    td.num, th.num { text-align: right; white-space: nowrap; }
+    tr.ours td { font-weight: 650; background: var(--accent-soft); }
+    ul.points { padding-left: 20px; }
+    ul.points li { margin-bottom: 10px; }
+    .callout { border-left: 3px solid var(--accent); padding: 2px 0 2px 16px; margin: 20px 0; }
     footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line);
              color: var(--muted); font-size: 0.9rem; }
   </style>
@@ -78,34 +89,52 @@
 <body>
 <main>
   <span class="tag">EDGE Challenge · ATP 2026</span>
-  <h1>No more dead zones while you browse</h1>
+  <h1>Browsing that sees the dropout coming</h1>
   <p class="lede">
-    Your phone can usually tell a dropout is coming, because the signal fades first.
-    Shajarah uses that warning to switch networks early and download what you'll read next,
-    so a tunnel, a lift or a satellite gap doesn't interrupt you.
+    Phones switch between Wi-Fi, 5G and satellite all the time, and now and then lose signal
+    altogether. The signal nearly always fades before it drops. Shajarah acts on that warning: it
+    moves your connection to a better network before the old one fails, and quietly downloads the
+    pages you're likely to open next, so a tunnel or a lift doesn't leave you staring at a spinner.
   </p>
   <div class="links">
-    <a class="btn primary" href="#demo">Watch the demo</a>
-    <a class="btn" href="demo.html">Try the interactive demo</a>
-    <a class="btn" href="replay.html">Detailed run charts</a>
-    <a class="btn" href="https://github.com/a-meriac/Shajarah">Code on GitHub</a>
+    <a class="btn primary" href="demo.html">Try the interactive demo</a>
+    <a class="btn" href="replay.html">Explore the run data</a>
+    <a class="btn" href="https://github.com/a-meriac/Shajarah">Source code on GitHub</a>
     <!-- When the paper is ready: put it in site/media/ and uncomment.
     <a class="btn" href="media/paper.pdf">Read the paper (PDF)</a> -->
   </div>
 
+  <h2>Results at a glance</h2>
+  <div class="grid">
+    <div class="stat"><div class="num">56% less</div><div class="label">time spent waiting for pages than with an ordinary connection (14 s instead of 32 s per trip)</div></div>
+    <div class="stat"><div class="num">14 of 26</div><div class="label">clicks inside a 45-second tunnel opened instantly, against 3 of 20 without Shajarah</div></div>
+    <div class="stat"><div class="num">60 ms</div><div class="label">longest silence in a live call when leaving Wi-Fi, instead of about one second</div></div>
+    <div class="stat"><div class="num">2.9 MB</div><div class="label">of extra data per tunnel: the price of downloading pages ahead of time</div></div>
+  </div>
+  <p class="caption">
+    Measured in an emulated network: 20 simulated readers browsing Wikipedia on a drive through a
+    45-second tunnel, and a voice call on a walk out of Wi-Fi range. Details below.
+  </p>
+
   <h2>The problem</h2>
   <p>
-    Phones hop between Wi-Fi, 5G and satellite all the time. Every switch can break open connections,
-    and a real outage (a road tunnel, say) leaves you staring at a spinner. Existing fixes either
-    keep the connection alive but have nothing to show you offline, or download pages ahead of time
-    all the time and waste data.
+    A phone treats a weakening signal as fine right up until the moment it isn't. Only once the
+    connection has actually failed does it look for another network, reconnect, and retry whatever
+    you were loading. On a train, in a car, or walking out of a building, that means a frozen page,
+    a dropped call, or a spinner that lasts as long as the tunnel.
+  </p>
+  <p>
+    The two usual remedies each cover half of the problem. Modern transport protocols such as QUIC
+    can carry a connection from one network to another, but only after the switch, and they have
+    nothing to show you while there is no network at all. Prefetching can fill a cache in advance,
+    but done all the time it burns data on pages nobody reads.
   </p>
 
   <h2>How it works</h2>
   <div class="flow" aria-label="Browser to client proxy, through a tunnel over Wi-Fi, 5G or satellite, to a server proxy, then websites">
     <div class="node"><b>Browser</b><span>unchanged</span></div>
     <div class="arrow">→</div>
-    <div class="node"><b>Client proxy</b><span>on your device</span></div>
+    <div class="node"><b>Client proxy</b><span>on your phone</span></div>
     <div class="arrow">→</div>
     <div class="node tunnel"><b>Tunnel</b><span>Wi-Fi · 5G · satellite</span></div>
     <div class="arrow">→</div>
@@ -114,48 +143,104 @@
     <div class="node"><b>Websites</b></div>
   </div>
   <ol class="steps">
-    <li><b>See it coming.</b> The device watches signal strength. When it's fading, it predicts a dropout a few seconds ahead.</li>
-    <li><b>Switch early.</b> The tunnel opens a connection on the next network before the current one dies, so nothing breaks.</li>
-    <li><b>Stock up.</b> The server guesses which links you'll click next and sends those pages ahead of time. It sends more when a dropout is near and less when things are fine.</li>
-    <li><b>Read offline.</b> During the gap, pages open instantly from the device's cache.</li>
+    <li><b>Watch the signal.</b> The phone measures the signal on every network ten times a second and fits a trend. If the current network is heading below usable strength within the next eight seconds or so, it raises a warning.</li>
+    <li><b>Switch before it breaks.</b> If another network is healthy, the connection moves there immediately. The tunnel runs on QUIC, which can change networks without reconnecting, so nothing in progress is lost.</li>
+    <li><b>Stock up when there's nowhere to go.</b> In a tunnel every network fails together. The phone tells the server a dropout is coming; the server lowers its bar for prefetching and sends the pages you're most likely to open next, and the most likely pages after those.</li>
+    <li><b>Read through the gap.</b> Pages you open while offline come straight from the phone's cache, as if the network were still there.</li>
   </ol>
-
-  <h2 id="demo">Demo</h2>
-  <!-- Swap the placeholder for one of these:
-       Local file (keep under 100 MB):
-         <video src="media/demo.mp4" controls playsinline poster="media/demo-poster.jpg"></video>
-       YouTube:
-         <iframe style="width:100%;aspect-ratio:16/9;border:0;border-radius:10px"
-                 src="https://www.youtube-nocookie.com/embed/VIDEO_ID" allowfullscreen></iframe> -->
-  <div class="placeholder">Demo video coming soon</div>
-
-  <h2>Results</h2>
   <p>
-    We compare five setups in an emulated network with scripted dropouts, from a plain proxy up to the full system,
-    and measure how long the user is stuck waiting and how much data is wasted.
+    To decide which pages are worth sending, the server asks a decision model,
+    <a href="https://openrouter.ai/docs/guides/community/jev">Jev</a> by TypeSafe, how likely you
+    are to click each link, given the page's title, the last few pages you read and the links on the
+    page. Only titles and link text are sent, never page content. When nothing is about to go wrong,
+    the server sends very little.
   </p>
-  <!-- Replace the "—" values once the experiments are done. -->
-  <div class="grid">
-    <div class="stat"><div class="num">—</div><div class="label">less waiting per dropout vs. plain proxy</div></div>
-    <div class="stat"><div class="num">—</div><div class="label">pages served offline during a 45 s outage</div></div>
-    <div class="stat"><div class="num">—</div><div class="label">extra data used</div></div>
+
+  <!-- Demo video: swap in one of these when it's ready.
+  <h2 id="video">Demo video</h2>
+  <video src="media/demo.mp4" controls playsinline poster="media/demo-poster.jpg"></video>
+  or
+  <iframe style="width:100%;aspect-ratio:16/9;border:0;border-radius:10px"
+          src="https://www.youtube-nocookie.com/embed/VIDEO_ID" allowfullscreen></iframe> -->
+
+  <h2 id="results">Results</h2>
+  <p>
+    Our main test is a drive through a 45-second tunnel with no signal on any network. Twenty
+    simulated readers each browse along their own path of real Wikipedia clicks; every setup replays
+    exactly the same readers and clicks, so the only difference is the connection.
+  </p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Setup</th><th class="num">Average wait per trip</th><th class="num">Median</th><th class="num">Tunnel clicks opened instantly</th><th class="num">Extra data</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Ordinary connection (TCP, reconnects after failure)</td><td class="num">31.7 s</td><td class="num">28.5 s</td><td class="num">3 of 20</td><td class="num">none</td></tr>
+        <tr><td>Modern connection (QUIC, survives network changes)</td><td class="num">21.6 s</td><td class="num">17.0 s</td><td class="num">3 of 22</td><td class="num">none</td></tr>
+        <tr><td>Always-on prefetching</td><td class="num">20.1 s</td><td class="num">12.6 s</td><td class="num">5 of 23</td><td class="num">0.24 MB</td></tr>
+        <tr class="ours"><td>Shajarah</td><td class="num">14.0 s</td><td class="num">3.4 s</td><td class="num">14 of 26</td><td class="num">2.9 MB</td></tr>
+      </tbody>
+    </table>
   </div>
-  <!-- Charts: save PNGs into site/media/ and replace the placeholder, e.g.
-  <figure>
-    <img src="media/stall_time.png" alt="Waiting time per dropout for each of the five setups">
-    <figcaption>Waiting time per dropout, five setups, five runs each.</figcaption>
-  </figure> -->
-  <figure><div class="placeholder">Charts coming soon</div></figure>
-
-  <h2>What's new here</h2>
+  <p class="caption">"Wait" is the total time a reader spent looking at a page that was still loading. 20 readers per setup.</p>
   <p>
-    Connection migration (QUIC) and link prefetching both exist already. What we add is linking them:
-    how aggressively we prefetch depends on how likely you are to lose your connection, and a
-    language model predicts which links you'll click.
+    Compared reader by reader with the modern connection, Shajarah was faster for 8 of the 20 and
+    slower for none. The remaining readers clicked a page the model hadn't anticipated and waited for
+    the signal to return, exactly as they would have without Shajarah. The typical reader waited
+    3.4 seconds instead of 17.
   </p>
+  <p>
+    Switching early matters most for anything live. On a walk out of a building's Wi-Fi, a simulated
+    voice call (50 packets a second) that switched after Wi-Fi had died went silent for about a
+    second and lost 2% of its audio. With Shajarah switching 5.8 seconds before the drop, the longest
+    gap was 60 ms and the only loss was the network's normal 0.4%.
+  </p>
+  <p class="callout">
+    <a href="demo.html">The interactive demo</a> replays any of these runs from above: the coverage
+    along the road, the moment the dropout is predicted, and what each phone shows second by second.
+  </p>
+
+  <h2>What's new, and what we learned</h2>
+  <p>
+    Connection migration and link prefetching both exist. What Shajarah adds is a single prediction
+    driving both: the same fading signal that triggers an early switch also tells the server
+    whether to prefetch, how much, and until when. Building it taught us two things that matter for
+    anyone combining them:
+  </p>
+  <ul class="points">
+    <li><b>Never prefetch into a dying link.</b> Our first version kept sending pages after the signal had gone. The unacknowledged data jammed the connection when coverage returned, and some readers ended up waiting longer than with no prefetching at all. The server now stops just before the predicted dropout and never has more than 256 KB in flight, because the predicted time can be a few seconds off.</li>
+    <li><b>QUIC waits too long after a long outage.</b> While the link is down, QUIC doubles its retry interval with every failed attempt; after 45 seconds, the next retry was half a minute away, so the connection stayed silent long after the signal came back. We reset that back-off as soon as the other end is heard from again.</li>
+  </ul>
+
+  <h2>How we tested it</h2>
+  <p>
+    Everything runs in an emulated network on Linux. The phone, a router, our server and the
+    websites each live in their own network namespace, and the phone's Wi-Fi, 5G and satellite links
+    are shaped to realistic delay, loss and bandwidth. Scripted scenarios fade and cut those links on
+    a fixed timeline.
+  </p>
+  <p>
+    The readers come from Wikipedia's public clickstream, the only large public record of which
+    links people actually click. Each reader follows links that real readers chose in August 2026,
+    with realistic reading times, across about 2,000 Wikipedia pages frozen for the tests. We scored
+    the click predictions separately against July's clicks, and checked the pipeline on ordinary
+    sites (a news front page, documentation, a shop, a forum, a government service) to make sure it
+    isn't tuned to Wikipedia.
+  </p>
+
+  <h2>Limitations</h2>
+  <ul class="points">
+    <li><b>Click prediction is modest.</b> Jev's three favourite links catch 16% of real clicks, against 9% for simply taking the first links on the page. When it misses, you wait as long as you would have anyway; the gains come from the hits, never at the expense of the misses.</li>
+    <li><b>Prefetching costs data.</b> About 3 MB per tunnel, most of it never read. That is a fair trade on an unmetered connection and a poor one on a small data plan. The prefetching policy can already work to a smaller budget on metered links; detecting a metered connection automatically is still to do.</li>
+    <li><b>The network is emulated.</b> The signal curves are hand-made; replaying real drive-test measurements is the next step.</li>
+    <li><b>Privacy.</b> The prototype calls Jev through a hosted API. In a production system the model would run on our own server, so page titles and link text never leave infrastructure we control.</li>
+  </ul>
 
   <footer>
-    Built for the EDGE Challenge, ATP 2026.
+    Shajarah is our entry for the EDGE Challenge, ATP 2026.
+    <a href="demo.html">Interactive demo</a> ·
+    <a href="replay.html">Run data</a> ·
+    <a href="https://github.com/a-meriac/Shajarah">Source code</a>
     <!-- Team: add names here. -->
   </footer>
 </main>
