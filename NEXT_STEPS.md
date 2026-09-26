@@ -179,9 +179,11 @@ Superseded runs, for the paper's "what went wrong" paragraph: `results/tunnel20-
   horizons add false alarms and no warning time; 6 s is nearly as good with fewer false alarms.
   The warning is capped by the 5 s trend window, and false alarms are real dips, not flapping
   (12% of warnings restart within 5 s). Synthetic traces: real drive-test data would firm it up.
+
 Kept for later: send live traffic over both networks during a switch. Not chosen on 27 Sep:
 satellite scenarios, full-page prefetch (images), real signal recordings, remembering dead zones.
 
+## Still open outside the code
 
 - [ ] Fill in the unknowns at the bottom of `docs/jev_notes.md` (rate limits, data retention)
 - [ ] Find public drive-test signal traces (e.g. the Raca et al. 4G/5G datasets, Lumos5G) to
