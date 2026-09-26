@@ -70,9 +70,13 @@ special relativity 0.80, Nobel Prize 0.17, photoelectric effect 0.02, and Ulm/Pr
   `jev.include_context` is on, and never anything from the user's device beyond the pages'
   URLs and titles).
 
+## Privacy position (for the paper)
+
+We don't rely on TypeSafe's retention policy. The prototype calls Jev through a hosted API because
+that was available; in a perfect world the model would run locally on the proxy server (a local
+decision model such as Laya), so page titles and link texts never leave infrastructure we control.
+Say this in the paper's privacy section and list the hosted API as a prototype limitation.
+
 ## Still unknown
 
-- [ ] TypeSafe's own retention and training policy for request text. It is shown on the
-      [model page](https://openrouter.ai/typesafe/jev-1.13), which doesn't load for automated
-      fetches; check it in a browser. Needed for the privacy section.
 - [ ] Latency from the server proxy's real location (AWS region)
