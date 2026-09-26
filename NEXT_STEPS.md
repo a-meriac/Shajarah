@@ -52,7 +52,7 @@ matters much more than the selection rule on Wikipedia. This caps what Jev can r
   and `experiments/analyze.py`. The origin serves stand-ins for linked articles outside the
   snapshot, so pushes cost what real pages would.
 
-Tests: `make test` -> 97 passed (unit + loopback, any OS). `make test-netns` -> 2 passed (Linux).
+Tests: `make test` -> 117 passed (unit + loopback, any OS). `make test-netns` -> 2 passed (Linux).
 
 ## First system results (batch `main`, 24 Sep, 70 runs: 7 configs × 2 scenarios × 5 readers)
 
@@ -104,22 +104,43 @@ stays off until the warning is cleared. Worth a paragraph in the paper: prefetch
 the predicted outage start, not just the budget. The old config-5 runs are kept in
 `results/tunnel20-before-push-stop/`.
 
+**Second fix needed** (`5763ed9`): with only the eta-based stop (re-run 26 Sep, kept in
+`results/tunnel20-eta-stop-only/`), config 5 improved (mean 18.0 s, median 6.9 s, 3.5 MB pushed)
+but readers 15 and 16 still stalled: the warned dropout came 2.5 s early (predicted ~40.5 s, link
+died at 38 s) and 26 pushes went into the dead link in the last 1.6 s. The server now also keeps
+at most `prefetch.max_push_backlog_bytes` (256 KB) of push data unacknowledged per client, so a
+link that dies early strands little whatever the timing estimate says. Config 5 needs one more
+re-run with this.
+
+Two runs had the PC asleep mid-run (config 2 and 5, session 7); `analyze.py` now detects and
+skips such runs, and both were redone.
+
+## Voice-call probe (26 Sep, Wi-Fi walk, 5 runs per mode)
+
+50 packets/s through the tunnel as QUIC datagrams, echoed by the server:
+
+| mode | switch at | packets lost | longest silence |
+|---|---|---|---|
+| react after failure (configs 1-4) | 29.4-29.5 s, 1 s after Wi-Fi dies | 1.8-2.0% | 0.93-1.08 s |
+| switch early (config 5/5a) | 22.7 s, 5.8 s before | 0.3-0.5% | 0.05-0.07 s |
+
+Switching early costs a call nothing beyond the 5G link's normal loss (0.2% each way); reacting
+means a one-second dropout. This is the evidence for the "switch early" half of the claim, which
+page loads in the walk couldn't show. `python -m experiments.voip_probe summary`.
+
 ## Next
 
-1. **Re-run config 5 with the fix** (20 runs, ~45 min):
-   `sudo .venv-linux/bin/python -m experiments.runner --batch tunnel20 --configs 5 --scenarios car_tunnel_45s --sessions 20`,
-   then `python -m experiments.analyze tunnel20`.
-2. **Voice-call probe** (written, not yet run; ~10 min): shows switching early during the Wi-Fi
-   walk, which page loads can't.
-   `sudo .venv-linux/bin/python -m experiments.voip_probe batch --scenario wifi_to_5g_walk --repeats 5`,
-   then `python -m experiments.voip_probe summary`.
-3. **Image-only links** reach Jev with no text (found by `experiments/general_web.py` on a shop):
+1. **Re-run config 5 with the backlog cap** (20 runs, ~45 min):
+   `sudo systemd-inhibit --what=sleep:idle sh -c '.venv-linux/bin/python -m experiments.runner --batch tunnel20 --configs 5 --scenarios car_tunnel_45s --sessions 20'`,
+   then `python -m experiments.analyze tunnel20`. Check that no reader waits longer than with
+   plain QUIC any more.
+2. **Image-only links** reach Jev with no text (found by `experiments/general_web.py` on a shop):
    use the image's alt text or the link's title. Changes Jev's questions for such links, so
    re-warm (`python -m experiments.warm_jev`) afterwards.
-4. **Replay page** (`site/replay.html`, 25 Sep): after the re-run, `make replay-export`, commit
-   and push; rerun a few runs for the demo video.
-5. **Figures**, redone from `tunnel20` when the paper layout is known (`make figures BATCH=tunnel20`).
-6. More scenarios (LEO gap, GEO fallback); smaller items: Jev's overconfidence before its
+3. **Replay page** (`site/replay.html`): `make replay-export`, commit and push; rerun a few runs
+   for the demo video.
+4. **Figures**, redone from `tunnel20` and the voice probe when the paper layout is known.
+5. More scenarios (LEO gap, GEO fallback); smaller items: Jev's overconfidence before its
    probabilities set budgets; origin modifying X% of pages between runs (revalidation savings);
    forums link mostly off-site, which `links.same_origin_only` drops.
 
