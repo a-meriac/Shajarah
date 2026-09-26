@@ -1,7 +1,9 @@
 // Bird's-eye demo of recorded test runs (experiments/export_replay.py -> site/replays/).
-// One reader, two setups, the same trip: the map is drawn from the recorded signal and link
-// conditions (position along the road = time), the phones from the recorded page events.
-// Plain JS + SVG, no dependencies. The selection lives in the URL hash so a view can be shared.
+// Three hand-picked readers from the car-tunnel batch, each riding the same trip with an ordinary
+// connection and with Shajarah. The map is drawn from the recorded signal and link conditions
+// (position along the road = time), the phones from the recorded page events. The summary at the
+// bottom covers every reader, so the picks are shown in context.
+// Plain JS + SVG, no dependencies. The example and time live in the URL hash for sharing.
 
 const IFACES = {
   sat0: { label: "Satellite", color: "var(--net-sat0)" },
@@ -23,13 +25,19 @@ const SCENARIOS = {
     lede: "A recorded test drive from our emulated network. The same reader, browsing Wikipedia, rides through the same stretch of road twice: once with an ordinary connection and once with Shajarah. Cellular fades before a 45-second tunnel with no signal at all. Press play and watch what each phone shows.",
     mover: "car", gap: "Tunnel: no signal",
   },
-  wifi_to_5g_walk: {
-    title: "Walk out of Wi-Fi range, with and without Shajarah",
-    lede: "A recorded walk out of a building: Wi-Fi fades and drops, cellular is available throughout. Page loads barely differ here, because the switch is quick either way; the live-call test below is where switching early shows.",
-    mover: "walker", gap: "No coverage",
-  },
 };
-const DEFAULT_LEFT = "1", DEFAULT_RIGHT = "5";
+// Chosen from the 20 tunnel readers as the clearest cases of Shajarah helping (largest saving
+// against the ordinary connection); each shows something different.
+const SCENARIO = "car_tunnel_45s";
+const LEFT = "1", RIGHT = "5";
+const EXAMPLES = [
+  { session: 5, title: "The page that never came",
+    blurb: "One click in the middle of the tunnel. The ordinary phone gives up after a minute without loading the page; Shajarah had already delivered it." },
+  { session: 20, title: "Reading on through the tunnel",
+    blurb: "Three pages in a row with no signal: two open instantly because they were prefetched before the tunnel (the second one two clicks ahead), and a page read earlier comes back from the phone's cache after a 2-second check. The ordinary phone waits 54 s for the first." },
+  { session: 0, title: "Two clicks in the tunnel",
+    blurb: "The reader moves on twice inside the tunnel. Shajarah has the next page ready instantly, and shows a saved copy of the page before it after a 2-second check; the ordinary phone waits 44 s for its first click." },
+];
 const SPEEDS = [2, 5, 10, 20];
 const W = 1000, X0 = 96, X1 = 984;
 const LANE_Y = { sat0: 16, cell0: 48, wifi0: 80 }, LANE_H = 24;
@@ -41,7 +49,7 @@ const LONG_WAIT_S = 1; // a wait worth marking (the same bar as the "Waits over 
 const app = document.getElementById("app");
 const tooltip = document.getElementById("tooltip");
 const files = new Map();
-const S = { index: [], voip: null, scenario: null, session: null, left: null, right: null, runs: {}, t: 0, speed: 5, playing: false, last: 0 };
+const S = { index: [], voip: null, scenario: SCENARIO, example: 0, session: null, left: LEFT, right: RIGHT, runs: {}, t: 0, speed: 5, playing: false, last: 0 };
 let refs = {};
 
 // ----------------------------------------------------------------------------- helpers
@@ -121,7 +129,7 @@ function stateAt(run, t) {
     if (p.t > t) break;
     const w = Math.min(p.wait, t - p.t);
     waited += w;
-    if (t >= p.t + p.wait) opened++;
+    if (t >= p.t + p.wait && p.source !== "error") opened++;
     if (w > LONG_WAIT_S) stuck++;
   }
   const idx = lastAtOrBefore(pages, t, (p) => p.t);
@@ -133,6 +141,7 @@ function stateAt(run, t) {
     const recovering = gaps(run).some(([a, b]) => cur.t >= a && cur.t < b && t >= b);
     screen = { kind: "wait", elapsed: t - cur.t, recovering };
   }
+  else if (cur.source === "error") screen = { kind: "failed", page: cur };
   else if (t - (cur.t + cur.wait) < RECENT_S && (INSTANT.has(cur.source) || cur.wait > 1)) screen = { kind: "opened", page: cur };
   else screen = { kind: "read" };
   const pushed = run.pushes.filter((p) => p.t <= t);
@@ -163,6 +172,7 @@ function events(run) {
     ev.push({ t: p.t, text: `Clicked "${p.title}"` });
     const end = p.t + p.wait;
     if (end > run.duration) continue;
+    if (p.source === "error") { ev.push({ t: end, text: `Gave up: the page didn't load within ${fmtS(p.wait)}` }); continue; }
     const how = p.source === "push" ? "instantly (prefetched)"
       : p.source === "stale" ? `from the saved copy after ${fmtS(p.wait)}`
       : p.wait > 1 ? `after waiting ${fmtS(p.wait)}` : "";
@@ -193,22 +203,7 @@ async function runFile(entry) {
 }
 
 const entriesFor = (scenario) => S.index.filter((r) => r.scenario === scenario);
-const sessionsFor = (scenario) => [...new Set(entriesFor(scenario).map((r) => r.session))].sort((a, b) => a - b);
-const configsFor = (scenario, session) => entriesFor(scenario).filter((r) => r.session === session).map((r) => r.config);
 const entry = (scenario, session, config) => entriesFor(scenario).find((r) => r.session === session && r.config === config);
-
-// The reader where the right-hand setup saved the most waiting: a clear example. The summary
-// below the phones gives the averages over every reader.
-function showcaseReader(scenario, left, right) {
-  let best = null, bestGain = -Infinity;
-  for (const s of sessionsFor(scenario)) {
-    const a = entry(scenario, s, left), b = entry(scenario, s, right);
-    if (!a || !b) continue;
-    const gain = a.metrics.wait_s - b.metrics.wait_s;
-    if (gain > bestGain) { bestGain = gain; best = s; }
-  }
-  return best ?? sessionsFor(scenario)[0];
-}
 
 async function load() {
   try {
@@ -217,44 +212,33 @@ async function load() {
     S.index = [];
   }
   try { S.voip = await fetchJSON("replays/voip.json"); } catch { S.voip = null; }
-  if (!S.index.length) {
-    app.innerHTML = `<div class="empty"><p><b>No recorded runs yet.</b></p><p>Export them with <code>python -m experiments.export_replay &lt;batch&gt;</code> and commit <code>site/replays/</code>.</p></div>`;
+  const available = EXAMPLES.filter((ex) => entry(SCENARIO, ex.session, LEFT) && entry(SCENARIO, ex.session, RIGHT));
+  if (available.length < EXAMPLES.length) {
+    app.innerHTML = `<div class="empty"><p><b>The recorded runs for these examples are missing.</b></p><p>Export them with <code>python -m experiments.export_replay tunnel20</code> and commit <code>site/replays/</code>.</p></div>`;
     return;
   }
   const h = new URLSearchParams(location.hash.slice(1));
-  const scenarios = [...new Set(S.index.map((r) => r.scenario))];
-  S.scenario = scenarios.includes(h.get("scenario")) ? h.get("scenario") : scenarios.includes("car_tunnel_45s") ? "car_tunnel_45s" : scenarios[0];
-  pickConfigs(h.get("left"), h.get("right"));
-  const sessions = sessionsFor(S.scenario);
-  const want = parseInt(h.get("reader"), 10);
-  S.session = sessions.includes(want) ? want : showcaseReader(S.scenario, S.left, S.right);
+  const want = parseInt(h.get("example"), 10) - 1;
+  S.example = want >= 0 && want < EXAMPLES.length ? want : 0;
   S.t = parseFloat(h.get("t")) || 0;
   build();
   await select();
 }
 
-function pickConfigs(left, right) {
-  const all = [...new Set(entriesFor(S.scenario).map((r) => r.config))];
-  S.left = all.includes(left) ? left : all.includes(DEFAULT_LEFT) ? DEFAULT_LEFT : all[0];
-  S.right = all.includes(right) ? right : all.includes(DEFAULT_RIGHT) ? DEFAULT_RIGHT : all[all.length - 1];
-}
-
 function writeHash() {
-  const h = new URLSearchParams({ scenario: S.scenario, reader: S.session, left: S.left, right: S.right, t: S.t.toFixed(1) });
+  const h = new URLSearchParams({ example: S.example + 1, t: S.t.toFixed(1) });
   history.replaceState(null, "", `#${h}`);
 }
 
 // ----------------------------------------------------------------------------- page structure
 
 function build() {
-  const scenarios = [...new Set(S.index.map((r) => r.scenario))];
-  const opt = (v, label, sel) => `<option value="${esc(v)}"${v === sel ? " selected" : ""}>${esc(label)}</option>`;
   app.innerHTML = `
+    <div class="examples" role="tablist" aria-label="Examples">
+      ${EXAMPLES.map((ex, i) => `<button type="button" role="tab" class="example" data-example="${i}" aria-selected="${i === S.example}"><span class="n">Example ${i + 1}</span>${esc(ex.title)}</button>`).join("")}
+    </div>
+    <p class="blurb" id="blurb"></p>
     <div class="card controls">
-      <label>Trip<select id="scenario">${scenarios.map((s) => opt(s, SCENARIOS[s]?.title.split(",")[0] || s, S.scenario)).join("")}</select></label>
-      <label>Reader<select id="reader"></select></label>
-      <label>Left phone<select id="left"></select></label>
-      <label>Right phone<select id="right"></select></label>
       <button class="primary" id="play" type="button">Play</button>
       <span class="speeds" role="group" aria-label="Playback speed">${SPEEDS.map((s) => `<button type="button" data-speed="${s}" aria-pressed="${s === S.speed}">${s}×</button>`).join("")}</span>
       <div class="timebar"><input id="scrub" type="range" min="0" max="120" step="0.1" value="0" aria-label="Time"><span class="clock" id="clock">0:00</span></div>
@@ -284,8 +268,6 @@ function build() {
       <details><summary>Table</summary><div id="sum-table"></div></details>
     </div>`;
   refs = {
-    scenario: document.getElementById("scenario"), reader: document.getElementById("reader"),
-    leftSel: document.getElementById("left"), rightSel: document.getElementById("right"),
     play: document.getElementById("play"), scrub: document.getElementById("scrub"), clock: document.getElementById("clock"),
     map: document.getElementById("map"), timeline: document.getElementById("timeline"),
   };
@@ -293,13 +275,13 @@ function build() {
     const q = (k) => document.getElementById(`${side}-${k}`);
     refs[side] = { name: q("name"), sub: q("sub"), net: q("net"), flag: q("flag"), title: q("title"), state: q("state"), offline: q("offline"), wait: q("wait"), opened: q("opened"), stuck: q("stuck"), data: q("data"), log: q("log") };
   }
-  refs.scenario.onchange = async () => {
-    S.scenario = refs.scenario.value; pickConfigs(S.left, S.right);
-    S.session = showcaseReader(S.scenario, S.left, S.right); S.t = 0; await select();
-  };
-  refs.reader.onchange = async () => { S.session = parseInt(refs.reader.value, 10); await select(); };
-  refs.leftSel.onchange = async () => { S.left = refs.leftSel.value; await select(); };
-  refs.rightSel.onchange = async () => { S.right = refs.rightSel.value; await select(); };
+  for (const b of document.querySelectorAll("[data-example]")) {
+    b.onclick = async () => {
+      S.example = parseInt(b.dataset.example, 10);
+      S.t = 0;
+      await select();
+    };
+  }
   refs.play.onclick = () => togglePlay();
   refs.scrub.oninput = () => { S.t = parseFloat(refs.scrub.value); render(); };
   refs.scrub.onchange = writeHash;
@@ -343,18 +325,10 @@ function phoneHTML(side) {
 
 async function select() {
   stop();
-  const sessions = sessionsFor(S.scenario);
-  if (!sessions.includes(S.session)) S.session = sessions[0];
-  const configs = configsFor(S.scenario, S.session);
-  if (!configs.includes(S.left)) S.left = configs[0];
-  if (!configs.includes(S.right)) S.right = configs[configs.length - 1];
-  refs.reader.innerHTML = sessions.map((s, i) => `<option value="${s}"${s === S.session ? " selected" : ""}>Reader ${i + 1}</option>`).join("");
-  const cfgOpts = (sel) => configs.map((c) => `<option value="${esc(c)}"${c === sel ? " selected" : ""}>${esc(setupName(c))}</option>`).join("");
-  refs.leftSel.innerHTML = cfgOpts(S.left);
-  refs.rightSel.innerHTML = cfgOpts(S.right);
-  const sc = SCENARIOS[S.scenario] || { title: S.scenario, lede: "", mover: "car", gap: "No signal" };
-  document.getElementById("headline").textContent = sc.title;
-  document.getElementById("lede").textContent = sc.lede;
+  S.session = EXAMPLES[S.example].session;
+  for (const b of document.querySelectorAll("[data-example]")) b.setAttribute("aria-selected", String(+b.dataset.example === S.example));
+  document.getElementById("blurb").textContent = EXAMPLES[S.example].blurb;
+  const sc = SCENARIOS[S.scenario];
   const [a, b] = await Promise.all([runFile(entry(S.scenario, S.session, S.left)), runFile(entry(S.scenario, S.session, S.right))]);
   S.runs = { left: a, right: b };
   for (const side of ["left", "right"]) {
@@ -494,6 +468,7 @@ function renderPhone(side) {
   r.state.innerHTML = s.kind === "start" ? `<span class="muted">Opening the first page…</span>`
     : s.kind === "wait" ? `<span class="badge wait"><span class="spinner" aria-hidden="true"></span>Loading… ${fmtS(s.elapsed)}</span>${s.recovering ? `<span class="small muted">Signal is back, but the connection is still recovering</span>` : ""}`
     : s.kind === "opened" ? openedBadge(s.page)
+    : s.kind === "failed" ? `<span class="badge wait"><span class="ico" aria-hidden="true">✕</span>Page failed to load after ${fmtS(s.page.wait)}</span>`
     : `<span class="badge read"><span class="ico" aria-hidden="true">●</span>Reading</span>`;
   r.offline.textContent = st.pushedN ? `${st.pushedN} page${st.pushedN > 1 ? "s" : ""} saved on the phone for offline reading` : "";
 
@@ -563,7 +538,7 @@ function drawSummary() {
   });
   const n = Math.max(...stats.map((s) => s.n));
   document.getElementById("sum-title").textContent = `All ${n} readers on this trip`;
-  document.getElementById("sum-sub").textContent = "Average total time spent waiting for pages per reader (bar); the dot is the reader shown above. The page opens on the reader with the biggest difference: pick others to see trips where the prediction missed and both phones wait.";
+  document.getElementById("sum-sub").textContent = "The three examples above are among the clearest cases out of all the readers we tested. This is how the whole group fared: average total time spent waiting for pages per reader (bar); the dot is the example shown above.";
 
   const el = document.getElementById("summary");
   const rowH = 30, H = stats.length * rowH + 30, L = 230, R = W - 140;
@@ -598,13 +573,13 @@ function drawSummary() {
   } else callout.textContent = "";
 
   const voip = document.getElementById("voip-callout");
-  const calls = S.voip ? S.voip.runs.filter((r) => r.scenario === S.scenario) : [];
+  const calls = S.voip ? S.voip.runs : [];
   if (calls.length) {
     const med = (xs) => { const s = [...xs].sort((a, b) => a - b); return s.length % 2 ? s[(s.length - 1) / 2] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2; };
     const by = (mode) => calls.filter((r) => r.mode === mode);
     const react = by("reactive"), early = by("switch_early");
     voip.hidden = false;
-    voip.textContent = `Live call on the same walk (a separate test, ${react.length} runs each): switching after the link died left a ${med(react.map((r) => r.longest_silence_s)).toFixed(2)} s silence and ${med(react.map((r) => r.lost_pct)).toFixed(1)}% of the audio lost; switching early left ${Math.round(1000 * med(early.map((r) => r.longest_silence_s)))} ms and ${med(early.map((r) => r.lost_pct)).toFixed(1)}%, the network's normal loss.`;
+    voip.textContent = `Switching early matters most for live traffic. In a separate test, a voice call on a walk out of Wi-Fi range (${react.length} runs each): switching after the link died left a ${med(react.map((r) => r.longest_silence_s)).toFixed(2)} s silence and ${med(react.map((r) => r.lost_pct)).toFixed(1)}% of the audio lost; switching early left ${Math.round(1000 * med(early.map((r) => r.longest_silence_s)))} ms and ${med(early.map((r) => r.lost_pct)).toFixed(1)}%, the network's normal loss.`;
   } else voip.hidden = true;
 
   document.getElementById("sum-table").innerHTML = `<table><thead><tr><th>Setup</th><th class="num">Readers</th><th class="num">Mean wait</th><th class="num">Median wait</th><th class="num">Outage clicks from cache</th><th class="num">Prefetched per trip</th></tr></thead><tbody>${stats.map((s) => `<tr><td>${esc(setupName(s.c))}</td><td class="num">${s.n}</td><td class="num">${fmtS(s.mean)}</td><td class="num">${fmtS(s.median)}</td><td class="num">${s.outage ? `${s.cached} of ${s.outage}` : "–"}</td><td class="num">${s.pushedMB > 0.005 ? s.pushedMB.toFixed(2) + " MB" : "–"}</td></tr>`).join("")}</tbody></table>`;

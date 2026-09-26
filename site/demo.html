@@ -58,6 +58,12 @@
     .timebar input { flex: 1; min-width: 0; accent-color: var(--accent); }
     .clock { font-variant-numeric: tabular-nums; white-space: nowrap; }
 
+    /* example tabs */
+    .examples { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 10px; }
+    .example { text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; font-weight: 600; font-size: 0.95rem; }
+    .example .n { display: block; font-size: 0.75rem; font-weight: 500; color: var(--muted); }
+    .example[aria-selected="true"] { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+    .blurb { margin: 0 2px 14px; max-width: 80ch; }
     /* map */
     .map { margin-bottom: 14px; }
     .map svg { display: block; width: 100%; height: auto; user-select: none; }
@@ -128,9 +134,10 @@
   <nav class="nav"><a href="./">← Shajarah</a><a href="replay.html">Detailed charts</a></nav>
   <h1 id="headline">Drive through a tunnel, with and without Shajarah</h1>
   <p class="lede" id="lede">
-    A recorded test drive from our emulated network. The same reader, browsing Wikipedia, rides
-    through the same coverage twice: once with an ordinary connection and once with Shajarah.
-    Press play and watch what each phone shows.
+    Recorded test drives from our emulated network. In each example the same reader, browsing
+    Wikipedia, rides through the same stretch of road twice: once with an ordinary connection and
+    once with Shajarah. Cellular fades before a 45-second tunnel with no signal at all. Pick an
+    example, press play, and watch what each phone shows.
   </p>
   <div id="app"><p class="muted">Loading recorded runs…</p></div>
 </main>
