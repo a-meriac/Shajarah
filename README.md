@@ -33,7 +33,7 @@ python -m experiments.analyze main
 - `emulation/`: fake Wi-Fi/5G/satellite links and dropout scenarios
 - `data/`: the local origin server, the Wikipedia snapshot and clickstream tools, the browsing sessions
 - `experiments/`: measurement scripts
-- `site/`: the project page, the interactive demo (`demo.html`) and run charts (`replay.html`), published on GitHub Pages
+- `site/`: the project page and the run replay (`replay.html`), published on GitHub Pages
 - `docs/PLAN.md`: the full plan
 
 Work in progress. See [NEXT_STEPS.md](NEXT_STEPS.md) for where we left off.

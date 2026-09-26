@@ -13,6 +13,18 @@ const SOURCES = {
   origin: { label: "Downloaded", color: "var(--src-net)" },
   pending: { label: "Still waiting at the end", color: "var(--ink-muted)" },
 };
+// The same names and descriptions as on the home page.
+const SETUPS = {
+  "1": { name: "Ordinary (TCP)", about: "Reconnects only after the link has failed, as most apps do" },
+  "2": { name: "Modern (QUIC)", about: "Survives network changes, but doesn't prefetch" },
+  "3": { name: "Always-on prefetch", about: "A few likely pages pushed after every page view" },
+  "4": { name: "Hover prefetch", about: "The clicked page is fetched 200 ms before the click" },
+  "5": { name: "Shajarah", about: "Predicts the dropout and prefetches ahead of it; switches network early when it can" },
+  "5a": { name: "Shajarah, switching only", about: "Switches network early, no prefetching" },
+  "5b": { name: "Shajarah, prefetch only", about: "Prefetches on a dropout warning, no early switching" },
+};
+// Opens on the clearest tunnel example: the reader Shajarah saved the most waiting for.
+const DEFAULT = { scenario: "car_tunnel_45s", session: "5", a: "5", b: "1" };
 const SCENARIO_NAMES = {
   car_tunnel_45s: "Car tunnel (45 s without coverage)",
   wifi_to_5g_walk: "Walking out of Wi-Fi range",
@@ -32,7 +44,9 @@ let lanes = []; // [{ run, root, width }]
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const fmtT = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}`;
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
-const configLabel = (r) => `Setup ${r.config}`;
+const setupName = (c) => (SETUPS[c] || { name: `Setup ${c}` }).name;
+const setupAbout = (c, fallback = "") => (SETUPS[c] || { about: fallback }).about;
+const configLabel = (r) => setupName(r.config);
 
 function lastAtOrBefore(arr, t, key = (x) => x.t) {
   let lo = 0, hi = arr.length - 1, best = -1;
@@ -97,13 +111,14 @@ async function load() {
   const want = readHash();
   const scenarios = [...new Set(state.runs.map((r) => r.scenario))];
   state.scenario = scenarios.includes(want.scenario) ? want.scenario
-    : (scenarios.includes("car_tunnel_45s") ? "car_tunnel_45s" : scenarios[0]);
+    : (scenarios.includes(DEFAULT.scenario) ? DEFAULT.scenario : scenarios[0]);
   const sessions = sessionsFor(state.scenario);
-  state.session = sessions.includes(want.session) ? want.session : sessions[0];
+  state.session = sessions.includes(want.session) ? want.session
+    : (sessions.includes(DEFAULT.session) ? DEFAULT.session : sessions[0]);
   const configs = configsFor(state.scenario, state.session);
-  state.a = configs.includes(want.a) ? want.a : (configs.includes("5") ? "5" : configs[0]);
+  state.a = configs.includes(want.a) ? want.a : (configs.includes(DEFAULT.a) ? DEFAULT.a : configs[0]);
   state.b = want.b === "none" ? null : configs.includes(want.b) ? want.b
-    : (configs.includes("2") && state.a !== "2" ? "2" : null);
+    : (configs.includes(DEFAULT.b) && state.a !== DEFAULT.b ? DEFAULT.b : null);
   state.t = want.t;
   buildControls();
   await showRuns();
@@ -134,11 +149,11 @@ function buildControls() {
   const scenarios = [...new Set(state.runs.map((r) => r.scenario))];
   const sessions = sessionsFor(state.scenario);
   const configs = configsFor(state.scenario, state.session);
-  const about = (c) => { const e = entry(c); return `Setup ${c}${e && e.about ? ` – ${e.about}` : ""}`; };
+  const about = (c) => setupName(c);
   app.innerHTML = `
     <div class="controls">
       <label>Scenario<select id="scenario">${options(scenarios, state.scenario, (s) => SCENARIO_NAMES[s] || s)}</select></label>
-      <label>Reader<select id="session">${options(sessions, state.session, (s) => `Reader ${s}`)}</select></label>
+      <label>Reader<select id="session">${options(sessions, state.session, (s) => `Reader ${sessions.indexOf(s) + 1}`)}</select></label>
       <label>Setup<select id="a">${options(configs, state.a, about)}</select></label>
       <label>Compare with<select id="b"><option value="none">(none)</option>${options(configs, state.b, about)}</select></label>
       <div class="timebar">
@@ -240,7 +255,7 @@ function drawLane(lane) {
 
   root.innerHTML = `
     <h2>${esc(configLabel(run))}</h2>
-    <p class="sub">${esc(run.about || "")}</p>
+    <p class="sub">${esc(setupAbout(run.config, run.about || ""))}</p>
     <div class="tiles" data-role="tiles"></div>
     <div class="chart"><div class="title">Coverage along the way (brighter = stronger signal; outline = network in use)</div>${sceneSvg(run, shown, x, W)}</div>
     <div class="chart"><div class="title">Signal strength (dBm)</div>${signalSvg(run, shown, x, W)}
