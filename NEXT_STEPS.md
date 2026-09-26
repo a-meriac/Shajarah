@@ -185,6 +185,19 @@ Superseded runs, for the paper's "what went wrong" paragraph: `results/tunnel20-
   and aioquic is ~2.5x slower than kernel TCP on Wi-Fi. So time to finish mixes in
   implementation speed; extra bytes received and longest stall isolate the switch (TCP
   switching early threw away 44 MB and restarted). Now 150 MB at 20 s, running 150 s.
+  Second try (150 MB, 1 run each), all finished:
+
+  | mode | time | attempts | received / size | longest stall |
+  |---|---|---|---|---|
+  | TCP, react | 72.0 s | 2 | 1.67 | 1.1 s |
+  | TCP, early | 55.0 s | 2 | 1.20 | 0.5 s |
+  | QUIC, react | 104.7 s | 1 | 1.07 | 1.1 s |
+  | QUIC, early | 121.5 s | 1 | 1.07 | 0.4 s |
+
+  TCP threw away 100 MB (reacting) / 30 MB (early) and restarted; QUIC kept every byte. But TCP
+  still finished first: aioquic uses Reno here, the kernel TCP uses Cubic, and on the lossy 5G
+  profile that's ~1.2 vs ~2 MB/s. Stalls are equal (a TCP reconnect is fast on the emulated
+  RTTs). Switching early made QUIC slower, since it left the faster Wi-Fi 6 s sooner.
 
 Kept for later: send live traffic over both networks during a switch. Not chosen on 27 Sep:
 satellite scenarios, full-page prefetch (images), real signal recordings, remembering dead zones.
