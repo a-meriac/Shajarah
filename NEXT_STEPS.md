@@ -179,10 +179,12 @@ Superseded runs, for the paper's "what went wrong" paragraph: `results/tunnel20-
   horizons add false alarms and no warning time; 6 s is nearly as good with fewer false alarms.
   The warning is capped by the 5 s trend window, and false alarms are real dips, not flapping
   (12% of warnings restart within 5 s). Synthetic traces: real drive-test data would firm it up.
-- **Download probe** (`experiments/download_probe.py`): not run yet (needs sudo). First run:
-  `sudo .venv-linux/bin/python -m experiments.download_probe batch --repeats 1`, then
-  `python -m experiments.download_probe summary`; adjust `--size-mb` so a download spans the
-  Wi-Fi cut (default 100 MB, starting at 18 s of the walk).
+- **Download probe** (`experiments/download_probe.py`): first try (`results/download-first-try/`,
+  100 MB at 18 s): TCP finished before the Wi-Fi cut; on 5G both transports only reach 1-2 MB/s
+  (0.2% random loss in the 5G profile; real 5G hides most loss with link-layer retransmission),
+  and aioquic is ~2.5x slower than kernel TCP on Wi-Fi. So time to finish mixes in
+  implementation speed; extra bytes received and longest stall isolate the switch (TCP
+  switching early threw away 44 MB and restarted). Now 150 MB at 20 s, running 150 s.
 
 Kept for later: send live traffic over both networks during a switch. Not chosen on 27 Sep:
 satellite scenarios, full-page prefetch (images), real signal recordings, remembering dead zones.
