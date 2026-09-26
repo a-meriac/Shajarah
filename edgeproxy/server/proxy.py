@@ -15,7 +15,9 @@ its connectivity outlook. A HANDOVER_HINT ("dropout in eta_s seconds, lasting ab
 switches the policy to its lower threshold and bigger budget and immediately re-plans pushes
 for the current page. Pushing stops shortly before the warned dropout (eta_s minus
 prefetch.push_stop_margin_s) and stays off until the client clears the hint: anything sent into
-the outage only jams the connection when it comes back. Clearing the hint switches back to the
+the outage only jams the connection when it comes back. Since that time is only an estimate, at
+most prefetch.max_push_backlog_bytes of pushes are ever unacknowledged, so a link that dies early
+strands little. Clearing the hint switches back to the
 normal policy.
 
   python -m edgeproxy.server.proxy --transport quic --port 4433 --predictor jev
@@ -244,6 +246,9 @@ class ServerProxy:
             picks = [(u, p) for u, p in ranked if u not in client.sent][:k]
             await self._push(picks, child.url, 2, budget, session, client)
 
+    async def _backlog_room(self, session: ServerSession, client: _Client, wire: int) -> bool:
+        return await _wait_backlog(session, self.policy.config.max_push_backlog_bytes, wire, client)
+
     async def _predict(self, state: PageState, depth: int) -> dict[str, float] | None:
         if not state.candidates:
             return None
@@ -294,6 +299,9 @@ class ServerProxy:
             wire = len(frame.encode())  # the budget is about bytes on the network
             if budget.spent + wire > budget.limit:
                 continue
+            if not await self._backlog_room(session, client, wire):
+                self.log.emit("push_stopped", reason="dropout due", source_url=source_url)
+                break
             budget.spent += wire
             client.sent.add(target)
             pushed[target] = r.body
@@ -314,6 +322,16 @@ class ServerProxy:
 class _Budget:
     limit: int
     spent: int = 0
+
+
+async def _wait_backlog(session: ServerSession, limit: int, wire: int, client: _Client) -> bool:
+    """Wait until the client has acknowledged enough earlier pushes to fit `wire` more bytes.
+    False if the warned dropout came first. An empty backlog always has room."""
+    while (backlog := session.backlog_bytes()) and backlog + wire > limit:
+        if client.offline():
+            return False
+        await asyncio.sleep(0.02)
+    return not client.offline()
 
 
 def depth2_parents(policy: PrefetchPolicy, probs: dict[str, float], outlook: LinkOutlook):

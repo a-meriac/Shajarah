@@ -360,3 +360,17 @@ async def test_no_pushes_once_the_warned_dropout_is_due(kind, tunnel_certs, orig
         await s.browser.get(_url(origin, "/wiki/A"))
         assert await _wait_for(lambda: s.cache.peek(_url(origin, "/wiki/B")) is not None)
         assert s.cache.peek(_url(origin, "/wiki/C")) is None
+
+
+async def test_pushes_wait_for_acknowledgements(kind, tunnel_certs, origin):
+    """With a tiny backlog cap every push waits for the previous one; all still arrive, and the
+    connection ends with nothing unacknowledged."""
+    from edgeproxy.server.prefetch_policy import PolicyConfig, PrefetchPolicy
+
+    policy = PrefetchPolicy(PolicyConfig(max_push_backlog_bytes=1))
+    predictor = FakePredictor({"B": 0.9, "C": 0.9})
+    async with Stack(kind, tunnel_certs, ServerProxy(predictor=predictor, policy=policy)) as s:
+        await s.browser.get(_url(origin, "/wiki/A"))
+        for page in ("B", "C"):
+            assert await _wait_for(lambda p=page: s.cache.peek(_url(origin, f"/wiki/{p}")))
+        assert await _wait_for(lambda: s.server.sessions[-1].backlog_bytes() == 0)

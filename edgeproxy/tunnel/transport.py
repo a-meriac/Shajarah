@@ -52,3 +52,7 @@ class ServerSession(ABC):
 
     def send_datagram(self, data: bytes) -> None:
         raise NotImplementedError
+
+    def backlog_bytes(self) -> int:
+        """Bytes handed to the tunnel for this client and not yet acknowledged by it."""
+        return 0

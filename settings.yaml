@@ -31,6 +31,8 @@ prefetch:                      # which predicted pages the server pushes
   depth2_min_outage_s: 20      # ...only if the predicted outage outlasts a typical page view
   push_stop_margin_s: 1        # stop pushing this long before the warned dropout: data sent into
                                # a dead link jams the connection for ~30 s after it returns
+  max_push_backlog_bytes: 256000  # at most this much push data unacknowledged per client, since
+                               # the dropout time is only estimated (it came 2.5 s early in runs)
 
 handover:                      # client-side dropout prediction from signal strength
   threshold_dbm: -110          # cellular/satellite signal below this is unusable (RSRP)

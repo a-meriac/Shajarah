@@ -223,6 +223,11 @@ class _ServerProtocol(QuicConnectionProtocol, ServerSession):
         self._on_datagram = on_datagram
         self.peer_addrs: list = []  # every source address seen, in order (proves migration)
 
+    def backlog_bytes(self) -> int:
+        # Each stream's send buffer holds everything from the first unacknowledged byte on
+        # (sent or still queued). aioquic has no public API for this; checked against 1.3.
+        return sum(len(stream.sender._buffer) for stream in self._quic._streams.values())
+
     def datagram_received(self, data, addr) -> None:
         if not self.peer_addrs or self.peer_addrs[-1] != addr:
             self.peer_addrs.append(addr)

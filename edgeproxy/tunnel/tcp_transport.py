@@ -172,6 +172,9 @@ class _TcpServerSession(ServerSession):
     async def push(self, frame: Frame) -> None:
         self.write(ONEWAY, frame.encode())
 
+    def backlog_bytes(self) -> int:
+        return self.writer.transport.get_write_buffer_size()
+
 
 class TcpTunnelServer:
     def __init__(

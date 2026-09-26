@@ -32,6 +32,9 @@ class PolicyConfig:
     # unacknowledged, and QUIC's loss recovery then holds back even the reader's own requests
     # for tens of seconds after the link returns (batch tunnel20, 25 Sep).
     push_stop_margin_s: float = 1.0
+    # Never have more push data than this unacknowledged per client: if the link dies anyway (the
+    # warning's timing is only an estimate), little is stuck and the connection recovers at once.
+    max_push_backlog_bytes: int = 256_000
 
 
 @dataclass
