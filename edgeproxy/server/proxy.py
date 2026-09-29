@@ -418,9 +418,7 @@ def main() -> None:
     ap.add_argument(
         "--offline", action="store_true", help="Jev from the warmed cache only (no internet)"
     )
-    ap.add_argument(
-        "--fixed-policy", action="store_true", help="ignore handover hints (config 3, ablation 5a)"
-    )
+    ap.add_argument("--fixed-policy", action="store_true", help="ignore handover hints (config 3)")
     ap.add_argument("--log", type=Path, default=None, help="JSONL event log")
     ap.add_argument("--run-id", default="")
     ap.add_argument("--settings", type=Path, default=None, help="default: settings.yaml")

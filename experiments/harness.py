@@ -25,7 +25,6 @@ class RunConfig:
     transport: str  # quic | tcp
     predictor: str  # none | jev
     fixed_policy: bool  # prefetch ignores handover hints
-    proactive: bool  # switch interface before the link dies
     send_hints: bool  # tell the server when a dropout is coming
     hover_oracle: bool = False  # the next click is known 200 ms early (Speculation Rules)
     about: str = ""
@@ -34,13 +33,11 @@ class RunConfig:
 CONFIGS = {
     c.name: c
     for c in [
-        RunConfig("1", "tcp", "none", False, False, False, about="TCP+TLS, reconnect"),
-        RunConfig("2", "quic", "none", False, False, False, about="QUIC migration after failure"),
-        RunConfig("3", "quic", "jev", True, False, False, about="always-on fixed prefetch"),
-        RunConfig("4", "quic", "none", False, False, False, True, "hover oracle, 200 ms early"),
-        RunConfig("5", "quic", "jev", False, True, True, about="full: switch early + hints"),
-        RunConfig("5a", "quic", "none", False, True, False, about="switch early only"),
-        RunConfig("5b", "quic", "jev", False, False, True, about="hint-driven prefetch only"),
+        RunConfig("1", "tcp", "none", False, False, about="TCP+TLS, reconnect"),
+        RunConfig("2", "quic", "none", False, False, about="QUIC migration after failure"),
+        RunConfig("3", "quic", "jev", True, False, about="always-on fixed prefetch"),
+        RunConfig("4", "quic", "none", False, False, True, "hover oracle, 200 ms early"),
+        RunConfig("5", "quic", "jev", False, True, about="full: QUIC + dropout-driven prefetch"),
     ]
 }
 

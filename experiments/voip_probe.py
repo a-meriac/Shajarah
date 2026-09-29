@@ -1,12 +1,12 @@
-"""Voice-call probe: what a network switch does to a live stream, reacting vs switching early.
+"""Voice-call probe: what a network switch does to a live stream.
 
 A call sends ~50 small packets a second. The client sends one QUIC datagram every 20 ms (sequence
 number + send time) and the server echoes it. The path manager runs on the scenario's signal
-traces exactly as in the system runs, either only reacting to failure (as configs 1-4) or also
-switching on a predicted fade (as config 5/5a). Reported per run: packets lost, the longest
-silence between echoes, round-trip times, and when the switch happened.
+traces exactly as in the system runs, moving the tunnel once the link stops answering. Reported
+per run: packets lost, the longest silence between echoes, round-trip times, and when the switch
+happened.
 
-Linux, root. `batch` builds the namespaces and runs both modes N times on one scenario:
+Linux, root. `batch` builds the namespaces and runs the call N times on one scenario:
 
   sudo .venv-linux/bin/python -m experiments.voip_probe batch --scenario wifi_to_5g_walk --repeats 5
   python -m experiments.voip_probe summary          # table from results/voip/*.json
@@ -47,7 +47,6 @@ INTERVAL_S = 0.02  # 50 packets per second
 PACKET = struct.Struct("!Id")  # sequence number, send time (client clock)
 PADDING = b"\0" * 148  # ~160-byte payload, like a 64 kbit/s voice frame
 OUT = ROOT / "results" / "voip"
-MODES = {"reactive": False, "switch_early": True}
 NO_SIGNAL = [{"t": 0, "dbm": -140}]
 
 
@@ -71,7 +70,7 @@ async def serve() -> None:
     await asyncio.Event().wait()
 
 
-async def call(scenario_name: str, mode: str) -> dict:
+async def call(scenario_name: str) -> dict:
     settings = load_settings()
     scenario = yaml.safe_load((SCENARIOS / f"{scenario_name}.yaml").read_text())
     duration = scenario["duration_s"]
@@ -112,7 +111,6 @@ async def call(scenario_name: str, mode: str) -> dict:
         ],
         active,
         settings.handover,
-        proactive=MODES[mode],
         send_hints=False,
         dead_after_s=p.dead_after_s,
         ping_interval_s=p.ping_interval_s,
@@ -146,7 +144,6 @@ async def call(scenario_name: str, mode: str) -> dict:
     rtts = [rtt for _, _, rtt in echoes]
     return {
         "scenario": scenario_name,
-        "mode": mode,
         "sent": sent,
         "received": len(received),
         "lost_pct": round(100 * (1 - len(received) / sent), 2),
@@ -169,27 +166,25 @@ def batch(scenario: str, repeats: int) -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     try:
         for i in range(repeats):
-            for mode in MODES:
-                out = OUT / f"{scenario}-{mode}-{i}.json"
-                if out.exists():
-                    continue
-                subprocess.run([netns, "up"], check=True, capture_output=True)
-                server = _ns("ep-srv", sys.executable, "-m", "experiments.voip_probe", "server",
-                             stdout=subprocess.PIPE, text=True)  # fmt: skip
-                try:
-                    server.stdout.readline()  # "voip echo server on ..."
-                    client = _ns("ep-cli", sys.executable, "-m", "experiments.voip_probe", "call",
-                                 "--scenario", scenario, "--mode", mode,
-                                 stdout=subprocess.PIPE, text=True)  # fmt: skip
-                    result, _ = client.communicate(timeout=300)
-                    out.write_text(result)
-                    r = json.loads(result)
-                    print(f"{mode:13} #{i}: lost {r['lost_pct']}%, "
-                          f"longest silence {r['longest_silence_s']} s", flush=True)  # fmt: skip
-                finally:
-                    server.terminate()
-                    server.wait(5)
-                    subprocess.run([netns, "down"], capture_output=True, check=False)
+            out = OUT / f"{scenario}-{i}.json"
+            if out.exists():
+                continue
+            subprocess.run([netns, "up"], check=True, capture_output=True)
+            server = _ns("ep-srv", sys.executable, "-m", "experiments.voip_probe", "server",
+                         stdout=subprocess.PIPE, text=True)  # fmt: skip
+            try:
+                server.stdout.readline()  # "voip echo server on ..."
+                client = _ns("ep-cli", sys.executable, "-m", "experiments.voip_probe", "call",
+                             "--scenario", scenario, stdout=subprocess.PIPE, text=True)  # fmt: skip
+                result, _ = client.communicate(timeout=300)
+                out.write_text(result)
+                r = json.loads(result)
+                print(f"#{i}: lost {r['lost_pct']}%, "
+                      f"longest silence {r['longest_silence_s']} s", flush=True)  # fmt: skip
+            finally:
+                server.terminate()
+                server.wait(5)
+                subprocess.run([netns, "down"], capture_output=True, check=False)
     finally:
         owner = os.environ.get("SUDO_UID"), os.environ.get("SUDO_GID")
         if all(owner):
@@ -199,17 +194,18 @@ def batch(scenario: str, repeats: int) -> None:
 
 def summary() -> None:
     rows = [json.loads(p.read_text()) for p in sorted(OUT.glob("*.json"))]
-    groups: dict[tuple[str, str], list[dict]] = {}
+    groups: dict[str, list[dict]] = {}
     for r in rows:
-        groups.setdefault((r["scenario"], r["mode"]), []).append(r)
-    print(f"{'scenario':16} {'mode':13} {'n':>2} {'lost %':>7} {'longest silence s':>18} "
+        if r.get("mode", "reactive") == "reactive":  # older runs also tried switching early
+            groups.setdefault(r["scenario"], []).append(r)
+    print(f"{'scenario':16} {'n':>2} {'lost %':>7} {'longest silence s':>18} "
           f"{'rtt ms (median)':>16}")  # fmt: skip
-    for (scenario, mode), rs in sorted(groups.items()):
+    for scenario, rs in sorted(groups.items()):
         lost, silence, rtt = (
             statistics.median(r[k] for r in rs)
             for k in ("lost_pct", "longest_silence_s", "rtt_ms_median")
         )
-        print(f"{scenario:16} {mode:13} {len(rs):2} {lost:7.2f} {silence:18.3f} {rtt:16.1f}")
+        print(f"{scenario:16} {len(rs):2} {lost:7.2f} {silence:18.3f} {rtt:16.1f}")
 
 
 def main() -> None:
@@ -218,7 +214,6 @@ def main() -> None:
     sub.add_parser("server")
     c = sub.add_parser("call")
     c.add_argument("--scenario", required=True)
-    c.add_argument("--mode", choices=list(MODES), required=True)
     b = sub.add_parser("batch")
     b.add_argument("--scenario", default="wifi_to_5g_walk")
     b.add_argument("--repeats", type=int, default=5)
@@ -227,7 +222,7 @@ def main() -> None:
     if args.cmd == "server":
         asyncio.run(serve())
     elif args.cmd == "call":
-        print(json.dumps(asyncio.run(call(args.scenario, args.mode))))
+        print(json.dumps(asyncio.run(call(args.scenario))))
     elif args.cmd == "batch":
         batch(args.scenario, args.repeats)
     else:

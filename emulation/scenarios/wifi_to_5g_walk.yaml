@@ -1,5 +1,5 @@
-# Walking out of a building: Wi-Fi fades and drops, 5G is available throughout. A short handover
-# where make-before-break should matter and prefetch should not.
+# Walking out of a building: Wi-Fi fades and drops, 5G is available throughout. A short handover:
+# the tunnel moves to 5G once Wi-Fi stops answering, and prefetch should not matter.
 name: wifi_to_5g_walk
 duration_s: 60
 initial:

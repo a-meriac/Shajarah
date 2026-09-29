@@ -2,11 +2,8 @@
 
 Every tick it reads each interface's signal and feeds that interface's handover predictor.
 
-- Reactive switch (every config): pings through the tunnel; if none has been answered for
-  `dead_after_s`, the link is treated as dead and the tunnel moves to the healthiest other
-  interface. This is how a system without prediction notices an outage.
-- Proactive switch (`proactive`, config 5): if the active interface's signal is predicted to
-  fail soon and another interface is healthy, move before the link dies.
+- Switch: pings through the tunnel; if none has been answered for `dead_after_s`, the link is
+  treated as dead and the tunnel moves to the healthiest other interface.
 - Hints (`send_hints`, config 5): if a dropout is predicted and no other interface is healthy,
   send HANDOVER_HINT so the server prefetches more; clear it once the outlook is good again.
 
@@ -44,7 +41,6 @@ class PathManager:
         interfaces: list[Interface],
         active: str,
         predictor_config: PredictorConfig | None = None,
-        proactive: bool = True,
         send_hints: bool = True,
         expected_outage_s: float = 30.0,
         dead_after_s: float = 1.0,
@@ -57,7 +53,6 @@ class PathManager:
         self.transport = transport
         self.interfaces = {i.name: i for i in interfaces}
         self.active = active
-        self.proactive = proactive
         self.send_hints = send_hints
         self.expected_outage_s = expected_outage_s
         self.dead_after_s = dead_after_s
@@ -111,12 +106,10 @@ class PathManager:
             )  # fmt: skip
             self._next_signal_log = t + self.signal_log_s
 
-        warned = self.hints[self.active] is not None
         best = self._best_alternative()
         if not link_alive and best is not None:
             await self._switch(t, best, "reactive")
-        elif warned and self.proactive and best is not None:
-            await self._switch(t, best, "proactive")
+            link_alive = True  # the new path gets its own dead_after_s before it counts as dead
 
         warned = self.hints[self.active] is not None  # the active interface may have changed
         outage_coming = (warned or not link_alive) and self._best_alternative() is None

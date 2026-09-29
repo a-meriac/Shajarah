@@ -15,8 +15,8 @@ so both are run: it decorrelates over ~20 s walking and ~3 s driving (about 40 m
 Ground truth is the noise-free signal: the link is down while it is below the threshold. For
 every outage (a crossing after 10+ s above) this reports the warning time, from the start of the
 warning that was still on at the crossing (0 = not warned: the system only reacts). A false alarm
-is a warning that switched off again without an outage in it. Its cost is small but real: an
-early switch to another network (and back once it proves healthy), or ~0.7 MB of extra prefetch.
+is a warning that switched off again without an outage in it. Its cost is small but real:
+~0.7 MB of extra prefetch.
 
 The traces are synthetic, so the numbers show the trade-off's shape, not field accuracy. Real
 drive-test recordings are the next step.

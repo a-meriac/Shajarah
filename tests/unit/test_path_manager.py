@@ -62,24 +62,17 @@ async def replay(name, **kwargs):
     return pm, transport
 
 
-async def test_walk_switches_before_wifi_dies_when_proactive():
-    pm, transport = await replay("wifi_to_5g_walk", proactive=True, send_hints=True)
-    ((t, frm, to, reason),) = pm.switches
-    assert (frm, to, reason) == ("wifi0", "cell0", "proactive")
-    assert t < 28.5 - 2  # seconds of warning before Wi-Fi goes dead at 28.5 s
+async def test_walk_switches_after_wifi_stops_answering():
+    pm, transport = await replay("wifi_to_5g_walk", send_hints=True)
+    ((t, _, to, reason),) = pm.switches
+    assert (to, reason) == ("cell0", "reactive")
+    assert 28.5 + DEAD_AFTER <= t < 28.5 + DEAD_AFTER + 0.2
     assert transport.migrations == ["10.2.0.2"]
     assert transport.sent == []  # 5G was available, so no dropout for the server to prepare for
 
 
-async def test_walk_switches_only_after_failure_when_reactive():
-    pm, _ = await replay("wifi_to_5g_walk", proactive=False, send_hints=False)
-    ((t, _, to, reason),) = pm.switches
-    assert (to, reason) == ("cell0", "reactive")
-    assert 28.5 + DEAD_AFTER <= t < 28.5 + DEAD_AFTER + 0.2
-
-
 async def test_outage_warns_server_before_the_drop_and_clears_after():
-    pm, transport = await replay("car_tunnel_45s", proactive=True, send_hints=True)
+    pm, transport = await replay("car_tunnel_45s", send_hints=True)
     assert pm.switches == []  # nowhere to switch to: every network drops
     hints = [(f.headers["active"], f.headers["outage_s"]) for f in transport.sent]
     assert [h[0] for h in hints] == [True, False]
@@ -90,12 +83,12 @@ async def test_outage_warns_server_before_the_drop_and_clears_after():
 
 
 async def test_no_hints_unless_enabled():
-    _, transport = await replay("car_tunnel_45s", proactive=True, send_hints=False)
+    _, transport = await replay("car_tunnel_45s", send_hints=False)
     assert transport.sent == []
 
 
 async def test_logs_signal_and_warnings_for_the_replay_viewer():
-    pm, _ = await replay("car_tunnel_45s", proactive=True, send_hints=True)
+    pm, _ = await replay("car_tunnel_45s", send_hints=True)
     signals = [e for e in pm.log.events if e["event"] == "signal"]
     assert 0.45 <= signals[1]["t"] - signals[0]["t"] <= 0.55  # every signal_log_s
     assert set(signals[0]["dbm"]) == {"wifi0", "cell0", "sat0"}

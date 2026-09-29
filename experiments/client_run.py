@@ -143,7 +143,6 @@ async def run(args) -> None:
         interfaces,
         active,
         settings.handover,
-        proactive=config.proactive,
         send_hints=config.send_hints,
         expected_outage_s=p.expected_outage_s,
         dead_after_s=p.dead_after_s,

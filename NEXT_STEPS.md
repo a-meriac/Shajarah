@@ -124,9 +124,8 @@ skips such runs, and both were redone.
 | react after failure (configs 1-4) | 29.4-29.5 s, 1 s after Wi-Fi dies | 1.8-2.0% | 0.93-1.08 s |
 | switch early (config 5/5a) | 22.7 s, 5.8 s before | 0.3-0.5% | 0.05-0.07 s |
 
-Switching early costs a call nothing beyond the 5G link's normal loss (0.2% each way); reacting
-means a one-second dropout. This is the evidence for the "switch early" half of the claim, which
-page loads in the walk couldn't show. `python -m experiments.voip_probe summary`.
+Switching early was removed on 29 Sep, so only the first row describes the system now: a switch
+means about a one-second dropout for a call. `python -m experiments.voip_probe summary`.
 
 **Third fix** (`d7d88e6`): with the backlog cap (re-run 26 Sep, kept in
 `results/tunnel20-before-pto-reset/`), config 5's median dropped to 3.1 s, but 5 readers still
@@ -165,14 +164,19 @@ Superseded runs, for the paper's "what went wrong" paragraph: `results/tunnel20-
 5. Optional: rerun the voice probe on the final code (the probe-backoff reset only matters
    after long silences, so the walk results should be unchanged).
 
+## Removed 29 Sep
+
+- **Switching early** (proactive switch before a predicted fade, configs 5a and the switch in 5)
+  and the **cost-aware networks** (prefer Wi-Fi > cellular > satellite, prefetch less on mobile
+  data and satellite) are gone from the code, at the user's request. The tunnel now only moves
+  after the link stops answering (1 s). The dropout warning stays: it drives the extra prefetch.
+  Consequences: the voice-call "switch early" result (0.05 s silence) no longer applies, only the
+  ~1 s reactive gap; 5b equals 5 now, so both were merged into 5. The 45 s outage results are
+  unaffected (no other network there, so the early switch never fired). The site still
+  describes switching early; it is to be redone all at once later.
+
 ## Added 27 Sep
 
-- **Cost-aware networks** (`90433c1`): healthy networks are ranked Wi-Fi, cellular, satellite;
-  the tunnel moves back to a cheaper one once it has been healthy for `paths.return_after_s`
-  (3 s), and the client reports its network kind (NETWORK frame). The server scales its
-  normal prefetch budget by `prefetch.network_factor` (1 / 0.25 / 0.05); before an outage it
-  still uses the full budget. Recorded runs predate this (config 5 on 5G would now push less in
-  normal times, same during a warning). No scenario shows it off yet.
 - **Warning-horizon sweep** (`python -m experiments.warning_sweep`, figure `warning`): synthetic
   traces, 20 h each for walking and driving. At the 8 s horizon in use: walking, 70% of outages
   warned 2+ s ahead (median 2.9 s) at 57 false alarms/h; driving, 51% at 136/h. Longer
@@ -180,7 +184,7 @@ Superseded runs, for the paper's "what went wrong" paragraph: `results/tunnel20-
   The warning is capped by the 5 s trend window, and false alarms are real dips, not flapping
   (12% of warnings restart within 5 s). Synthetic traces: real drive-test data would firm it up.
 
-Kept for later: send live traffic over both networks during a switch. Not chosen on 27 Sep:
+Not chosen on 27 Sep:
 satellite scenarios, full-page prefetch (images), real signal recordings, remembering dead zones.
 
 ## Still open outside the code
