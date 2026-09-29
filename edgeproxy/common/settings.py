@@ -51,6 +51,8 @@ class ClientSettings:
 @dataclass
 class ServerSettings:
     origin_timeout_s: float = 15.0
+    connect_ports: list = field(default_factory=lambda: [443])  # HTTPS pass-through targets
+    connect_timeout_s: float = 10.0
 
 
 @dataclass

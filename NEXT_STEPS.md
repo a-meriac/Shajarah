@@ -164,6 +164,16 @@ Superseded runs, for the paper's "what went wrong" paragraph: `results/tunnel20-
 5. Optional: rerun the voice probe on the final code (the probe-backoff reset only matters
    after long silences, so the walk results should be unchanged).
 
+## HTTPS pass-through (29 Sep)
+
+Browsers' CONNECT requests are relayed through the QUIC tunnel as raw encrypted bytes (one QUIC
+stream per connection: CONNECT header frame, the server's status frame, then bytes both ways).
+The server opens TCP to the site, only on `server.connect_ports` (443). No decryption, so no
+prefetch, cache or compression for HTTPS; the connection does survive migration (tested). The TCP
+baseline answers CONNECT with 502. Live check through both proxies: en.wikipedia.org over HTTPS,
+922 KB in 0.9 s. Decrypting on the phone (local CA, the Opera Mini / Silk model) is the option
+for prefetching HTTPS sites later.
+
 ## Removed 29 Sep
 
 - **Switching early** (proactive switch before a predicted fade, configs 5a and the switch in 5)

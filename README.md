@@ -4,6 +4,8 @@ Our entry for the EDGE Challenge (ATP 2026): keep browsing smooth when your conn
 
 The idea: the connection runs over QUIC, so it survives a network change without a new handshake. Your device can usually tell a dropout is coming because the signal fades first. When it is, an AI model picks the pages you're likely to open next and they're downloaded ahead of time, so there's something to read while you're offline.
 
+HTTPS sites are passed through still encrypted: neither proxy can read them, so they aren't prefetched, but they keep their connection when the network changes.
+
 **Project page:** https://a-meriac.github.io/Shajarah/
 
 ```

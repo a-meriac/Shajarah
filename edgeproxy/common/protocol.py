@@ -2,6 +2,8 @@
 
 Every message is one frame: 4-byte big-endian header length, a JSON header, then the body.
 A request/response pair travels on one bidirectional stream; server pushes use their own streams.
+HTTPS pass-through (CONNECT) streams start with one header-only frame each way, then carry raw
+bytes; `split_head` reads that header.
 
 Bodies are deflate-compressed on the wire when that makes them meaningfully smaller (HTML shrinks
 ~5x; images don't, so they're sent as is). The header then carries "enc": "deflate", and decode()
@@ -38,6 +40,7 @@ class MsgType(str, Enum):
     HANDOVER_HINT = "handover_hint"  # client -> server: outage predicted in eta_s seconds
     PING = "ping"  # client -> server: liveness check, answered with an empty RESPONSE
     VIEWED = "viewed"  # client -> server: the reader opened this page from the cache
+    CONNECT = "connect"  # client -> server: relay raw bytes to host:port (HTTPS pass-through)
 
 
 @dataclass
@@ -73,3 +76,16 @@ def decode(data: bytes) -> Frame:
     if headers.pop("enc", None) == "deflate":
         body = zlib.decompress(body)
     return Frame(msg_type, headers, body)
+
+
+def split_head(data: bytes) -> tuple[Frame, bytes] | None:
+    """The frame header at the start of `data` (body ignored) and the bytes after the header, or
+    None if the header hasn't fully arrived yet."""
+    if len(data) < _LEN.size:
+        return None
+    (hlen,) = _LEN.unpack_from(data)
+    end = _LEN.size + hlen
+    if len(data) < end:
+        return None
+    headers = json.loads(data[_LEN.size : end])
+    return Frame(MsgType(headers.pop("type")), headers), bytes(data[end:])

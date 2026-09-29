@@ -60,6 +60,8 @@ client:
 
 server:
   origin_timeout_s: 15
+  connect_ports: [443]         # HTTPS pass-through may only reach these ports (not an open relay)
+  connect_timeout_s: 10        # give up connecting to a site for pass-through after this
 
 tunnel:
   idle_timeout_s: 120          # must outlast the longest emulated outage

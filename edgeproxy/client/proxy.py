@@ -7,7 +7,9 @@ What it answers from:
   This is what keeps pages readable during an outage.
 - "origin": a full response through the tunnel.
 
-HTTPS (CONNECT) isn't handled here. The live browser demo puts mitmproxy in front for that.
+HTTPS (CONNECT) is passed through: the browser's encrypted bytes go through the tunnel unchanged
+to the server proxy, which relays them to the site. Neither proxy can read them, so HTTPS sites
+aren't cached or prefetched, but their connections survive a network change (QUIC tunnel only).
 
   python -m edgeproxy.client.proxy --transport quic --server 10.9.0.2 --local-ip 10.1.0.2
 """
@@ -32,7 +34,7 @@ from edgeproxy.common.http import (
     reason,
 )
 from edgeproxy.common.protocol import HISTORY_LEN, Frame, MsgType, set_compression
-from edgeproxy.tunnel.transport import ClientTransport
+from edgeproxy.tunnel.transport import ClientTransport, pipe
 
 SOURCE_HEADER = "X-Edgeproxy-Source"
 # Set by the experiment driver for config 4 (hover oracle): fetch now and keep the page ready to
@@ -245,6 +247,9 @@ class ClientProxy:
         while (raw := await reader.readline()) not in (b"\r\n", b"\n", b""):
             name, _, value = raw.decode("latin-1").partition(":")
             headers.append((name.strip(), value.strip()))
+        if method == "CONNECT":
+            await self._pass_through(target, reader, writer)
+            return False
         length = int(get_header(headers, "content-length") or 0)
         body = await reader.readexactly(length) if length else b""
 
@@ -257,6 +262,24 @@ class ClientProxy:
         )
         await self._write(writer, method, reply, keep)
         return keep
+
+    async def _pass_through(
+        self, target: str, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
+    ) -> None:
+        """CONNECT host:port: relay the browser's encrypted bytes through the tunnel as they are."""
+        host, _, port = target.rpartition(":")
+        frame = Frame(MsgType.CONNECT, {"host": host.strip("[]"), "port": int(port or 443)})
+        try:
+            stream = await asyncio.wait_for(self.transport.open_stream(frame), self.request_timeout)
+        except (OSError, TimeoutError, NotImplementedError) as e:
+            self.log.emit("connect_failed", target=target, error=str(e) or type(e).__name__)
+            writer.write(b"HTTP/1.1 502 Bad Gateway\r\nContent-Length: 0\r\n\r\n")
+            await writer.drain()
+            return
+        self.log.emit("connect", target=target)
+        writer.write(b"HTTP/1.1 200 Connection Established\r\n\r\n")
+        await writer.drain()
+        await pipe(stream, reader, writer)
 
     async def _write(
         self, writer: asyncio.StreamWriter, method: str, reply: Reply, keep: bool

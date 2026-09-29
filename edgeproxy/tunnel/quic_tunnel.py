@@ -2,6 +2,9 @@
 
 Each request/response uses one bidirectional stream. Server pushes and client control frames use
 unidirectional streams. Real-time traffic (e.g. the VoIP probe) uses QUIC DATAGRAM frames (RFC 9221).
+HTTPS pass-through uses one bidirectional stream per connection: a CONNECT header frame, the
+server's header-only RESPONSE frame back, then the browser's encrypted bytes both ways. Since
+these are ordinary QUIC streams, they survive migration like everything else.
 
 Migration: the client protocol object outlives its UDP socket. `migrate()` binds a new socket
 (on the new interface's address), hands it to the same protocol, rotates the connection ID and
@@ -13,6 +16,7 @@ connection, this lets the connection move between interfaces.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import logging
 import time
 from functools import partial
@@ -27,11 +31,14 @@ from aioquic.quic.events import (
     DatagramFrameReceived,
     QuicEvent,
     StreamDataReceived,
+    StreamReset,
 )
 
-from edgeproxy.common.protocol import Frame, decode
+from edgeproxy.common.protocol import Frame, MsgType, decode, split_head
 from edgeproxy.tunnel.transport import (
+    ByteStream,
     ClientTransport,
+    ConnectHandler,
     DatagramHandler,
     PushHandler,
     RequestHandler,
@@ -48,6 +55,8 @@ DEFAULT_IDLE_TIMEOUT = 120.0
 MAX_DATAGRAM = 65536
 # Silence after which a packet from the peer means "reachable again" (see _ReachabilityMixin).
 REACHABLE_AGAIN_S = 1.0
+# A pass-through stream's writer waits once this much of its data is unacknowledged.
+STREAM_WINDOW = 1_000_000
 
 
 def _is_client_initiated(stream_id: int) -> bool:
@@ -70,6 +79,78 @@ class _StreamAssembler:
         if event.end_stream:
             return bytes(self._buffers.pop(event.stream_id))
         return None
+
+    def pending(self, stream_id: int) -> bytes:
+        return bytes(self._buffers.get(stream_id, b""))
+
+    def drop(self, stream_id: int) -> None:
+        self._buffers.pop(stream_id, None)
+
+
+class _QuicStream(ByteStream):
+    """A pass-through stream on one QUIC connection (either end)."""
+
+    def __init__(self, protocol: QuicConnectionProtocol, stream_id: int) -> None:
+        self._protocol, self.stream_id = protocol, stream_id
+        self._chunks: asyncio.Queue[bytes] = asyncio.Queue()
+        self._head = b""  # read before the queue: bytes that arrived with the header
+        self._eof = False
+        self._closed = False  # we reset it, or the connection ended
+
+    def feed(self, data: bytes, end: bool = False) -> None:
+        if data:
+            self._chunks.put_nowait(data)
+        if end:
+            self._chunks.put_nowait(b"")
+
+    def unread(self, data: bytes) -> None:
+        self._head = data + self._head
+
+    async def read(self) -> bytes:
+        if self._head:
+            data, self._head = self._head, b""
+            return data
+        if self._eof:
+            return b""
+        data = await self._chunks.get()
+        self._eof = not data
+        return data
+
+    def _send(self, data: bytes, end: bool = False) -> None:
+        if self._closed:
+            raise ConnectionError("stream closed")
+        try:
+            self._protocol._quic.send_stream_data(self.stream_id, data, end_stream=end)
+        except (ValueError, AssertionError) as e:  # aioquic: a finished or reset stream
+            raise ConnectionError(f"stream closed: {e}") from e
+        self._protocol.transmit()
+
+    def write(self, data: bytes) -> None:
+        self._send(data)
+
+    def write_eof(self) -> None:
+        self._send(b"", end=True)
+
+    def _unacked(self) -> int:
+        # aioquic has no public API for this; checked against 1.3 (as backlog_bytes).
+        stream = self._protocol._quic._streams.get(self.stream_id)
+        return len(stream.sender._buffer) if stream is not None else 0
+
+    async def drain(self) -> None:
+        while not self._closed and self._unacked() > STREAM_WINDOW:
+            await asyncio.sleep(0.01)
+
+    def fail(self) -> None:
+        """The peer reset the stream or the connection ended: reads see the end."""
+        self._closed = True
+        self.feed(b"", end=True)
+
+    def abort(self) -> None:
+        if not self._closed:
+            with contextlib.suppress(ValueError, AssertionError):  # already finished or reset
+                self._protocol._quic.reset_stream(self.stream_id, 0)
+                self._protocol.transmit()
+        self.fail()
 
 
 # ---------------------------------------------------------------------------------------- client
@@ -103,16 +184,28 @@ class _ClientProtocol(_ReachabilityMixin, QuicConnectionProtocol):
         super().__init__(*args, **kwargs)
         self._assembler = _StreamAssembler()
         self._pending: dict[int, asyncio.Future[Frame]] = {}
+        self._streams: dict[int, _QuicStream] = {}
         self.on_push: PushHandler | None = None
         self.on_datagram: DatagramHandler | None = None
         self.terminated = asyncio.Event()
 
     def quic_event_received(self, event: QuicEvent) -> None:
-        if isinstance(event, StreamDataReceived):
+        if isinstance(event, StreamDataReceived) and event.stream_id in self._streams:
+            stream = self._streams[event.stream_id]
+            if event.end_stream:  # nothing more will arrive on it
+                del self._streams[event.stream_id]
+            stream.feed(event.data, event.end_stream)
+        elif isinstance(event, StreamReset) and event.stream_id in self._streams:
+            self._streams.pop(event.stream_id).fail()
+        elif isinstance(event, StreamDataReceived):
             payload = self._assembler.feed(event)
             if payload is None:
                 return
-            frame = decode(payload)
+            try:
+                frame = decode(payload)
+            except ValueError:
+                log.warning("dropped a malformed frame on stream %d", event.stream_id)
+                return
             waiter = self._pending.pop(event.stream_id, None)
             if waiter is not None:
                 if not waiter.done():
@@ -129,6 +222,9 @@ class _ClientProtocol(_ReachabilityMixin, QuicConnectionProtocol):
                 if not waiter.done():
                     waiter.set_exception(err)
             self._pending.clear()
+            for stream in self._streams.values():
+                stream.fail()
+            self._streams.clear()
 
     def open_request(self, data: bytes) -> asyncio.Future[Frame]:
         stream_id = self._quic.get_next_available_stream_id()
@@ -137,6 +233,23 @@ class _ClientProtocol(_ReachabilityMixin, QuicConnectionProtocol):
         self._quic.send_stream_data(stream_id, data, end_stream=True)
         self.transmit()
         return waiter
+
+    async def open_stream(self, frame: Frame) -> _QuicStream:
+        stream_id = self._quic.get_next_available_stream_id()
+        stream = self._streams[stream_id] = _QuicStream(self, stream_id)
+        stream.write(frame.encode())
+        buf = b""
+        while (head := split_head(buf)) is None:
+            chunk = await stream.read()
+            if not chunk:
+                raise ConnectionError("tunnel stream closed before the server answered")
+            buf += chunk
+        reply, rest = head
+        if reply.headers.get("status") != 200:
+            stream.abort()  # stays routed until the server's end of stream arrives
+            raise ConnectionError(f"server could not connect: {reply.headers.get('status')}")
+        stream.unread(rest)
+        return stream
 
     def send_oneway(self, data: bytes) -> None:
         stream_id = self._quic.get_next_available_stream_id(is_unidirectional=True)
@@ -211,6 +324,9 @@ class QuicClientTransport(ClientTransport):
     async def send(self, frame: Frame) -> None:
         self._require().send_oneway(frame.encode())
 
+    async def open_stream(self, frame: Frame) -> ByteStream:
+        return await self._require().open_stream(frame)
+
     def send_datagram(self, data: bytes) -> None:
         self._require().send_datagram(data)
 
@@ -241,12 +357,20 @@ class QuicClientTransport(ClientTransport):
 
 class _ServerProtocol(_ReachabilityMixin, QuicConnectionProtocol, ServerSession):
     def __init__(
-        self, *args, handler: RequestHandler, on_datagram: DatagramHandler | None, **kwargs
+        self,
+        *args,
+        handler: RequestHandler,
+        on_datagram: DatagramHandler | None,
+        on_connect: ConnectHandler | None = None,
+        **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
         self._assembler = _StreamAssembler()
         self._handler = handler
         self._on_datagram = on_datagram
+        self._on_connect = on_connect
+        self._streams: dict[int, _QuicStream] = {}
+        self._framed: set[int] = set()  # streams known to carry one whole frame, not CONNECT
         self.peer_addrs: list = []  # every source address seen, in order (proves migration)
 
     def backlog_bytes(self) -> int:
@@ -261,11 +385,60 @@ class _ServerProtocol(_ReachabilityMixin, QuicConnectionProtocol, ServerSession)
 
     def quic_event_received(self, event: QuicEvent) -> None:
         if isinstance(event, StreamDataReceived):
+            sid = event.stream_id
+            if sid in self._streams:
+                stream = self._streams[sid]
+                if event.end_stream:  # nothing more will arrive on it
+                    del self._streams[sid]
+                stream.feed(event.data, event.end_stream)
+                return
             payload = self._assembler.feed(event)
-            if payload is not None:
-                asyncio.ensure_future(self._dispatch(event.stream_id, decode(payload)))
+            if payload is None:
+                self._maybe_pass_through(sid)
+                return
+            self._framed.discard(sid)
+            try:
+                frame = decode(payload)
+            except ValueError:
+                log.warning("dropped a malformed frame on stream %d", sid)
+                return
+            if frame.type is MsgType.CONNECT:  # header and end of stream in one go
+                self._open_pass_through(sid, frame, b"", end=True)
+            else:
+                asyncio.ensure_future(self._dispatch(sid, frame))
+        elif isinstance(event, StreamReset) and event.stream_id in self._streams:
+            self._streams.pop(event.stream_id).fail()
+        elif isinstance(event, ConnectionTerminated):
+            for stream in self._streams.values():
+                stream.fail()
+            self._streams.clear()
         elif isinstance(event, DatagramFrameReceived) and self._on_datagram is not None:
             self._on_datagram(event.data)
+
+    def _maybe_pass_through(self, stream_id: int) -> None:
+        """Once a client stream's header has arrived, switch CONNECT streams to relaying."""
+        if stream_id in self._framed or not _is_bidirectional(stream_id):
+            return
+        head = split_head(self._assembler.pending(stream_id))
+        if head is None:
+            return
+        frame, rest = head
+        if frame.type is MsgType.CONNECT:
+            self._assembler.drop(stream_id)
+            self._open_pass_through(stream_id, frame, rest)
+        else:
+            self._framed.add(stream_id)
+
+    def _open_pass_through(self, stream_id: int, frame: Frame, rest: bytes, end=False) -> None:
+        stream = _QuicStream(self, stream_id)
+        if not end:
+            self._streams[stream_id] = stream
+        stream.feed(rest, end)
+        if self._on_connect is None:
+            stream.write(Frame(MsgType.RESPONSE, {"status": 501}).encode())
+            stream.write_eof()
+            return
+        asyncio.ensure_future(self._on_connect(frame, stream))
 
     async def _dispatch(self, stream_id: int, frame: Frame) -> None:
         try:
@@ -309,17 +482,23 @@ class QuicTunnelServer:
         configuration: QuicConfiguration,
         handler: RequestHandler,
         on_datagram: DatagramHandler | None = None,
+        on_connect: ConnectHandler | None = None,
     ) -> None:
         self.host, self.port = host, port
         self.configuration = configuration
         self.handler = handler
         self.on_datagram = on_datagram
+        self.on_connect = on_connect
         self._server: QuicServer | None = None
         self.sessions: list[_ServerProtocol] = []
 
     def _create_protocol(self, *args, **kwargs) -> _ServerProtocol:
         protocol = _ServerProtocol(
-            *args, handler=self.handler, on_datagram=self.on_datagram, **kwargs
+            *args,
+            handler=self.handler,
+            on_datagram=self.on_datagram,
+            on_connect=self.on_connect,
+            **kwargs,
         )
         self.sessions.append(protocol)
         return protocol

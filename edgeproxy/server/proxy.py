@@ -20,6 +20,11 @@ most prefetch.max_push_backlog_bytes of pushes are ever unacknowledged, so a lin
 strands little. Clearing the hint switches back to the
 normal policy.
 
+HTTPS pass-through (CONNECT): the server opens a TCP connection to the site and relays the
+browser's encrypted bytes unchanged. It can't read them, so these sites get no prediction,
+prefetch or caching; they do keep their connection when the phone changes network. Only the
+ports in server.connect_ports are allowed (443), so the server isn't an open relay.
+
   python -m edgeproxy.server.proxy --transport quic --port 4433 --predictor jev
 """
 
@@ -41,7 +46,7 @@ from edgeproxy.predictors.base import PageState, Predictor
 from edgeproxy.server.fetcher import Fetcher
 from edgeproxy.server.links import extract_links, page_summary
 from edgeproxy.server.prefetch_policy import LinkOutlook, PrefetchPolicy
-from edgeproxy.tunnel.transport import ServerSession
+from edgeproxy.tunnel.transport import ByteStream, ServerSession, pipe
 
 
 @dataclass
@@ -88,8 +93,12 @@ class ServerProxy:
         policy: PrefetchPolicy | None = None,
         max_candidates: int = 2000,
         same_origin_only: bool = True,
+        connect_ports: list[int] | None = None,
+        connect_timeout: float = 10.0,
     ) -> None:
         self.fetcher = fetcher or Fetcher()
+        self.connect_ports = connect_ports  # None = any port (tests)
+        self.connect_timeout = connect_timeout
         self.log = log
         self.predictor = predictor  # None: plain proxy, no prefetching (configs 1 and 2)
         self.policy = policy or PrefetchPolicy()
@@ -136,6 +145,31 @@ class ServerProxy:
         if r.status == 304:
             return Frame(MsgType.NOT_MODIFIED, {"status": 304, "headers": r.headers})
         return Frame(MsgType.RESPONSE, {"status": r.status, "headers": r.headers}, r.body)
+
+    async def handle_connect(self, frame: Frame, stream: ByteStream) -> None:
+        """Relay a pass-through stream to host:port, answering with the status first."""
+        host, port = str(frame.headers.get("host", "")), int(frame.headers.get("port", 0))
+        if self.connect_ports is not None and port not in self.connect_ports:
+            status, conn = 403, None
+        else:
+            try:
+                conn = await asyncio.wait_for(
+                    asyncio.open_connection(host, port), self.connect_timeout
+                )
+                status = 200
+            except (OSError, TimeoutError):
+                status, conn = 502, None
+        self.log.emit("connect", host=host, port=port, status=status)
+        try:
+            stream.write(Frame(MsgType.RESPONSE, {"status": status}).encode())
+            if conn is None:
+                stream.write_eof()
+                return
+        except ConnectionError:
+            if conn is not None:
+                conn[1].close()
+            return
+        await pipe(stream, *conn)
 
     def _page_viewed(
         self, url: str, session: ServerSession, html: bytes | None, history: list[str]
@@ -390,12 +424,16 @@ async def _serve(args) -> None:
         policy=PrefetchPolicy(s.prefetch, adaptive=not args.fixed_policy),
         max_candidates=s.links.max_candidates,
         same_origin_only=s.links.same_origin_only,
+        connect_ports=s.server.connect_ports,
+        connect_timeout=s.server.connect_timeout_s,
     )
     if args.transport == "quic":
         from edgeproxy.tunnel.quic_tunnel import QuicTunnelServer, server_configuration
 
         config = server_configuration(cert, key, idle_timeout=s.tunnel.idle_timeout_s)
-        server = QuicTunnelServer(args.host, args.port, config, proxy.handle)
+        server = QuicTunnelServer(
+            args.host, args.port, config, proxy.handle, on_connect=proxy.handle_connect
+        )
     else:
         from edgeproxy.tunnel.tcp_transport import TcpTunnelServer, server_ssl_context
 
