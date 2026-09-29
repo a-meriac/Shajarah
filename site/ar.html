@@ -4,313 +4,576 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>شجرة · Shajarah</title>
+  <meta name="description" content="تُبقي شجرة المستجيبين الأوائل على اتصال بينما تتنقّل هواتفهم بين الواي فاي و5G والأقمار الصناعية: نفق QUIC واحد يصمد أمام تغيّر عنوان IP، وضغط للبيانات، وجلب مسبق بالذكاء الاصطناعي. تحدي EDGE، ATP 2026.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Beiruti:wght@400;600;800&display=swap" rel="stylesheet">
   <link rel="alternate" hreflang="en" href="index.html">
-  <meta name="description" content="تُبقي شجرة اتصالك قائمًا عندما يتنقّل هاتفك بين الشبكات: من دون مصافحة جديدة، ومع انتقال يسبق انقطاع الإشارة. وتجلب مسبقًا الصفحات المرجّحة أيضًا. تحدي EDGE، ATP 2026.">
-  <style>
-    :root {
-      color-scheme: light;
-      --bg: #fbfaf7;
-      --fg: #1d1d1b;
-      --muted: #6b6a66;
-      --line: #e3e0d8;
-      --card: #ffffff;
-      --accent: #2f6f5e;
-      --accent-soft: #e4f0ec;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        color-scheme: dark;
-        --bg: #161615;
-        --fg: #ecebe6;
-        --muted: #9d9b94;
-        --line: #2e2d2a;
-        --card: #1f1f1d;
-        --accent: #7cc4ad;
-        --accent-soft: #1f302b;
-      }
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--fg);
-      font: 20px/1.75 "Beiruti", "Noto Naskh Arabic", system-ui, sans-serif;
-    }
-    main { max-width: 760px; margin: 0 auto; padding: 56px 16px 80px; }
-    h1 { font-size: 2.4rem; line-height: 1.15; margin: 0 0 12px; letter-spacing: -0.02em; }
-    h1.wordmark { font-family: "Beiruti", "Noto Naskh Arabic", "Segoe UI", sans-serif; font-weight: 800;
-                  font-size: 4.4rem; line-height: 1.1; letter-spacing: 0; margin: 0; color: var(--accent);
-                  text-align: start; }
-    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 20px; }
-    .topbar .tag { margin-bottom: 0; }
-    .lang { font-size: 0.95rem; text-decoration: none; border: 1px solid var(--line); border-radius: 999px;
-            padding: 3px 12px; color: var(--fg); background: var(--card); }
-    .lang:lang(ar) { font-family: "Beiruti", "Noto Naskh Arabic", sans-serif; font-size: 1.05rem; }
-    .subtitle { font-size: 1.6rem; font-weight: 650; letter-spacing: -0.01em; margin: 0 0 18px; }
-    ul.key { list-style: none; padding: 0; margin: 0 0 28px; }
-    ul.key li { position: relative; padding-inline-start: 22px; margin-bottom: 10px; color: var(--muted); font-size: 1.08rem; }
-    ul.key li::before { content: ""; position: absolute; inset-inline-start: 4px; top: 0.62em; width: 8px; height: 8px;
-                        border-radius: 50%; background: var(--accent); }
-    ul.key b { color: var(--fg); }
-    h2 { font-size: 1.25rem; margin: 56px 0 12px; }
-    p { margin: 0 0 14px; }
-    .lede { font-size: 1.2rem; color: var(--muted); margin-bottom: 28px; }
-    .tag { display: inline-block; font-size: 0.8rem; color: var(--accent); background: var(--accent-soft);
-           padding: 3px 10px; border-radius: 999px; margin-bottom: 20px; }
-    a { color: var(--accent); }
-    .links { display: flex; flex-wrap: wrap; gap: 10px; }
-    .btn { display: inline-block; padding: 9px 16px; border-radius: 8px; border: 1px solid var(--line);
-           background: var(--card); color: var(--fg); text-decoration: none; font-size: 0.95rem; }
-    .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); }
-
-    /* How it works: a row of boxes that stacks on phones */
-    .flow { display: flex; align-items: center; gap: 8px; margin: 20px 0 8px; }
-    .node { flex: 1; background: var(--card); border: 1px solid var(--line); border-radius: 10px;
-            padding: 12px; text-align: center; font-size: 0.9rem; }
-    .node b { display: block; font-size: 0.95rem; }
-    .node span { color: var(--muted); font-size: 0.8rem; }
-    .node.tunnel { border-color: var(--accent); background: var(--accent-soft); }
-    .arrow { color: var(--muted); }
-    @media (max-width: 600px) {
-      .flow { flex-direction: column; align-items: stretch; }
-      .arrow { text-align: center; transform: rotate(90deg); }
-    }
-
-    ol.steps { padding-inline-start: 20px; }
-    ol.steps li { margin-bottom: 10px; }
-
-    figure { margin: 20px 0; }
-    figure img, video { width: 100%; border-radius: 10px; border: 1px solid var(--line); }
-    figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 6px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
-    .stat { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
-    .stat .num { font-size: 1.6rem; font-weight: 650; }
-    .stat .label { color: var(--muted); font-size: 0.85rem; }
-    .stat .num { font-variant-numeric: tabular-nums; }
-    .caption { color: var(--muted); font-size: 0.9rem; margin-top: 10px; }
-    .table-wrap { overflow-x: auto; margin: 16px 0 6px; }
-    table { border-collapse: collapse; width: auto; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
-    th, td { text-align: start; padding: 7px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
-    th:first-child, td:first-child { padding-inline-start: 0; }
-    th { color: var(--muted); font-weight: 500; font-size: 0.85rem; }
-    td.num, th.num { text-align: end; white-space: nowrap; }
-    tr.ours td { font-weight: 650; background: var(--accent-soft); }
-    ul.points { padding-inline-start: 20px; }
-    ul.points li { margin-bottom: 10px; }
-    .callout { border-inline-start: 3px solid var(--accent); padding-block: 2px; padding-inline: 16px 0; margin: 20px 0; }
-    /* Section links. Wide screens: a quiet list in the margin beside the article that stays put
-       and marks the section being read. Narrow screens: one slim line at the top that scrolls
-       sideways instead of wrapping. */
-    nav.toc { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
-              margin: 24px -16px 0; padding: 8px 16px; border-bottom: 1px solid var(--line);
-              display: flex; gap: 18px; overflow-x: auto; white-space: nowrap; scrollbar-width: none;
-              font-size: 0.88rem; }
-    nav.toc::-webkit-scrollbar { display: none; }
-    nav.toc a { text-decoration: none; color: var(--muted); padding: 2px 0; border-bottom: 2px solid transparent; }
-    nav.toc a:hover { color: var(--fg); }
-    nav.toc a.active { color: var(--accent); border-bottom-color: var(--accent); }
-    h2 { scroll-margin-top: 64px; }
-    @media (min-width: 1180px) {
-      nav.toc { position: fixed; top: 120px; inset-inline-start: calc(50% - 380px - 200px); width: 170px;
-                margin: 0; padding: 0; border: 0; background: none; flex-direction: column; gap: 2px;
-                overflow: visible; white-space: normal; font-size: 0.85rem; }
-      nav.toc a { padding: 4px 0 4px 12px; padding-inline: 12px 0; border-bottom: 0;
-                  border-inline-start: 2px solid var(--line); }
-      nav.toc a.active { border-inline-start-color: var(--accent); }
-      h2 { scroll-margin-top: 24px; }
-    }
-    footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line);
-             color: var(--muted); font-size: 0.9rem; }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<main>
-  <div class="topbar" id="overview">
-    <span class="tag">تحدي EDGE · ATP 2026</span>
+<nav class="topnav" aria-label="الأقسام">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="شجرة، العودة إلى الأعلى">شجرة</a>
+    <div class="links">
+      <a href="#problem"><b>02</b>المشكلة</a>
+      <a href="#solutions"><b>03</b>الحلول</a>
+      <a href="#idea"><b>04</b>فكرتنا</a>
+      <a href="#model"><b>05</b>النموذج</a>
+      <a href="#prototype"><b>06</b>النموذج الأولي</a>
+      <a href="#testing"><b>07</b>الاختبار</a>
+      <a href="#results"><b>08</b>النتائج</a>
+      <a href="#improvements"><b>09</b>التحسينات</a>
+      <a href="#field"><b>10</b>الميدان</a>
+    </div>
+    <a class="navbtn" href="replay-ar.html">إعادة عرض البيانات</a>
     <a class="lang" href="index.html" lang="en" hreflang="en">English</a>
   </div>
-  <h1 class="wordmark">شجرة</h1>
-  <p class="subtitle"><span lang="en" dir="ltr">Shajarah</span></p>
-  <p class="lede">تُبقي اتصالك قائمًا عندما يتنقّل هاتفك بين الشبكات.</p>
-  <ul class="key">
-    <li><b>من دون إعادة اتصال.</b> يعمل الاتصال عبر بروتوكول QUIC الذي يستمر عندما يتغيّر عنوان IP للهاتف، بدلًا من بدء مصافحة جديدة كما يتطلب TCP. فتستمر الصفحات والتنزيلات والمكالمات.</li>
-    <li><b>تنتقل إلى شبكة أخرى مبكرًا.</b> عندما تبدأ الإشارة بالضعف وتتوفّر شبكة أخرى، ينتقل الاتصال إليها قبل أن تنقطع الشبكة الحالية.</li>
-    <li><b>وأيضًا: تنزّل ما ستقرؤه لاحقًا.</b> إذا لم تكن هناك شبكة أخرى، يختار نموذج ذكاء اصطناعي الصفحات التي يُرجَّح أن تنقر عليها ويجلبها مسبقًا، فتُفتح حتى من دون أي إشارة.</li>
-  </ul>
-  <div class="links">
-    <a class="btn primary" href="replay-ar.html">إعادة عرض البيانات</a>
-    <a class="btn" href="https://github.com/a-meriac/Shajarah">الشيفرة المصدرية على GitHub</a>
+</nav>
+
+<header class="hero" id="top">
+  <div class="dark">
+    <p class="kicker">تحدي EDGE · ATP 2026</p>
+    <h1 class="wordmark">شجرة</h1>
+    <p class="name" lang="en" dir="ltr" style="text-align:right">Shajarah</p>
+    <p class="tagline">نُبقي المستجيبين الأوائل على اتصال بينما تتنقّل هواتفهم بين الواي فاي و5G والأقمار الصناعية.</p>
+    <div class="buttons">
+      <a class="btn primary" href="#results">اطّلع على النتائج</a>
+      <a class="btn" href="replay-ar.html">أعد عرض الاختبارات</a>
+      <a class="btn" href="https://github.com/a-meriac/Shajarah">الشيفرة على GitHub</a>
+    </div>
   </div>
-  <nav class="toc" aria-label="أقسام الصفحة">
-    <a href="#overview">نظرة عامة</a>
-    <a href="#glance">باختصار</a>
-    <a href="#problem">المشكلة</a>
-    <a href="#how">كيف تعمل</a>
-    <a href="#results">النتائج</a>
-    <a href="#learned">ما تعلّمناه</a>
-    <a href="#testing">كيف اختبرناها</a>
-    <a href="#limits">حدود العمل</a>
-  </nav>
-
-  <h2 id="glance">النتائج باختصار</h2>
-  <div class="grid">
-    <div class="stat"><div class="num">60 ملّي ثانية</div><div class="label">أطول انقطاع في مكالمة مباشرة عند مغادرة نطاق الواي فاي، بدلًا من ثانية تقريبًا</div></div>
-    <div class="stat"><div class="num">56% أقل</div><div class="label">من وقت انتظار الصفحات مقارنةً بالاتصال العادي</div></div>
-    <div class="stat"><div class="num">14 من 26</div><div class="label">نقرة أثناء انقطاع مدته 45 ثانية فُتحت فورًا، مقابل 3 من 20 من دون شجرة</div></div>
-    <div class="stat"><div class="num">0 من 20</div><div class="label">من القرّاء انتظروا أكثر مما مع الاتصال الحديث؛ 8 كانوا أسرع، والباقون بالسرعة نفسها</div></div>
+  <div class="side">
+    <div>
+      <h2>الفريق</h2>
+      <ul class="team" lang="en" dir="ltr" style="text-align:right">
+        <li>Andre Meriac</li>
+        <li>Jassim Alzaabi</li>
+        <li>Chanwon Cheong</li>
+      </ul>
+    </div>
+    <div class="glance">
+      <div><b>0.96 ثانية</b><span>ليعود النفق إلى نقل البيانات بعد انقطاع 5G، مقابل 13.1 ثانية لاتصال TCP+TLS المرجعي لدينا</span></div>
+      <div><b>5.7×</b><span>أصغر حجمًا تعبر الصفحات النفق، وهي القيمة الوسيطة لـ2,147 صفحة من ويكيبيديا</span></div>
+      <div><b>16.1%</b><span>من النقرات الحقيقية تذهب إلى الروابط الثلاثة الأولى في ترتيب Jev، أي أكثر من ثلاثة أضعاف الاختيار العشوائي</span></div>
+    </div>
   </div>
-  <p class="caption">
-    قيست في شبكة محاكاة: 20 قارئًا افتراضيًا يتصفحون ويكيبيديا خلال انقطاع مفاجئ للشبكة مدته 45 ثانية،
-    ومكالمة صوتية أثناء المشي خارج نطاق الواي فاي. التفاصيل أدناه.
-  </p>
+</header>
 
-  <h2 id="problem">المشكلة</h2>
-  <p>
-    تتجاهل الهواتف ضعف الإشارة إلى أن ينقطع الاتصال فعلًا. عندها فقط تبحث عن شبكة أخرى، وتعيد
-    الاتصال، وتعيد تحميل ما كنت تفتحه. في القطار أو السيارة أو عند الخروج من مبنى، يعني ذلك صفحة
-    متجمّدة أو مكالمة مقطوعة.
-  </p>
-  <p>
-    يعالج كلٌّ من الحلّين المعتادين نصف المشكلة فقط. تستطيع بروتوكولات النقل الحديثة مثل QUIC نقل
-    الاتصال من شبكة إلى أخرى، ولكن بعد حدوث التبديل فقط، ولا تستطيع تحميل أي شيء في غياب الإشارة
-    تمامًا. أما الجلب المسبق فيمكنه تخزين الصفحات مقدّمًا، لكن تشغيله باستمرار يهدر البيانات على
-    صفحات لا يفتحها أحد.
-  </p>
-
-  <h2 id="how">كيف تعمل</h2>
-  <div class="flow" aria-label="من المتصفح إلى وكيل العميل، عبر نفق فوق الواي فاي أو 5G أو القمر الصناعي، إلى وكيل الخادم، ثم إلى المواقع">
-    <div class="node"><b>المتصفح</b><span>دون تغيير</span></div>
-    <div class="arrow">←</div>
-    <div class="node"><b>وكيل العميل</b><span>على هاتفك</span></div>
-    <div class="arrow">←</div>
-    <div class="node tunnel"><b>النفق</b><span>واي فاي · 5G · قمر صناعي</span></div>
-    <div class="arrow">←</div>
-    <div class="node"><b>وكيل الخادم</b><span>في السحابة</span></div>
-    <div class="arrow">←</div>
-    <div class="node"><b>المواقع</b></div>
+<main>
+<!-- 02 -->
+<section class="slide" id="problem">
+  <div class="wrap">
+    <p class="tag">02 · المشكلة</p>
+    <h2 class="title">يفقد المستجيبون الاتصال حين يحتاجونه أكثر</h2>
+    <div class="cols two">
+      <div>
+        <h3>لماذا يحتاج المستجيبون إلى الاتصال</h3>
+        <p>يعتمد المستجيبون الأوائل بشكل متزايد على أدوات تعمل عبر الإنترنت في الميدان. تستخدم فرق كثيرة تطبيق ATAK الذي يعرض مواقع أفراد الفريق وبيانات الحادث على خريطة مشتركة في هواتفهم، وقد اعتمد تقليديًا على الشبكة الخلوية. وتخطط فرق البحث والإنقاذ تحركاتها وتتنقّل بأدوات خرائط مثل CalTopo، وتتيح المكالمات الصوتية عبر الإنترنت للفرق أن تتواصل أينما توفّرت تغطية البيانات.</p>
+        <p>لكن في عمليات البحث والإنقاذ في الصحراء أو أثناء عاصفة رملية تكون التغطية متقطعة، وينتقل هاتف المستجيب باستمرار بين أبراج خلوية مختلفة والأقمار الصناعية. ولا تكون هذه الأدوات أفضل من الاتصال الذي تعمل فوقه.</p>
+        <h3>لماذا يعطّل التنقّل بين الشبكات كل شيء</h3>
+        <p>كل انتقال إلى شبكة جديدة يمنح الهاتف عنوان IP جديدًا. واتصالات التطبيقات العادية مرتبطة بذلك العنوان، فيُجبر كل انتقال التطبيقات على البدء من جديد بمصافحة TCP جديدة. والنتيجة أن الخرائط تتوقف، والصفحات لا تُحمَّل، والمكالمات الصوتية تنقطع.</p>
+        <p>هكذا يبدو انتقال واحد من وجهة نظر التطبيق:</p>
+        <ol class="steps">
+          <li>ينضم الهاتف إلى شبكة جديدة ويحصل على عنوان IP جديد.</li>
+          <li>كل اتصال TCP مفتوح كان مرتبطًا بالعنوان القديم، فأصبح ميتًا، وكثيرًا ما لا يلاحظ التطبيق ذلك إلا بعد انتهاء مهلة الانتظار.</li>
+          <li>يفتح التطبيق اتصالًا جديدًا: مصافحة TCP ثم مصافحة TLS، قبل أن تتدفق أي بيانات.</li>
+          <li>ما كان في الطريق، صفحة أو جزء من خريطة أو رسالة، يضيع أو يجب إرساله من جديد.</li>
+        </ol>
+        <p>قد تبدو كل فجوة قصيرة، لكن الانتقالات تتكرر مرة بعد مرة أثناء تحرّك الفريق، وكل واحد منها يقطع كل تطبيقات الهاتف في اللحظة نفسها.</p>
+      </div>
+      <div class="card dark">
+        <p class="label">كلفة إعادة الاتصال</p>
+        <div class="num"><span class="ltr">1.2 s+</span></div>
+        <p class="big-label">من الوقت الضائع بعد كل انتقال على رابط قمر صناعي ثابت بالنسبة للأرض، قبل أن تتدفق أي بيانات من جديد.</p>
+        <p>يحتاج كل اتصال آمن جديد إلى مصافحة TCP ثم مصافحة TLS، وتستغرق كل منهما رحلة ذهاب وإياب كاملة على الأقل. وعلى رابط قمر صناعي ثابت تستغرق الرحلة الواحدة نحو 600 ملّي ثانية، فتزداد كلفة إعادة الاتصال كلما زاد زمن الاستجابة في الرابط.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>الرابط</th><th class="num">ذهاب وإياب</th><th class="num">مصافحتان</th></tr></thead>
+            <tbody>
+              <tr><td>واي فاي</td><td class="num">8 ملّي ثانية</td><td class="num">16 ملّي ثانية</td></tr>
+              <tr><td>5G</td><td class="num">24 ملّي ثانية</td><td class="num">48 ملّي ثانية</td></tr>
+              <tr><td>قمر صناعي منخفض المدار</td><td class="num">40 ملّي ثانية</td><td class="num">80 ملّي ثانية</td></tr>
+              <tr><td>قمر صناعي ثابت</td><td class="num">600 ملّي ثانية</td><td class="num">1.2 ثانية</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small">أزمنة الذهاب والإياب للروابط التي نحاكيها. ويُضاف إليها الوقت اللازم لاكتشاف أن الرابط القديم انقطع.</p>
+        <p><strong class="hl">مع ترحيل الاتصال في QUIC، لا حاجة إلى أي مصافحة جديدة.</strong></p>
+      </div>
+    </div>
   </div>
-  <ol class="steps">
-    <li><b>مراقبة الإشارة.</b> يقيس الهاتف الإشارة على كل شبكة عشر مرات في الثانية ويستخلص اتجاهها. إذا كانت الشبكة الحالية في طريقها إلى ما دون القوة الصالحة للاستخدام خلال الثواني الثماني التالية تقريبًا، يُطلق تحذيرًا.</li>
-    <li><b>الانتقال إلى شبكة أخرى قبل الانقطاع.</b> إذا كانت هناك شبكة أخرى سليمة، ينتقل الاتصال إليها قبل أن تنقطع الشبكة الحالية. ولأنه يعمل عبر QUIC، لا حاجة إلى مصافحة جديدة ولا يضيع شيء مما هو قيد التحميل.</li>
-    <li><b>الجلب المسبق حين لا توجد شبكة بديلة.</b> عندما تنقطع كل الشبكات معًا، يُبلغ الهاتف الخادم بأن انقطاعًا وشيك، فيبدأ الخادم بإرسال صفحات إضافية: الصفحات التي يُرجَّح أن تفتحها بعد ذلك، والصفحات المرجّحة التي تليها.</li>
-    <li><b>فتح الصفحات من دون إشارة.</b> في غياب الاتصال، تُفتح الصفحات التي أُرسلت إليك مباشرةً من ذاكرة الهاتف، وكأن شيئًا لم يحدث.</li>
-  </ol>
-  <p>
-    لتحديد الصفحات التي تستحق الإرسال، يسأل الخادم نموذج قرار هو
-    <a href="https://openrouter.ai/docs/guides/community/jev">Jev</a> من شركة TypeSafe عن مدى
-    احتمال نقرك على كل رابط، استنادًا إلى عنوان الصفحة وآخر الصفحات التي قرأتها والروابط الموجودة
-    فيها. تُرسل العناوين ونصوص الروابط فقط، ولا يُرسل محتوى الصفحات أبدًا. وعندما لا يكون هناك
-    انقطاع وشيك، يرسل الخادم القليل جدًا.
-  </p>
+</section>
 
-  <h2 id="results">النتائج</h2>
-  <p>
-    اختبارنا الرئيسي هو انقطاع مفاجئ للشبكة: تضعف الإشارة الخلوية، ثم تغيب الإشارة عن كل الشبكات
-    لمدة 45 ثانية. يتصفح عشرون
-    قارئًا افتراضيًا، كلٌّ في مساره الخاص من نقرات ويكيبيديا الحقيقية؛ ويُعيد كل إعداد تشغيل القرّاء
-    والنقرات أنفسهم تمامًا، فيكون الاختلاف الوحيد هو الاتصال.
-  </p>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr><th>الإعداد</th><th class="num">متوسط الانتظار</th><th class="num">الوسيط</th><th class="num">النقرات أثناء الانقطاع<br>التي فُتحت فورًا</th><th class="num">بيانات إضافية</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>عادي (TCP)</td><td class="num">31.7 ث</td><td class="num">28.5 ث</td><td class="num">3 من 20</td><td class="num">لا شيء</td></tr>
-        <tr><td>حديث (QUIC)</td><td class="num">21.6 ث</td><td class="num">17.0 ث</td><td class="num">3 من 22</td><td class="num">لا شيء</td></tr>
-        <tr class="ours"><td>شجرة</td><td class="num">14.0 ث</td><td class="num">3.4 ث</td><td class="num">14 من 26</td><td class="num">2.9 ميغابايت</td></tr>
-      </tbody>
-    </table>
+<!-- 03 -->
+<section class="slide" id="solutions">
+  <div class="wrap">
+    <p class="tag">03 · الحلول الحالية</p>
+    <h2 class="title">ما هو موجود، وأين يقصُر</h2>
+    <div class="cols three">
+      <div class="card sol">
+        <div class="head"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h15l-4-4M20 16H5l4 4"/></svg></span><h3>ترحيل الاتصال في QUIC</h3></div>
+        <p>QUIC بروتوكول نقل حديث يعرّف الاتصال بمعرّف لا بعنوان IP، فيستطيع مبدئيًا الانتقال إلى شبكة جديدة من دون إعادة الاتصال. وهو مدمج بالفعل في بعض متصفحات الويب، حيث يسرّع تحميل الصفحات بدمج مصافحة النقل ومصافحة التشفير في واحدة.</p>
+        <div class="pm">
+          <p class="plus"><b>+ نقطة القوة:</b> مصمَّم ليصمد أمام تغيّر الشبكة، مع مصافحات سريعة ومشفّرة.</p>
+          <p class="minus"><b>− القيد:</b> نادرًا ما يُستخدم الترحيل عمليًا، ومعظم التطبيقات والمكالمات الصوتية ما زالت تعمل عبر TCP الذي لا يستطيع الترحيل أصلًا.</p>
+        </div>
+      </div>
+      <div class="card sol">
+        <div class="head"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7l5 5-5 5M12 18h7"/></svg></span><h3>Mosh، الطرفية المتنقّلة</h3></div>
+        <p>Mosh أداة طرفية عن بُعد تُبقي الجلسة قائمة بينما يغيّر الجهاز عنوان IP، حتى عند التنقّل بين الواي فاي والبيانات الخلوية والإيثرنت السلكي. وتتنبأ أيضًا بكيفية تغيّر الشاشة مع كل ضغطة مفتاح، فتُخفي التأخير عن المستخدم.</p>
+        <div class="pm">
+          <p class="plus"><b>+ نقطة القوة:</b> تنقّل مجرَّب بين الشبكات، مع تنبؤ يُخفي التأخير.</p>
+          <p class="minus"><b>− القيد:</b> تعمل لجلسات الطرفية فقط، فلا تساعد مستجيبًا يحمّل خريطة أو يفتح موقعًا أو يجري مكالمة.</p>
+        </div>
+      </div>
+      <div class="card sol">
+        <div class="head"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="17" cy="7" r="2"/><path d="M6 7v10M17 9c0 5-11 4-11 8"/></svg></span><h3>Multipath TCP</h3></div>
+        <p>يتيح Multipath TCP لاتصال واحد أن يستخدم عدة مسارات شبكية في آن واحد، مثل الواي فاي والشبكة الخلوية. فإذا تعطّل مسار استمرت البيانات عبر المسارات الأخرى. وتستخدمه Apple في أجهزة iPhone لخدمات مثل Siri، حتى تصمد الطلبات أمام إشارة واي فاي ضعيفة.</p>
+        <div class="pm">
+          <p class="plus"><b>+ نقطة القوة:</b> يُبقي الاتصال قائمًا عندما ينقطع أحد الروابط، ويمكنه جمع سعة عدة روابط.</p>
+          <p class="minus"><b>− القيد:</b> يجب أن يدعمه الجهاز والخادم كلاهما، ومعظم المواقع لا تدعمه، ولا يقلّل البيانات المرسلة عبر الروابط البطيئة.</p>
+        </div>
+      </div>
+    </div>
+    <h3>مقارنة جنبًا إلى جنب</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th></th><th>يصمد أمام تغيّر عنوان IP</th><th>يساعد حركة الويب والتطبيقات</th><th>يتطلب تغيير كل موقع</th><th>يرسل بيانات أقل على الروابط البطيئة</th></tr></thead>
+        <tbody>
+          <tr><td>ترحيل QUIC</td><td>نعم، إذا دعمه الطرفان</td><td>فقط التطبيقات المبنية على QUIC</td><td>نعم</td><td>لا</td></tr>
+          <tr><td>Mosh</td><td>نعم</td><td>لا، جلسات الطرفية فقط</td><td>يتطلب Mosh على الجهاز البعيد</td><td>لشاشات الطرفية فقط</td></tr>
+          <tr><td>Multipath TCP</td><td>نعم، إذا توفّر مسار آخر</td><td>حيث يدعمه الطرفان</td><td>نعم</td><td>لا</td></tr>
+          <tr class="ours"><td>شجرة</td><td>نعم</td><td>التطبيقات التي تستخدم إعداد الوكيل في الهاتف</td><td>لا، خادمنا فقط</td><td>نعم: الضغط والجلب المسبق</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
-  <p class="caption">
-    الانتظار: إجمالي الوقت الذي قضاه القارئ أمام صفحة لم يكتمل تحميلها بعد، في كل رحلة (ث = ثانية).
-    عادي: TCP، الذي لا يعيد الاتصال إلا بعد انقطاع الرابط، كما تفعل معظم التطبيقات. حديث: QUIC،
-    الذي يصمد عند تغيّر الشبكة لكنه لا يجلب الصفحات مسبقًا. عشرون قارئًا لكل إعداد.
-  </p>
-  <p>
-    عند المقارنة قارئًا بقارئ مع الاتصال الحديث، كانت شجرة أسرع في 8 من أصل 20 حالة اختبار، ولم
-    تكن أبطأ في أي منها. أما بقية القرّاء فقد نقروا على صفحة لم يتوقعها النموذج، وانتظروا عودة
-    الإشارة تمامًا كما كانوا سينتظرون من دون شجرة. وانتظر القارئ النموذجي تحميل الصفحات 3.4 ثانية
-    فقط بدلًا من 17 ثانية.
-  </p>
-  <p>
-    التبديل المبكر بين الشبكات هو الأهم لأي شيء مباشر. أثناء المشي خارج نطاق الواي فاي في مبنى،
-    انقطع صوت مكالمة صوتية محاكاة (50 حزمة في الثانية) لنحو ثانية وفقدت 2% من صوتها عندما جرى
-    التبديل بعد انقطاع الواي فاي. أما مع شجرة التي تنتقل قبل الانقطاع ببضع ثوانٍ، فكان أطول انقطاع
-    60 ملّي ثانية، ولم يُفقد سوى 0.4% من الحزم، وهي نسبة الفقد الطبيعية للشبكة.
-  </p>
-  <p class="callout">
-    <a href="replay-ar.html">أعد عرض البيانات</a> من أي من هذه التشغيلات ثانيةً بثانية: الإشارة،
-    ولحظة التنبؤ بالانقطاع، وكل صفحة حمّلها كل إعداد أو انتظرها.
-  </p>
+</section>
 
-  <h2 id="learned">ما الجديد، وما الذي تعلّمناه</h2>
-  <p>
-    نقل الاتصال بين الشبكات والجلب المسبق للروابط موجودان من قبل. ما تضيفه شجرة هو التوقيت: فهي
-    تتنبأ بالانقطاع من ضعف الإشارة، وتنقل الاتصال إلى شبكة أخرى قبل أن تنقطع الشبكة القديمة، من دون
-    مصافحة جديدة. وحين لا توجد شبكة بديلة، يخبر التحذير نفسه الخادم متى يبدأ الجلب المسبق وبأي قدر
-    ومتى يتوقف. وقد علّمنا بناؤها أمرين
-    مهمّين لكل من يجمع بين الأسلوبين:
-  </p>
-  <ul class="points">
-    <li><b>لا تجلب مسبقًا عبر رابط يحتضر.</b> كانت نسختنا الأولى تستمر في إرسال الصفحات بعد زوال الإشارة، فملأت البيانات التي لم يُؤكَّد استلامها الاتصالَ عند عودة التغطية، وانتهى الأمر ببعض القرّاء إلى انتظار أطول مما لو لم يكن هناك جلب مسبق أصلًا. أصبح الخادم الآن يتوقف قبيل الانقطاع المتوقع مباشرةً، ولا يتجاوز ما لديه قيد الإرسال 256 كيلوبايت أبدًا، لأن التوقيت المتوقع قد يخطئ ببضع ثوانٍ.</li>
-    <li><b>ينتظر QUIC طويلًا بعد انقطاع طويل.</b> أثناء انقطاع الرابط، يضاعف QUIC الفاصل بين محاولات إعادة الإرسال بعد كل محاولة فاشلة؛ فبعد 45 ثانية كانت المحاولة التالية على بعد نصف دقيقة، فبقي الاتصال صامتًا طويلًا بعد عودة الإشارة. نحن نعيد ضبط فترة الانتظار هذه فور استجابة الطرف الآخر من جديد.</li>
-  </ul>
+<!-- 04 -->
+<section class="slide" id="idea">
+  <div class="wrap">
+    <p class="tag">04 · فكرتنا</p>
+    <h2 class="title">وكيل مزدوج بين الهاتف والسحابة</h2>
+    <p class="lede">تضع شجرة وكيلَين بين تطبيقات المستخدم والإنترنت: وكيل عميل على جهاز المستخدم، ووكيل خادم في السحابة. وتمرّ كل البيانات بينهما عبر نفق QUIC واحد يبقى مفتوحًا عندما يغيّر الجهاز شبكته، بينما يتولى وكيل الخادم العمل الثقيل نيابةً عن الجهاز. وعلى خلاف الحلول الحالية، تصمد شجرة أمام التنقّل بين الشبكات وتقلّل أيضًا البيانات التي يجب أن تعبر الرابط البطيء.</p>
+    <div class="ideas">
+      <div class="card dark">
+        <div class="n">01</div>
+        <h3>تصمد أمام تغيّر IP</h3>
+        <p>يأخذ وكيل العميل حركة كل تطبيق يستخدم إعداد الوكيل في الهاتف، وينقلها داخل نفق QUIC واحد. وعندما ينتقل الهاتف إلى شبكة أخرى، ينتقل النفق معه بدلًا من أن ينقطع.</p>
+      </div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div class="card">
+        <div class="n">02</div>
+        <h3>ترسل بيانات أقل</h3>
+        <p>يجلب وكيل الخادم صفحات الويب نيابةً عن الهاتف ويضغطها قبل إرسالها، فتعبر الرابط البطيء بيانات أقل بكثير. ويوفّر هذا عرض النطاق على كل اتصال لا على روابط الأقمار الصناعية وحدها، فتنخفض كلفة البيانات وتبقى سعة أكبر للحركة الحساسة للوقت مثل المكالمات الصوتية.</p>
+      </div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div class="card">
+        <div class="n">03</div>
+        <h3>تُحمَّل قبل أن تنقر</h3>
+        <p>يستخدم الخادم Jev، وهو نموذج ذكاء اصطناعي خفيف يُستدعى عبر واجهة برمجية، ليتنبأ بالروابط التي سيفتحها المستجيب بعد ذلك. ثم يرسل تلك الصفحات إلى الهاتف مسبقًا، فتُفتح فورًا حتى أثناء انقطاع قصير للإشارة.</p>
+      </div>
+    </div>
+    <div class="cols halves" style="margin-top:28px">
+      <div>
+        <h3>لماذا وكيلان؟</h3>
+        <p>لا تحتاج التطبيقات ولا المواقع إلى أي تغيير. تتحدث التطبيقات إلى وكيل العميل كما تتحدث إلى أي وكيل، وترى المواقع زائرًا عاديًا هو وكيل الخادم. والجزء الواقع بينهما وحده، وهو الجزء الذي نتحكم في طرفيه، يحتاج إلى التعامل مع تغيّر الشبكة.</p>
+      </div>
+      <div>
+        <h3>إبقاء الرابط غير الموثوق قصيرًا</h3>
+        <p>يتولى الخادم المصافحات مع المواقع وأي حزم تضيع في الطريق إليها، عبر اتصاله السريع والمستقر. ولا يُترك لنفق QUIC إلا رابط الهاتف نفسه، وهو الرابط الذي يتغيّر باستمرار.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-  <h2 id="testing">كيف اختبرناها</h2>
-  <p>
-    جرى كل شيء على شبكة محاكاة على نظام Linux. يعمل كلٌّ من الهاتف والموجّه وخادمنا والمواقع في
-    نطاق شبكي منفصل خاص به، وكانت لروابط الواي فاي و5G والقمر الصناعي في الهاتف قيم واقعية للتأخير
-    وفقد الحزم وعرض النطاق. وجدولنا ضعف الرابط وانقطاعه في أوقات محددة لمحاكاة ظروف العالم الحقيقي.
-  </p>
-  <p>
-    اخترنا اختبار شجرة باستخدام ويكيبيديا موقعًا يحمّله القرّاء، لأنها من السجلات العامة الكبيرة
-    القليلة التي تُظهر الروابط التي ينقر عليها الناس فعلًا. يتبع كل قارئ روابط اختارها قرّاء حقيقيون
-    في أغسطس 2026، مع أوقات قراءة واقعية، عبر نحو 2,000 صفحة من ويكيبيديا جُمّدت من أجل الاختبارات.
-    وقيّمنا توقعات النقر بشكل منفصل مقارنةً بنقرات شهر يوليو. كما اختبرنا شجرة على مواقع عادية
-    (الصفحة الرئيسية لموقع إخباري، ووثائق تقنية، ومتجر، ومنتدى، وخدمة حكومية) للتأكد من أنها غير
-    مضبوطة على ويكيبيديا وحدها.
-  </p>
+<!-- 05 -->
+<section class="slide" id="model">
+  <div class="wrap">
+    <p class="tag">05 · النموذج</p>
+    <h2 class="title">كيف تترابط أجزاء شجرة</h2>
+    <div class="flow">
+      <div class="col"><header><b>الهاتف والتطبيقات</b><span>تطبيقات من دون تعديل</span></header>
+        <div class="body">يواصل المستجيب استخدام تطبيقات عادية مثل المتصفح أو أداة الخرائط أو تطبيق المكالمات عبر الإنترنت، ولا يحتاج أي منها إلى تعديل. يمرّ كل طلب ترسله عبر وكيل العميل بدلًا من الذهاب مباشرة إلى الشبكة. وهكذا يحتفظ المستجيبون بالأدوات التي يعرفونها، وتتوقف هذه الأدوات ببساطة عن التعطّل عندما تتغيّر الشبكة.</div></div>
+      <div class="col dk"><header><b>وكيل العميل</b><span>على الجهاز</span></header>
+        <div class="body">يعمل وكيل العميل على الهاتف، وهو الجزء الوحيد في النظام الذي يعرف الشبكة المستخدمة. يضع كل طلب داخل نفق QUIC، ويحتفظ بذاكرة مؤقتة للصفحات يقدّم منها الصفحات المجلوبة مسبقًا مباشرة. وعندما يتغيّر عنوان IP يواصل النفق نفسه من العنوان الجديد، فلا ترى التطبيقات أي انقطاع.</div></div>
+      <div class="col or"><header><b>نفق QUIC</b><span>واي فاي · 5G · قمر صناعي</span></header>
+        <div class="body">النفق اتصال QUIC واحد بين الهاتف والسحابة، يمرّ عبر الواي فاي أو 5G أو القمر الصناعي. ولأن QUIC يعرّف الاتصال بمعرّف لا بعنوان، فإن تبديل الروابط لا يحتاج إلى مصافحة جديدة. والحزم الضائعة لا تؤخّر إلا تدفقها الخاص، فلا تعطّل صفحة بطيئة الصفحات الأخرى.</div></div>
+      <div class="col dk"><header><b>الوكيل السحابي</b><span>على خادم بعيد</span></header>
+        <div class="body">يقع الخادم على اتصال مستقر وسريع ويتولى العمل الثقيل عن الهاتف. يجلب الصفحات من الويب ويضغطها بخوارزمية deflate فتصغر نحو 5.7 مرة. ولأن اتصاله لا يتغيّر، تجري المصافحات مع المواقع عبر رابطه المستقر، ويبقى الجزء غير المستقر من الرحلة قصيرًا.</div></div>
+      <div class="col pe"><header><b>تنبؤ Jev</b><span>نموذج الرابط التالي</span></header>
+        <div class="body">كلما سلّم الخادم صفحة، استخرج روابطها ومرّرها إلى Jev مع سجل التصفح الأخير للمستخدم. يرتّب Jev الروابط بحسب احتمال أن ينقر عليها المستخدم بعد ذلك، ويدفع الخادم الصفحات الأعلى ترتيبًا إلى الذاكرة المؤقتة في الهاتف. وإذا فتح المستجيب إحداها أثناء انقطاع الإشارة، تُفتح فورًا.</div></div>
+    </div>
+    <div class="cols three" style="margin-top:32px">
+      <div>
+        <h3>طلب واحد، خطوة بخطوة</h3>
+        <ol class="steps">
+          <li>يطلب تطبيق صفحة من وكيل العميل.</li>
+          <li>إذا كانت في ذاكرة الهاتف نسخة حديثة قُدّمت فورًا. وإذا كانت هناك نسخة أقدم، يسأل الوكيل الخادم هل تغيّرت (ETag)، فلا يعبر الرابط إلا الجواب إن لم تتغيّر.</li>
+          <li>وإلا يمرّ الطلب عبر النفق؛ فيجلب الخادم الصفحة ويضغطها ويعيدها.</li>
+          <li>وفي الخلفية يسأل الخادم Jev عن الروابط التالية ويدفع الصفحات المرجّحة إلى الذاكرة المؤقتة.</li>
+        </ol>
+      </div>
+      <div>
+        <h3>عندما تتغيّر الشبكة</h3>
+        <ol class="steps">
+          <li>يفحص وكيل العميل النفق خمس مرات في الثانية.</li>
+          <li>إذا توقف الرابط الحالي عن الاستجابة لمدة ثانية، ينقل النفق إلى شبكة أخرى تعمل.</li>
+          <li>يواصل اتصال QUIC نفسه من عنوان IP الجديد: لا مصافحة جديدة، وتكتمل الطلبات التي كانت في الطريق.</li>
+          <li>إذا عاد الرابط بعد صمت طويل، يُعاد ضبط مؤقّت إعادة المحاولة في QUIC فورًا، فتتدفق البيانات من جديد خلال ثانية.</li>
+        </ol>
+      </div>
+      <div>
+        <h3>عندما تضعف الإشارة</h3>
+        <ol class="steps">
+          <li>يراقب الهاتف قوة الإشارة ويرسم اتجاهها خلال الثواني الخمس الأخيرة.</li>
+          <li>إذا كانت الإشارة ستصبح غير صالحة خلال ثماني ثوانٍ ولا توجد شبكة أخرى، ينبّه الخادم.</li>
+          <li>يجلب الخادم مسبقًا صفحات أكثر بكثير، وعلى عمق نقرتين في الانقطاعات الطويلة، ليبقى ما يُقرأ من دون اتصال.</li>
+          <li>ويتوقف عن الإرسال قبيل الانقطاع المتوقع مباشرة، لأن البيانات المرسلة إلى رابط ميت لا تفعل سوى إعاقة الاتصال عند عودته.</li>
+        </ol>
+      </div>
+    </div>
+    <div class="callout"><b>المواقع الآمنة.</b> تمرّ حركة HTTPS عبر النفق وهي ما زالت مشفّرة: لا يستطيع أي من الوكيلين قراءتها، ويكتفي الخادم بتمريرها إلى الموقع. وتصمد هذه الاتصالات أمام تغيّر الشبكة مثل كل ما في النفق، لكنها لا تُضغط ولا تُجلب مسبقًا.</div>
+  </div>
+</section>
 
-  <h2 id="limits">حدود العمل</h2>
-  <ul class="points">
-    <li><b>الجلب المسبق يستهلك البيانات.</b> نحو 3 ميغابايت لكل انقطاع، ومعظمها لا يُقرأ. وهذا يعادل تقريبًا صورة واحدة من كاميرا الهاتف أو دقيقتين تقريبًا من بث الموسيقى، ويُستهلك أساسًا في الثواني التي تسبق الانقطاع لا مع كل صفحة.</li>
-    <li><b>الشبكة محاكاة.</b> منحنيات الإشارة مصمّمة يدويًا؛ والخطوة التالية هي إعادة تشغيل قياسات حقيقية جُمعت أثناء القيادة.</li>
-    <li><b>الخصوصية.</b> يستدعي النموذج الأولي Jev عبر واجهة برمجية مستضافة. أما في نظام إنتاجي فسيعمل النموذج على خادمنا الخاص، فلا تغادر عناوين الصفحات ونصوص الروابط بنيةً تحتية نتحكم بها.</li>
-  </ul>
+<!-- 06 -->
+<section class="slide" id="prototype">
+  <div class="wrap">
+    <p class="tag">06 · النموذج الأولي</p>
+    <h2 class="title">كيف يعمل نموذجنا الأولي</h2>
+    <div class="diagram">
+      <div class="row">
+        <div class="box"><b>iPhone</b><span>متصفح Safari، والوكيل مضبوط في إعدادات الواي فاي</span></div>
+        <div class="link">واي فاي<i></i><span class="ltr">port 8118</span></div>
+        <div class="box dk"><b>الحاسوب 1</b><span>وكيل العميل (جهة الهاتف)</span></div>
+        <div class="link"><i></i></div>
+        <div class="tunnel">نفق QUIC<small>عبر الإيثرنت أو بيانات الجوال</small></div>
+        <div class="link"><i></i></div>
+        <div class="box dk"><b>الحاسوب 2</b><span>وكيل الخادم (جهة السحابة)</span></div>
+        <div class="link"><i></i></div>
+        <div class="box"><b>الويب</b><span>المواقع</span></div>
+      </div>
+      <p class="note"><b>لماذا حاسوبان؟</b> لم نلتزم بعد بالدفع مقابل استضافة خادم، لذلك يحلّ الحاسوب 2 محل الخادم السحابي. أما في النظام الفعلي فيعمل وكيل العميل على جهاز iPhone نفسه ويتصل مباشرة بخادم بعيد.</p>
+    </div>
+    <div class="cols three" style="margin-top:28px">
+      <div>
+        <h3>تشغيل العرض</h3>
+        <p>يشغّل الحاسوب 2 وكيل الخادم وينشئ شهادة، ننسخها إلى الحاسوب 1 حتى يثق الجهازان ببعضهما. ويشغّل الحاسوب 1 وكيل العميل ويقبل الاتصالات من الأجهزة الأخرى على شبكة الواي فاي. وعلى iPhone نضبط وكيلًا يدويًا في إعدادات الواي فاي يشير إلى الحاسوب 1، ثم نتصفح في Safari كالمعتاد. الخطوات الكاملة في <a href="https://github.com/a-meriac/Shajarah#live-demo-browse-from-an-iphone-through-the-tunnel">ملف README على GitHub</a>.</p>
+      </div>
+      <div>
+        <h3>نوعان من الحركة</h3>
+        <p>تمرّ مواقع HTTPS الآمنة عبر النفق وهي ما زالت مشفّرة، فلا يستطيع أي من الوكيلين قراءة محتواها. أما مواقع HTTP العادية فتمرّ عبر الوكيل الكامل، حيث يضغط الخادم الصفحات وتحفظها جهة الهاتف في ذاكرتها المؤقتة. ويتشارك النوعان نفق QUIC نفسه بين الحاسوبين.</p>
+      </div>
+      <div>
+        <h3>عرض الانتقال بين الشبكات</h3>
+        <p>لا يعمل إعداد الوكيل في iPhone إلا على الواي فاي، لذلك يحدث الانتقال على الحاسوب 1: يُبقي الواي فاي لجهاز iPhone وينقل النفق بين الإيثرنت وبيانات الجوال بينما يواصل Safari التحميل. وعلى الحاسوب 2 يسجّل سجل الخادم كل موقع يُفتح، ويُظهر Wireshark اتصال QUIC واحدًا يحمل كل الحركة. أما الانتقال نفسه فهو ما تقيسه اختباراتنا في الشبكة المحاكاة؛ انظر النتائج.</p>
+      </div>
+    </div>
+    <h3>ما أظهره العرض الحي</h3>
+    <div class="stats">
+      <div class="stat"><div class="num">94</div><p>اتصالًا آمنًا بـ44 موقعًا مختلفًا خلال نصف ساعة من التصفح على iPhone، كلها عبر نفق QUIC واحد</p></div>
+      <div class="stat"><div class="num">41</div><p>اتصالًا فتحه بحث واحد في Google في أقل من أربع ثوانٍ، كلها داخل النفق نفسه</p></div>
+      <div class="stat"><div class="num">0.9 <small>ثانية</small></div><p>لتحميل صفحة ويكيبيديا حجمها 922 كيلوبايت عبر HTTPS من خلال الوكيلين</p></div>
+    </div>
+    <p class="muted small">عمل تطبيق Instagram عبر النفق من دون أي تعديل، إذ يلتقط إعداد الوكيل في iPhone تلقائيًا. وكل اتصال فشل كان بخادم إعلانات أو تتبّع أو قياس استخدام، ويبدو أن الشبكة التي اختبرنا عليها تحجبها.</p>
+    <div class="built-with">
+      <span class="label">بُني باستخدام</span>
+      <span><b>aioquic</b> نفق QUIC</span>
+      <span><b>Python ssl</b> خط أساس TCP</span>
+      <span><b>zlib</b> الضغط</span>
+      <span><b>Jev عبر OpenRouter</b> التنبؤ بالروابط</span>
+      <span><b>selectolax</b> استخراج الروابط</span>
+    </div>
+  </div>
+</section>
 
-  <footer>
-    شجرة هي مشاركتنا في تحدي EDGE، ATP 2026.
-    <a href="replay-ar.html">إعادة عرض البيانات</a> ·
-    <a href="https://github.com/a-meriac/Shajarah">الشيفرة المصدرية</a>
-  </footer>
+<!-- 07 -->
+<section class="slide" id="testing">
+  <div class="wrap">
+    <p class="tag">07 · عملية الاختبار</p>
+    <h2 class="title">كيف اختبرنا شجرة</h2>
+    <div class="cols two">
+      <div>
+        <p>لنختبر النظام بإنصاف وبشكل قابل للتكرار، بنينا شبكة محاكاة على حاسوب Linux واحد. تُنشئ مساحات أسماء الشبكة أربعة أجهزة منفصلة: هاتفًا وموجّهًا وخادمًا سحابيًا وموقعًا. وتمنح أداة tc netem، وهي أداة Linux مجانية ومفتوحة المصدر، كل رابط تأخيرًا وتذبذبًا وفقدانًا للحزم وعرض نطاق واقعية. وأجرينا سيناريوهين: انقطاع 5G تضعف فيه الإشارة ويبقى الرابط ميتًا نحو 45 ثانية قبل أن يعود، ونزهة تضعف فيها إشارة الواي فاي حتى تختفي فينتقل الهاتف إلى 5G.</p>
+        <div class="label" style="margin-top:18px">سيناريو الانقطاع، ثانية بثانية</div>
+        <div class="timeline" aria-label="من 0 إلى 30 ثانية: إشارة 5G جيدة. من 30 إلى 38 ثانية: تضعف الإشارة. من 38 إلى 84 ثانية: لا إشارة على أي شبكة. من 84 إلى 120 ثانية: عودة 5G.">
+          <div class="ok" style="flex:30">5G</div><div class="fade" style="flex:8"></div><div class="dead" style="flex:46">لا إشارة · 46 ث</div><div class="ok" style="flex:36">عودة 5G</div>
+        </div>
+        <div class="timeline-axis"><span>0 s</span><span>30 s</span><span>38 s</span><span>84 s</span><span>120 s</span></div>
+        <p class="small muted" style="margin-top:8px">تضعف الإشارة ابتداءً من الثانية 30، ويبقى الرابط ميتًا من الثانية 38 إلى 84، ثم تعود 5G. والواي فاي والقمر الصناعي غير متاحين طوال الوقت، فلا توجد شبكة يُنتقل إليها.</p>
+        <p>بدلًا من اختلاق سلوك تصفح، استخدمنا سجلات النقر العامة في ويكيبيديا، التي تحصي عدد المرات التي تتبّع فيها قرّاء حقيقيون كل رابط من مقالة إلى أخرى. كل تشغيل قارئ افتراضي واحد يتبع نقرات حقيقية من أغسطس 2026. وأجرينا 20 تشغيلًا لكل واحد من أربعة إعدادات، من TCP العادي حتى النظام الكامل، ونقارن القيم الوسيطة حتى لا يؤثر تشغيل واحد سريع أو بطيء على غير العادة في النتيجة.</p>
+        <p>يُستخدم Jev كما هو عبر واجهته البرمجية، فلا يحتاج إلى بيانات تدريب. قيّمناه على 1,002 صفحة من ويكيبيديا مقابل 109.1 مليون نقرة حقيقية من يوليو 2026، وقارنّاه بثلاثة خطوط أساس: اختيار عشوائي بين الروابط الأربعين نفسها التي يراها Jev، وترتيب الروابط في الصفحة، والرابط الأكثر نقرًا في يونيو. وفصل الأشهر الثلاثة يعني ألا يُقيَّم أي متنبئ على نقرات تعلّم منها.</p>
+      </div>
+      <div class="card">
+        <p class="label">ما قسناه</p>
+        <ul class="clean">
+          <li><b style="color:var(--orange-text)">زمن تحميل الصفحة:</b> الوقت من طلب الصفحة حتى استلامها كاملة.</li>
+          <li><b style="color:var(--orange-text)">زمن التعافي:</b> المدة بين عودة الشبكة ومرور أول حزمة جديدة عبر النفق.</li>
+          <li><b style="color:var(--orange-text)">البيانات المنقولة:</b> البايتات المرسلة عبر رابط الهاتف، قبل الضغط وبعده.</li>
+          <li><b style="color:var(--orange-text)">معدل الإصابة:</b> نسبة النقرات الحقيقية التي ذهبت إلى الرابط الأول أو الروابط الثلاثة الأولى في ترتيب المتنبئ.</li>
+          <li><b style="color:var(--orange-text)">الجلب المسبق المهدور:</b> البيانات التي أُنفقت على صفحات مجلوبة مسبقًا لم تُفتح أبدًا.</li>
+        </ul>
+        <p class="label" style="margin-top:22px">إعدادات الروابط (في اتجاه واحد)</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>الرابط</th><th class="num">التأخير</th><th class="num">التذبذب</th><th class="num">الفقدان</th><th class="num">عرض النطاق</th></tr></thead>
+            <tbody>
+              <tr><td>واي فاي</td><td class="num">4 ms</td><td class="num">2 ms</td><td class="num">0.1%</td><td class="num">100 Mbit/s</td></tr>
+              <tr><td>5G</td><td class="num">12 ms</td><td class="num">4 ms</td><td class="num">0.2%</td><td class="num">150 Mbit/s</td></tr>
+              <tr><td class="muted">LTE</td><td class="num muted">25 ms</td><td class="num muted">8 ms</td><td class="num muted">0.5%</td><td class="num muted">30 Mbit/s</td></tr>
+              <tr><td class="muted">قمر صناعي منخفض المدار</td><td class="num muted">20 ms</td><td class="num muted">6 ms</td><td class="num muted">0.5%</td><td class="num muted">100 Mbit/s</td></tr>
+              <tr><td class="muted">قمر صناعي ثابت</td><td class="num muted">300 ms</td><td class="num muted">10 ms</td><td class="num muted">0.3%</td><td class="num muted">20 Mbit/s</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small muted">تُطبَّق على طرفي كل رابط، فتكون رحلة الذهاب والإياب نحو ضعف التأخير. الصفوف الرمادية جاهزة في بيئة الاختبار لكنها لم تُستخدم بعد في اختبار.</p>
+      </div>
+    </div>
+    <h3>الإعدادات الأربعة</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>الإعداد</th><th>النفق</th><th>الضغط</th><th>الجلب المسبق</th><th class="num">التشغيلات</th><th class="num">الصفحات المفتوحة</th></tr></thead>
+        <tbody>
+          <tr><td>TCP+TLS</td><td>TCP+TLS، يعيد الاتصال بعد الانقطاع</td><td>نعم</td><td>لا</td><td class="num">20</td><td class="num">78</td></tr>
+          <tr><td>QUIC</td><td>QUIC، يحافظ على الاتصال</td><td>نعم</td><td>لا</td><td class="num">20</td><td class="num">90</td></tr>
+          <tr><td>QUIC مع جلب مسبق ثابت</td><td>QUIC</td><td>نعم</td><td>Jev، مع تجاهل تنبيهات الانقطاع</td><td class="num">20</td><td class="num">92</td></tr>
+          <tr class="ours"><td>شجرة</td><td>QUIC</td><td>نعم</td><td>Jev، وأكثر قبل الانقطاع</td><td class="num">20</td><td class="num">95</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>ثلاثة أشهر من بيانات النقر، منفصلة</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>الشهر</th><th>استُخدم في</th></tr></thead>
+        <tbody>
+          <tr><td>يونيو 2026</td><td>خط أساس الرابط الأكثر نقرًا فقط</td></tr>
+          <tr><td>يوليو 2026</td><td>مفتاح الإجابة: تقييم Jev وخطوط الأساس (109.1 مليون نقرة على 1,002 صفحة)</td></tr>
+          <tr><td>أغسطس 2026</td><td>جلسات التصفح التي يتبعها القرّاء الافتراضيون</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- 08 -->
+<section class="slide" id="results">
+  <div class="wrap">
+    <p class="tag">08 · نتائج الاختبار</p>
+    <h2 class="title">ما أظهرته الاختبارات</h2>
+    <div class="stats">
+      <div class="stat dark"><div class="num">0.96 <small>ثانية</small></div><p>زمن تعافي QUIC بعد انقطاع 5G، مقابل 13.1 ثانية لاتصال TCP+TLS المرجعي لدينا (القيمة الوسيطة لـ20 تشغيلًا)</p></div>
+      <div class="stat"><div class="num">5.7×</div><p>القيمة الوسيطة لتصغير حجم الصفحة بخوارزمية deflate، على 2,147 صفحة من ويكيبيديا</p></div>
+      <div class="stat"><div class="num">16.1%</div><p>معدل إصابة Jev في الروابط الثلاثة الأولى، أكثر من ثلاثة أضعاف الاختيار العشوائي بين الروابط نفسها (5.1%)</p></div>
+    </div>
+    <div class="cols halves">
+      <div class="chart-card">
+        <h4>زمن التعافي، القيمة الوسيطة</h4>
+        <p class="sub">بعد انقطاع 5G، 20 تشغيلًا لكل إعداد</p>
+        <div class="legend"><span><i class="key" style="background:var(--series-tcp)"></i>TCP+TLS</span><span><i class="key" style="background:var(--series-quic)"></i>QUIC</span></div>
+        <div id="chart-recovery"></div>
+        <details class="data"><summary>اعرضه جدولًا</summary>
+          <div class="table-wrap"><table><thead><tr><th></th><th class="num">القيمة الوسيطة</th><th class="num">النصف الأوسط من التشغيلات</th></tr></thead><tbody>
+            <tr><td>TCP+TLS</td><td class="num">13.1 ثانية</td><td class="num">13.0–13.2 ثانية</td></tr>
+            <tr><td>QUIC</td><td class="num">0.96 ثانية</td><td class="num">0.92–1.03 ثانية</td></tr>
+          </tbody></table></div></details>
+      </div>
+      <div class="chart-card">
+        <h4>زمن تحميل الصفحة، القيمة الوسيطة</h4>
+        <p class="sub">بعيدًا عن أي انقطاع</p>
+        <div class="legend"><span><i class="key" style="background:var(--series-tcp)"></i>TCP+TLS</span><span><i class="key" style="background:var(--series-quic)"></i>QUIC</span></div>
+        <div id="chart-loads"></div>
+        <details class="data"><summary>اعرضه جدولًا</summary>
+          <div class="table-wrap"><table><thead><tr><th></th><th class="num">TCP+TLS</th><th class="num">QUIC</th></tr></thead><tbody>
+            <tr><td>واي فاي</td><td class="num">224 ملّي ثانية (10 صفحات)</td><td class="num">216 ملّي ثانية (10 صفحات)</td></tr>
+            <tr><td>5G</td><td class="num">265 ملّي ثانية (54 صفحة)</td><td class="num">229 ملّي ثانية (61 صفحة)</td></tr>
+          </tbody></table></div></details>
+      </div>
+    </div>
+    <div class="cols three" style="margin-top:28px">
+      <div>
+        <h3>التعافي</h3>
+        <p>عندما عادت 5G بعد انقطاع دام نحو 45 ثانية، عاد QUIC إلى نقل البيانات خلال ثانية، بينما استغرق اتصال TCP+TLS المرجعي لدينا 13 ثانية ليعيد الاتصال. ويشمل ذلك تعديلنا الخاص على QUIC، الذي يعيد ضبط مؤقّت إعادة المحاولة فور سماع الخادم من جديد؛ ومن دونه استغرق QUIC أيضًا عشرات الثواني. وبعيدًا عن أي انقطاع، استغرق تحميل الصفحات الوقت نفسه تقريبًا في الحالتين.</p>
+      </div>
+      <div>
+        <h3>التنبؤ</h3>
+        <p>يتفوّق معدل إصابة Jev في الروابط الثلاثة الأولى، 16.1%، على خطَّي الأساس اللذين لا يحتاجان إلى بيانات: الاختيار العشوائي (5.1%) وترتيب الروابط في الصفحة (9.4%)، من دون الحاجة إلى أي بيانات نقر. ويسجّل ترتيب الروابط الأكثر نقرًا نتيجة أعلى (38.1%)، لكنه يعتمد على سجلات النقر الخاصة بالموقع، وهي سجلات لا يملكها الوكيل.</p>
+      </div>
+      <div>
+        <h3>توفير البيانات</h3>
+        <p>في تشغيلات الانقطاع العشرين، أرسل QUIC العادي 4.7 ميغابايت حيث كانت الصفحات غير المضغوطة ستستهلك 25.2 ميغابايت، أي أقل بـ5.4 مرة. وعلى لقطة ويكيبيديا الكاملة المستخدمة في الاختبار، تُضغط صفحات حجمها 847 ميغابايت إلى 133 ميغابايت، أي توفير بمقدار 6.4 مرة على كل رابط، لا على الروابط البطيئة وحدها.</p>
+      </div>
+    </div>
+
+    <h3>انتظار الصفحات أثناء الانقطاع</h3>
+    <p>إجمالي الوقت الذي قضاه كل قارئ في انتظار الصفحات خلال التشغيل الذي يمتد دقيقتين، 20 قارئًا لكل إعداد. والصفحات التي فُتحت من الهاتف أثناء الانقطاع هي التي جلبتها شجرة مسبقًا أو حفظتها.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>الإعداد</th><th class="num">متوسط الانتظار</th><th class="num">الانتظار الوسيط</th><th class="num">نقرات الانقطاع المفتوحة من الهاتف</th><th class="num">المجلوب مسبقًا لكل تشغيل</th></tr></thead>
+        <tbody>
+          <tr><td>TCP+TLS</td><td class="num">31.7 ثانية</td><td class="num">28.5 ثانية</td><td class="num">3 من 20</td><td class="num">–</td></tr>
+          <tr><td>QUIC</td><td class="num">21.6 ثانية</td><td class="num">17.0 ثانية</td><td class="num">3 من 22</td><td class="num">–</td></tr>
+          <tr><td>QUIC مع جلب مسبق ثابت</td><td class="num">20.1 ثانية</td><td class="num">12.6 ثانية</td><td class="num">5 من 23</td><td class="num">0.24 ميغابايت</td></tr>
+          <tr class="ours"><td>شجرة</td><td class="num">14.0 ثانية</td><td class="num">3.4 ثانية</td><td class="num">14 من 26</td><td class="num">2.9 ميغابايت</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>مقارنةً بـQUIC العادي، كانت شجرة أسرع لدى 8 من القرّاء العشرين ولم تكن أبطأ لدى أي منهم؛ أما الباقون فنقروا صفحة لم يُتنبأ بها، فانتظروا الشبكة مثل الجميع.</p>
+
+    <div class="cols halves">
+      <div>
+        <h3>التنبؤ بالتفصيل</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>المتنبئ</th><th class="num">الأول</th><th class="num">الثلاثة الأولى</th><th>يحتاج إلى</th></tr></thead>
+            <tbody>
+              <tr class="ours"><td>Jev</td><td class="num">6.2%</td><td class="num">16.1%</td><td>الصفحة وحدها</td></tr>
+              <tr><td>اختيار عشوائي بين الروابط الأربعين نفسها</td><td class="num">1.7%</td><td class="num">5.1%</td><td>لا شيء</td></tr>
+              <tr><td>ترتيب الروابط في الصفحة</td><td class="num">2.7%</td><td class="num">9.4%</td><td>لا شيء</td></tr>
+              <tr><td>الرابط الأكثر نقرًا في الشهر السابق</td><td class="num">19.2%</td><td class="num">38.1%</td><td>سجلات النقر الخاصة بالموقع</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small muted">نسبة نقرات يوليو الحقيقية على كل صفحة التي ذهبت إلى الروابط الأولى في ترتيب المتنبئ، في المتوسط على 1,002 صفحة. يرى Jev أول 40 رابطًا في محتوى الصفحة، وهي تحمل 66% من النقرات؛ أما خط أساس الرابط الأكثر نقرًا فيرتّب كل الروابط.</p>
+      </div>
+      <div>
+        <h3>البيانات بالتفصيل</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th></th><th class="num">غير مضغوطة</th><th class="num">المرسَلة</th><th class="num">التوفير</th></tr></thead>
+            <tbody>
+              <tr><td>لقطة ويكيبيديا، 2,147 صفحة</td><td class="num">847 ميغابايت</td><td class="num">133 ميغابايت</td><td class="num">6.4×</td></tr>
+              <tr><td>QUIC، 20 تشغيل انقطاع</td><td class="num">25.2 ميغابايت</td><td class="num">4.7 ميغابايت</td><td class="num">5.4×</td></tr>
+              <tr><td>شجرة، 20 تشغيل انقطاع، مع الجلب المسبق</td><td class="num">384 ميغابايت</td><td class="num">62.1 ميغابايت</td><td class="num">6.2×</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small muted">يتراوح التوفير لكل صفحة بين 2.7× و19×؛ ويصغر النصف الأوسط من الصفحات بين 5.1× و6.2×.</p>
+        <h4>كلفة الجلب المسبق</h4>
+        <p>أرسلت شجرة 2.9 ميغابايت من الصفحات المجلوبة مسبقًا في كل تشغيل، ولم يُفتح 99.2% منها قط: فمعظم التنبؤات تخطئ، ولا يُجدي الجلب المسبق إلا عندما يجعل الانقطاعُ إصابةً واحدة تستحق تلك البيانات. ولهذا لا يكون الجلب المسبق كثيفًا إلا عند توقّع انقطاع.</p>
+      </div>
+    </div>
+
+    <h3>ما الذي حدث على نحو خاطئ في الطريق</h3>
+    <ul class="dash">
+      <li><b>الدفع إلى رابط ميت.</b> في التشغيلات الأولى استمر الجلب المسبق خلال الانقطاع. ثم أعاقت البيانات غير المؤكَّد استلامها تعافي QUIC، فانتظر بعض القرّاء أكثر مما مع QUIC العادي. والآن يتوقف الخادم قبيل الانقطاع المتوقع، ولا تتجاوز البيانات المجلوبة مسبقًا غير المؤكَّد استلامها 256 كيلوبايت.</li>
+      <li><b>مؤقّت إعادة محاولة ظل يطول.</b> بعد 45 ثانية من الصمت، كان QUIC ينتظر نحو 30 ثانية قبل أن يحاول من جديد. والآن يعيد الطرفان ضبط هذا المؤقّت فور أن يسمع كل منهما الآخر.</li>
+      <li><b>صفحات لم تتطابق أبدًا.</b> فاتت صفحات مجلوبة مسبقًا لأن العنوان نفسه كُتب بطريقتين. والآن يُوحَّد شكل العناوين في الطرفين.</li>
+    </ul>
+    <div class="buttons" style="margin-top:18px"><a class="btn primary" href="replay-ar.html">أعد عرض الاختبارات</a></div>
+  </div>
+</section>
+
+<!-- 09 -->
+<section class="slide" id="improvements">
+  <div class="wrap">
+    <p class="tag">09 · التحسينات</p>
+    <h2 class="title">ما يمكننا تحسينه</h2>
+    <div class="map-legend"><span><i class="pip on"></i>مُنجَز</span><span><i class="pip"></i>مُخطَّط</span></div>
+    <div class="mind">
+      <div class="group">
+        <div class="gname">النقل</div>
+        <ul>
+          <li class="built"><i class="pip on"></i><div><b>نفق QUIC</b><span>اتصال واحد يصمد أمام تغيّر عنوان IP.</span></div></li>
+          <li class="built"><i class="pip on"></i><div><b>تمرير HTTPS</b><span>تعبر المواقع الآمنة النفق وهي ما زالت مشفّرة.</span></div></li>
+          <li><i class="pip"></i><div><b>القمر الصناعي والخلوية معًا</b><span>الإرسال عبر الرابطين واستخدام الأسرع منهما.</span></div></li>
+          <li><i class="pip"></i><div><b>انتقال مبكر تنبؤي</b><span>الانتقال إلى شبكة أخرى قبل أن تنقطع الإشارة.</span></div></li>
+          <li><i class="pip"></i><div><b>مصادقة الوكيل</b><span>لا تستخدم وكيل العميل إلا الأجهزة المعتمدة.</span></div></li>
+        </ul>
+      </div>
+      <div class="group">
+        <div class="gname">التنبؤ والذاكرة المؤقتة</div>
+        <ul>
+          <li class="built"><i class="pip on"></i><div><b>تنبؤ Jev بالروابط</b><span>يرتّب الروابط التي يُرجَّح أن يفتحها المستخدم بعد ذلك.</span></div></li>
+          <li class="built"><i class="pip on"></i><div><b>ذاكرة الصفحات المؤقتة</b><span>تلبّي الطلبات المتكررة من دون إعادة جلبها.</span></div></li>
+          <li class="built"><i class="pip on"></i><div><b>الطلبات المشروطة (ETag)</b><span>تتحقق هل تغيّرت الصفحة من دون تنزيلها من جديد.</span></div></li>
+          <li><i class="pip"></i><div><b>Jev محلي عبر Laya</b><span>يُبقي بيانات التصفح على خوادم نتحكم فيها.</span></div></li>
+          <li><i class="pip"></i><div><b>جلب مسبق يراعي البطارية</b><span>يجلب أقل عندما تنخفض البطارية.</span></div></li>
+        </ul>
+      </div>
+      <div class="group">
+        <div class="gname">المحتوى</div>
+        <ul>
+          <li class="built"><i class="pip on"></i><div><b>ضغط deflate</b><span>تعبر الصفحات النفق أصغر بنحو 5.7 مرة.</span></div></li>
+          <li><i class="pip"></i><div><b>ضغط Brotli</b><span>خوارزمية أقوى تصغّر الصفحات أكثر.</span></div></li>
+          <li><i class="pip"></i><div><b>النص أولًا</b><span>يُرسل نص الصفحة قبل صورها.</span></div></li>
+          <li><i class="pip"></i><div><b>حذف HTML وCSS غير اللازمَين</b><span>يزيل شيفرة لا تحمل معلومات مفيدة.</span></div></li>
+          <li><i class="pip"></i><div><b>تصغير الصور والفيديو</b><span>يصغّر الصور ويخفض جودة الفيديو على الروابط البطيئة.</span></div></li>
+        </ul>
+      </div>
+      <div class="group">
+        <div class="gname">التشغيل</div>
+        <ul>
+          <li class="built"><i class="pip on"></i><div><b>بيئة اختبار بالمحاكاة</b><span>تعيد إنشاء روابط الواي فاي و5G والانقطاعات والانتقالات.</span></div></li>
+          <li><i class="pip"></i><div><b>خادم مستضاف ذاتيًا</b><span>تتحكم خدمات الطوارئ في بنيتها التحتية.</span></div></li>
+          <li><i class="pip"></i><div><b>أولوية المستجيبين (eMLPP)</b><span>يخدم المستجيبين أولًا، كما تفعل شبكات GSM مع مكالمات الإنقاذ.</span></div></li>
+          <li><i class="pip"></i><div><b>مكالمات Opus صامدة</b><span>تحوّل تصحيحُ الأخطاء فقدانَ الحزم إلى تشويش قصير.</span></div></li>
+          <li><i class="pip"></i><div><b>رسائل التخزين وإعادة التوجيه</b><span>تصل الرسائل المرسلة أثناء الانقطاع عند عودة الاتصال.</span></div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 -->
+<section class="slide" id="field">
+  <div class="wrap">
+    <p class="tag">10 · الاستخدام الفعلي</p>
+    <h2 class="title">من النموذج الأولي إلى الميدان</h2>
+    <div class="phases">
+      <div class="phase done"><p class="label">المرحلة 1 · مُنجَزة</p><h4>نموذج أولي في المختبر</h4><p>بيئة الاختبار بالمحاكاة وعرض iPhone المقدَّمان هنا.</p></div>
+      <div class="phase"><p class="label">المرحلة 2</p><h4>تسجيلات ميدانية</h4><p>استخدام هوائي لتسجيل انقطاعات الإشارة الحقيقية في الميدان، ثم إعادة تشغيلها في شبكتنا المحاكاة.</p></div>
+      <div class="phase"><p class="label">المرحلة 3</p><h4>خادم سحابي</h4><p>إعداد خادم على AWS لاستضافة وكيل الخادم، حتى يعمل النفق عبر الإنترنت الحقيقي.</p></div>
+      <div class="phase"><p class="label">المرحلة 4</p><h4>تطبيق سهل الاستخدام</h4><p>بناء تطبيق سهل الاستخدام للحاسوب المحمول أو Android يُعدّ وكيل العميل للمستخدم.</p></div>
+    </div>
+    <div class="cols halves">
+      <div>
+        <h3 style="color:var(--ink)">من يمكنه استخدامها</h3>
+        <p>بُنيت شجرة حول المستجيبين الأوائل، مثل فرق البحث والإنقاذ وطواقم الإسعاف العاملة في المناطق النائية، لكن المشكلة نفسها تصيب المستخدمين العاديين. فركّاب القطارات والحافلات، والسائقون المارّون بين الأبراج الخلوية، والمسافرون على اتصالات متقطعة، كلهم يفقدون صفحات ومكالمات عندما يغيّر الهاتف شبكته، فتستطيع شجرة أن تجعل التصفح العادي سلسًا أيضًا. أما لفرق الطوارئ، فسيُسجَّل كل جهاز بمستوى أولوية، ليعرف الخادم من يخدم أولًا عندما يشحّ عرض النطاق.</p>
+        <h3 style="color:var(--ink)">المخاطر والضمانات</h3>
+        <p>لأن وكيل الخادم يتعامل مع حركة المستخدمين، يجب أن يكون موثوقًا، لذلك يعمل على بنية تحتية نتحكم فيها، بدءًا من AWS، وسيعمل Jev محليًا في نهاية المطاف. والمواقع الآمنة تمرّ بالفعل مشفّرة، فلا يستطيع الخادم قراءتها. وسيحتاج وكيل العميل أيضًا إلى مصادقة حتى لا تستخدمه إلا الأجهزة المعتمدة، وإذا تعذّر الوصول إلى الخادم فسيعود العميل إلى اتصال مباشر، فلا يكون المستخدمون أسوأ حالًا مما هم عليه من دون شجرة.</p>
+      </div>
+      <div class="guidelines">
+        <p class="label">إرشادات لجودة الخدمة والتجربة</p>
+        <ol>
+          <li><b>اربط الجلسات بالمستخدم لا بالشبكة.</b> ينبغي أن يستمر الاتصال دون تغيير عندما ينتقل الجهاز إلى شبكة جديدة.</li>
+          <li><b>أبقِ الرابط غير الموثوق قصيرًا.</b> ينبغي ألا تمرّ المصافحات وإعادات الإرسال إلا بين الجهاز وخادم قريب ومستقر.</li>
+          <li><b>اجلب ما يهم ما دامت الإشارة جيدة.</b> نزّل الخرائط والتعليمات وجهات الاتصال قبل أن تنقطع التغطية.</li>
+          <li><b>امنح الحركة الحية الأولوية.</b> ينبغي أن تتقدّم المكالمات الصوتية والرسائل العاجلة دائمًا على التنزيلات الكبيرة.</li>
+          <li><b>طابِق المحتوى مع الاتصال.</b> على الروابط البطيئة، أرسل صورًا أصغر واترك أجزاء الصفحة التي لا تضيف شيئًا.</li>
+          <li><b>احكم على الجودة بما يشعر به المستخدمون.</b> قِس زمن التوقف وزمن التعافي وجودة المكالمات، لا سرعة التنزيل وحدها.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
 </main>
+
+<footer class="closing">
+  <div class="wrap">
+    <div>
+      <p class="thanks-ar">شكراً</p>
+      <p class="thanks" lang="en" dir="ltr" style="text-align:right">Thank you</p>
+      <p lang="en" dir="ltr" style="text-align:right">Andre Meriac · Jassim Alzaabi · Chanwon Cheong</p>
+    </div>
+    <p><a href="https://github.com/a-meriac/Shajarah" dir="ltr">github.com/a-meriac/Shajarah</a></p>
+  </div>
+</footer>
+
+<script src="charts.js"></script>
+<script src="site.js"></script>
 <script>
-  // Mark the section being read in the section links.
-  (() => {
-    const links = [...document.querySelectorAll("nav.toc a")];
-    const byId = new Map(links.map((a) => [a.getAttribute("href").slice(1), a]));
-    const heads = [...byId.keys()].map((id) => document.getElementById(id)).filter(Boolean);
-    const mark = () => {
-      let current = heads[0];
-      for (const h of heads) if (h.getBoundingClientRect().top < innerHeight * 0.3) current = h;
-      // The last sections are too short to scroll their heading that far up: at the bottom of
-      // the page, the last one is being read.
-      if (innerHeight + scrollY >= document.documentElement.scrollHeight - 4) current = heads[heads.length - 1];
-      const active = byId.get(current.id);
-      if (active.classList.contains("active")) return;
-      for (const a of links) a.classList.toggle("active", a === active);
-      // In the one-line bar on phones, keep the current section's link in view.
-      const nav = active.parentElement;
-      if (nav.scrollWidth > nav.clientWidth) active.scrollIntoView({ block: "nearest", inline: "center" });
-    };
-    addEventListener("scroll", mark, { passive: true });
-    addEventListener("resize", mark);
-    mark();
-  })();
+  // Charts draw left to right, so their values keep Latin units (Arabic units would come out reversed).
+  Site.home({
+    series: [
+      { label: "TCP+TLS", color: "var(--series-tcp)" },
+      { label: "QUIC", color: "var(--series-quic)" },
+    ],
+    recovery: { groups: [{ label: "بعد الانقطاع", values: [13.08, 0.96] }], fmt: (v) => (v < 1 ? `${v.toFixed(2)} s` : `${v.toFixed(1)} s`), label: "زمن التعافي بعد انقطاع 5G: ‏TCP+TLS ‏13.1 ثانية، QUIC ‏0.96 ثانية" },
+    loads: { groups: [{ label: "واي فاي", values: [224, 216] }, { label: "5G", values: [265, 229] }], fmt: (v) => `${v} ms`, label: "زمن تحميل الصفحة الوسيط: واي فاي 224 و216 ملّي ثانية، و5G ‏265 و229 ملّي ثانية" },
+  });
 </script>
 </body>
 </html>

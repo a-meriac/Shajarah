@@ -4,323 +4,575 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Shajarah · شجرة</title>
+  <meta name="description" content="Shajarah keeps first responders connected as their phones switch between Wi-Fi, 5G and satellite: one QUIC tunnel that survives IP changes, compression, and AI prefetching. EDGE Challenge, ATP 2026.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Beiruti:wght@400;600;800&display=swap" rel="stylesheet">
   <link rel="alternate" hreflang="ar" href="ar.html">
-  <meta name="description" content="Shajarah keeps your connection alive when your phone switches networks: no new handshake, and a switch made before the signal drops. Likely pages are prefetched too. EDGE Challenge, ATP 2026.">
-  <style>
-    :root {
-      color-scheme: light;
-      --bg: #fbfaf7;
-      --fg: #1d1d1b;
-      --muted: #6b6a66;
-      --line: #e3e0d8;
-      --card: #ffffff;
-      --accent: #2f6f5e;
-      --accent-soft: #e4f0ec;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        color-scheme: dark;
-        --bg: #161615;
-        --fg: #ecebe6;
-        --muted: #9d9b94;
-        --line: #2e2d2a;
-        --card: #1f1f1d;
-        --accent: #7cc4ad;
-        --accent-soft: #1f302b;
-      }
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--fg);
-      font: 17px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
-    }
-    main { max-width: 760px; margin: 0 auto; padding: 56px 16px 80px; }
-    h1 { font-size: 2.4rem; line-height: 1.15; margin: 0 0 12px; letter-spacing: -0.02em; }
-    h1.wordmark { font-family: "Beiruti", "Noto Naskh Arabic", "Segoe UI", sans-serif; font-weight: 800;
-                  font-size: 4.4rem; line-height: 1.1; letter-spacing: 0; margin: 0; color: var(--accent);
-                  text-align: start; }
-    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 20px; }
-    .topbar .tag { margin-bottom: 0; }
-    .lang { font-size: 0.95rem; text-decoration: none; border: 1px solid var(--line); border-radius: 999px;
-            padding: 3px 12px; color: var(--fg); background: var(--card); }
-    .lang:lang(ar) { font-family: "Beiruti", "Noto Naskh Arabic", sans-serif; font-size: 1.05rem; }
-    .subtitle { font-size: 1.6rem; font-weight: 650; letter-spacing: -0.01em; margin: 0 0 18px; }
-    ul.key { list-style: none; padding: 0; margin: 0 0 28px; }
-    ul.key li { position: relative; padding-inline-start: 22px; margin-bottom: 10px; color: var(--muted); font-size: 1.08rem; }
-    ul.key li::before { content: ""; position: absolute; inset-inline-start: 4px; top: 0.62em; width: 8px; height: 8px;
-                        border-radius: 50%; background: var(--accent); }
-    ul.key b { color: var(--fg); }
-    h2 { font-size: 1.25rem; margin: 56px 0 12px; }
-    p { margin: 0 0 14px; }
-    .lede { font-size: 1.2rem; color: var(--muted); margin-bottom: 28px; }
-    .tag { display: inline-block; font-size: 0.8rem; color: var(--accent); background: var(--accent-soft);
-           padding: 3px 10px; border-radius: 999px; margin-bottom: 20px; }
-    a { color: var(--accent); }
-    .links { display: flex; flex-wrap: wrap; gap: 10px; }
-    .btn { display: inline-block; padding: 9px 16px; border-radius: 8px; border: 1px solid var(--line);
-           background: var(--card); color: var(--fg); text-decoration: none; font-size: 0.95rem; }
-    .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); }
-
-    /* How it works: a row of boxes that stacks on phones */
-    .flow { display: flex; align-items: center; gap: 8px; margin: 20px 0 8px; }
-    .node { flex: 1; background: var(--card); border: 1px solid var(--line); border-radius: 10px;
-            padding: 12px; text-align: center; font-size: 0.9rem; }
-    .node b { display: block; font-size: 0.95rem; }
-    .node span { color: var(--muted); font-size: 0.8rem; }
-    .node.tunnel { border-color: var(--accent); background: var(--accent-soft); }
-    .arrow { color: var(--muted); }
-    @media (max-width: 600px) {
-      .flow { flex-direction: column; align-items: stretch; }
-      .arrow { text-align: center; transform: rotate(90deg); }
-    }
-
-    ol.steps { padding-inline-start: 20px; }
-    ol.steps li { margin-bottom: 10px; }
-
-    figure { margin: 20px 0; }
-    figure img, video { width: 100%; border-radius: 10px; border: 1px solid var(--line); }
-    figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 6px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
-    .stat { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
-    .stat .num { font-size: 1.6rem; font-weight: 650; }
-    .stat .label { color: var(--muted); font-size: 0.85rem; }
-    .stat .num { font-variant-numeric: tabular-nums; }
-    .caption { color: var(--muted); font-size: 0.9rem; margin-top: 10px; }
-    .table-wrap { overflow-x: auto; margin: 16px 0 6px; }
-    table { border-collapse: collapse; width: auto; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
-    th, td { text-align: start; padding: 7px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
-    th:first-child, td:first-child { padding-inline-start: 0; }
-    th { color: var(--muted); font-weight: 500; font-size: 0.85rem; }
-    td.num, th.num { text-align: end; white-space: nowrap; }
-    tr.ours td { font-weight: 650; background: var(--accent-soft); }
-    ul.points { padding-inline-start: 20px; }
-    ul.points li { margin-bottom: 10px; }
-    .callout { border-inline-start: 3px solid var(--accent); padding-block: 2px; padding-inline: 16px 0; margin: 20px 0; }
-    /* Section links. Wide screens: a quiet list in the margin beside the article that stays put
-       and marks the section being read. Narrow screens: one slim line at the top that scrolls
-       sideways instead of wrapping. */
-    nav.toc { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
-              margin: 24px -16px 0; padding: 8px 16px; border-bottom: 1px solid var(--line);
-              display: flex; gap: 18px; overflow-x: auto; white-space: nowrap; scrollbar-width: none;
-              font-size: 0.88rem; }
-    nav.toc::-webkit-scrollbar { display: none; }
-    nav.toc a { text-decoration: none; color: var(--muted); padding: 2px 0; border-bottom: 2px solid transparent; }
-    nav.toc a:hover { color: var(--fg); }
-    nav.toc a.active { color: var(--accent); border-bottom-color: var(--accent); }
-    h2 { scroll-margin-top: 64px; }
-    @media (min-width: 1180px) {
-      nav.toc { position: fixed; top: 120px; inset-inline-start: calc(50% - 380px - 200px); width: 170px;
-                margin: 0; padding: 0; border: 0; background: none; flex-direction: column; gap: 2px;
-                overflow: visible; white-space: normal; font-size: 0.85rem; }
-      nav.toc a { padding: 4px 0 4px 12px; padding-inline: 12px 0; border-bottom: 0;
-                  border-inline-start: 2px solid var(--line); }
-      nav.toc a.active { border-inline-start-color: var(--accent); }
-      h2 { scroll-margin-top: 24px; }
-    }
-    footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line);
-             color: var(--muted); font-size: 0.9rem; }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<main>
-  <div class="topbar" id="overview">
-    <span class="tag">EDGE Challenge · ATP 2026</span>
+<nav class="topnav" aria-label="Sections">
+  <div class="wrap">
+    <a class="brand" href="#top" lang="ar" aria-label="Shajarah, back to top">شجرة</a>
+    <div class="links">
+      <a href="#problem"><b>02</b>Problem</a>
+      <a href="#solutions"><b>03</b>Solutions</a>
+      <a href="#idea"><b>04</b>Idea</a>
+      <a href="#model"><b>05</b>Model</a>
+      <a href="#prototype"><b>06</b>Prototype</a>
+      <a href="#testing"><b>07</b>Testing</a>
+      <a href="#results"><b>08</b>Results</a>
+      <a href="#improvements"><b>09</b>Improvements</a>
+      <a href="#field"><b>10</b>In the field</a>
+    </div>
+    <a class="navbtn" href="replay.html">Replay the data</a>
     <a class="lang" href="ar.html" lang="ar" hreflang="ar">العربية</a>
   </div>
-  <h1 class="wordmark" lang="ar">شجرة</h1>
-  <p class="subtitle">Shajarah</p>
-  <p class="lede">Keeps your connection alive when your phone switches networks.</p>
-  <ul class="key">
-    <li><b>No reconnecting.</b> The connection runs over QUIC, which carries on when the phone's IP address changes instead of starting a new handshake the way TCP must. Pages, downloads and calls keep going.</li>
-    <li><b>Switches networks early.</b> When the signal starts to fade and another network is available, the connection moves there before the current one drops.</li>
-    <li><b>Plus: downloads what you'll read next.</b> If there's nowhere to switch to, an AI model picks the pages you're most likely to click and fetches them ahead of time, so they open even with no signal at all.</li>
-  </ul>
-  <div class="links">
-    <a class="btn primary" href="replay.html">Replay the data</a>
-    <a class="btn" href="https://github.com/a-meriac/Shajarah">Source code on GitHub</a>
-    <!-- When the paper is ready: put it in site/media/ and uncomment.
-    <a class="btn" href="media/paper.pdf">Read the paper (PDF)</a> -->
+</nav>
+
+<header class="hero" id="top">
+  <div class="dark">
+    <p class="kicker">EDGE Challenge · ATP 2026</p>
+    <h1 class="wordmark" lang="ar">شجرة</h1>
+    <p class="name">Shajarah</p>
+    <p class="tagline">Keeping first responders connected as their phones switch between Wi-Fi, 5G and satellite.</p>
+    <div class="buttons">
+      <a class="btn primary" href="#results">See the results</a>
+      <a class="btn" href="replay.html">Replay the test runs</a>
+      <a class="btn" href="https://github.com/a-meriac/Shajarah">Code on GitHub</a>
+    </div>
   </div>
-  <nav class="toc" aria-label="On this page">
-    <a href="#overview">Overview</a>
-    <a href="#glance">At a glance</a>
-    <a href="#problem">The problem</a>
-    <a href="#how">How it works</a>
-    <a href="#results">Results</a>
-    <a href="#learned">What we learned</a>
-    <a href="#testing">How we tested</a>
-    <a href="#limits">Limitations</a>
-  </nav>
-
-  <h2 id="glance">Results at a glance</h2>
-  <div class="grid">
-    <div class="stat"><div class="num">60 ms</div><div class="label">longest silence in a live call when leaving Wi-Fi, instead of about one second</div></div>
-    <div class="stat"><div class="num">56% less</div><div class="label">time spent waiting for pages than with an ordinary connection</div></div>
-    <div class="stat"><div class="num">14 of 26</div><div class="label">clicks during a 45-second outage opened instantly, against 3 of 20 without Shajarah</div></div>
-    <div class="stat"><div class="num">0 of 20</div><div class="label">readers waited longer than with a modern connection; 8 were faster, the rest the same</div></div>
+  <div class="side">
+    <div>
+      <h2>Team</h2>
+      <ul class="team">
+        <li>Andre Meriac</li>
+        <li>Jassim Alzaabi</li>
+        <li>Chanwon Cheong</li>
+      </ul>
+    </div>
+    <div class="glance">
+      <div><b>0.96 s</b><span>to carry traffic again after a 5G outage, against 13.1 s for our TCP+TLS baseline</span></div>
+      <div><b>5.7×</b><span>smaller pages across the tunnel, the median over 2,147 Wikipedia pages</span></div>
+      <div><b>16.1%</b><span>of real clicks go to Jev's top three links, over three times a random pick</span></div>
+    </div>
   </div>
-  <p class="caption">
-    Measured in an emulated network: 20 simulated readers browsing Wikipedia through a sudden
-    45-second network outage, and a voice call on a walk out of Wi-Fi range. Details below.
-  </p>
+</header>
 
-  <h2 id="problem">The problem</h2>
-  <p>
-    Phones ignore a fading signal until the connection actually breaks. Only then do they look for
-    another network, reconnect, and retry whatever you were loading. On a train, in a car, or walking out of a building, that means a frozen page,
-    a dropped call.
-  </p>
-  <p>
-    The two usual remedies each cover half of the problem. Modern transport protocols such as QUIC
-    can carry a connection from one network to another, but only after the switch, and they can't
-    load anything while there is no signal at all. Prefetching can store pages in advance, but doing
-    it constantly wastes data on pages nobody opens.
-  </p>
-
-  <h2 id="how">How it works</h2>
-  <div class="flow" aria-label="Browser to client proxy, through a tunnel over Wi-Fi, 5G or satellite, to a server proxy, then websites">
-    <div class="node"><b>Browser</b><span>unchanged</span></div>
-    <div class="arrow">→</div>
-    <div class="node"><b>Client proxy</b><span>on your phone</span></div>
-    <div class="arrow">→</div>
-    <div class="node tunnel"><b>Tunnel</b><span>Wi-Fi · 5G · satellite</span></div>
-    <div class="arrow">→</div>
-    <div class="node"><b>Server proxy</b><span>in the cloud</span></div>
-    <div class="arrow">→</div>
-    <div class="node"><b>Websites</b></div>
+<main>
+<!-- 02 -->
+<section class="slide" id="problem">
+  <div class="wrap">
+    <p class="tag">02 · The problem</p>
+    <h2 class="title">Responders lose connection when they need it most</h2>
+    <div class="cols two">
+      <div>
+        <h3>Why responders need a connection</h3>
+        <p>First responders increasingly rely on online tools in the field. Many teams use ATAK, which puts team positions and incident data on a shared map on their phones and has traditionally depended on cellular service. Search and rescue teams plan and navigate with mapping tools such as CalTopo, and voice calls over the internet let teams talk wherever there is data coverage.</p>
+        <p>In a desert search and rescue operation or during a sandstorm, however, coverage is patchy, and a responder's phone constantly switches between different cell towers and satellite. The tools are only as good as the connection underneath them.</p>
+        <h3>Why switching networks breaks things</h3>
+        <p>Each network switch gives the phone a new IP address. Ordinary app connections are tied to that address, so every switch forces apps to start again with a new TCP handshake. As a result, maps stall, pages fail to load and voice calls drop out.</p>
+        <p>What a single switch looks like to an app:</p>
+        <ol class="steps">
+          <li>The phone joins a new network and gets a new IP address.</li>
+          <li>Every open TCP connection was tied to the old address, so it is now dead, though the app often only notices after a timeout.</li>
+          <li>The app opens a new connection: a TCP handshake, then a TLS handshake, before any data can flow.</li>
+          <li>Whatever was in flight, a page, a map tile, a message, is lost or has to be sent again.</li>
+        </ol>
+        <p>Each gap may seem short, but switches happen again and again as a team moves, and every one interrupts every app on the phone at the same time.</p>
+      </div>
+      <div class="card dark">
+        <p class="label">The cost of reconnecting</p>
+        <div class="num">1.2 s+</div>
+        <p class="big-label">of dead time after every switch on a geostationary satellite link, before any data can flow again.</p>
+        <p>A new secure connection needs a TCP handshake and then a TLS handshake, and each takes at least one full round trip. On a geostationary satellite link a single round trip takes around 600 milliseconds, so the cost of reconnecting grows with the latency of the link.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Link</th><th class="num">Round trip</th><th class="num">Two handshakes</th></tr></thead>
+            <tbody>
+              <tr><td>Wi-Fi</td><td class="num">8 ms</td><td class="num">16 ms</td></tr>
+              <tr><td>5G</td><td class="num">24 ms</td><td class="num">48 ms</td></tr>
+              <tr><td>Low-orbit satellite</td><td class="num">40 ms</td><td class="num">80 ms</td></tr>
+              <tr><td>Geostationary satellite</td><td class="num">600 ms</td><td class="num">1.2 s</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small">Round trips of the links we emulate. Noticing that the old link is gone comes on top.</p>
+        <p><strong class="hl">With QUIC connection migration, no new handshake is needed at all.</strong></p>
+      </div>
+    </div>
   </div>
-  <ol class="steps">
-    <li><b>Watch the signal.</b> The phone measures the signal on every network ten times a second and fits a trend. If the current network is heading below usable strength within the next eight seconds or so, it raises a warning.</li>
-    <li><b>Switch networks before the drop.</b> If another network is healthy, the connection moves there before the current one fails. Because it runs on QUIC, there's no new handshake and nothing in progress is lost.</li>
-    <li><b>Prefetch when there's nowhere to go.</b> When every network drops at once, the phone tells the server a dropout is coming and the server starts sending extra pages: the ones you're most likely to open next, and the likely pages after those.</li>
-    <li><b>Open pages without signal.</b> While there's no connection, pages you've been sent open straight from the phone's storage, as if nothing had happened.</li>
-  </ol>
-  <p>
-    To decide which pages are worth sending, the server asks a decision model,
-    <a href="https://openrouter.ai/docs/guides/community/jev">Jev</a> by TypeSafe, how likely you
-    are to click each link, given the page's title, the last few pages you read and the links on the
-    page. Only titles and link text are sent, never page content. When nothing is about to go wrong,
-    the server sends very little.
-  </p>
+</section>
 
-  <!-- Demo video: swap in one of these when it's ready.
-  <h2 id="video">Demo video</h2>
-  <video src="media/demo.mp4" controls playsinline poster="media/demo-poster.jpg"></video>
-  or
-  <iframe style="width:100%;aspect-ratio:16/9;border:0;border-radius:10px"
-          src="https://www.youtube-nocookie.com/embed/VIDEO_ID" allowfullscreen></iframe> -->
-
-  <h2 id="results">Results</h2>
-  <p>
-    Our main test is a sudden network outage: the cellular signal fades, then there is no signal on
-    any network for 45 seconds. Twenty
-    simulated readers each browse along their own path of real Wikipedia clicks; every setup replays
-    exactly the same readers and clicks, so the only difference is the connection.
-  </p>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr><th>Setup</th><th class="num">Average wait</th><th class="num">Median wait</th><th class="num">Clicks during the<br>outage opened instantly</th><th class="num">Extra data</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>Ordinary (TCP)</td><td class="num">31.7 s</td><td class="num">28.5 s</td><td class="num">3 of 20</td><td class="num">none</td></tr>
-        <tr><td>Modern (QUIC)</td><td class="num">21.6 s</td><td class="num">17.0 s</td><td class="num">3 of 22</td><td class="num">none</td></tr>
-        <tr class="ours"><td>Shajarah</td><td class="num">14.0 s</td><td class="num">3.4 s</td><td class="num">14 of 26</td><td class="num">2.9 MB</td></tr>
-      </tbody>
-    </table>
+<!-- 03 -->
+<section class="slide" id="solutions">
+  <div class="wrap">
+    <p class="tag">03 · Existing solutions</p>
+    <h2 class="title">What already exists, and where it falls short</h2>
+    <div class="cols three">
+      <div class="card sol">
+        <div class="head"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h15l-4-4M20 16H5l4 4"/></svg></span><h3>QUIC connection migration</h3></div>
+        <p>QUIC is a modern transport protocol that identifies a connection by an ID rather than an IP address, so in principle it can move to a new network without reconnecting. It is already built into some web browsers, where it speeds up page loads by combining the transport and encryption handshakes into one.</p>
+        <div class="pm">
+          <p class="plus"><b>+ Strength:</b> Designed to survive network changes, with fast, encrypted handshakes.</p>
+          <p class="minus"><b>− Limitation:</b> Migration is rarely used in practice, and most apps and voice traffic still run over TCP, which cannot migrate at all.</p>
+        </div>
+      </div>
+      <div class="card sol">
+        <div class="head"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7l5 5-5 5M12 18h7"/></svg></span><h3>Mosh, the mobile shell</h3></div>
+        <p>Mosh is a remote terminal tool that keeps a session alive while the client changes IP address, even when switching between Wi-Fi, cellular data and wired Ethernet. It also predicts how each keystroke will change the screen, hiding latency from the user.</p>
+        <div class="pm">
+          <p class="plus"><b>+ Strength:</b> Proven roaming between networks, plus prediction that hides delay.</p>
+          <p class="minus"><b>− Limitation:</b> Works only for terminal sessions, so it cannot help a responder loading a map, opening a website or making a call.</p>
+        </div>
+      </div>
+      <div class="card sol">
+        <div class="head"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="17" cy="7" r="2"/><path d="M6 7v10M17 9c0 5-11 4-11 8"/></svg></span><h3>Multipath TCP</h3></div>
+        <p>Multipath TCP lets a single connection use several network paths at once, such as Wi-Fi and cellular. If one path fails, traffic carries on over the others. Apple uses it on iPhones for services such as Siri, so that requests survive a weak Wi-Fi signal.</p>
+        <div class="pm">
+          <p class="plus"><b>+ Strength:</b> Keeps a connection alive when one link drops, and can combine the capacity of several links.</p>
+          <p class="minus"><b>− Limitation:</b> Both the device and the server must support it, which most websites do not, and it does nothing to reduce the data sent over slow links.</p>
+        </div>
+      </div>
+    </div>
+    <h3>Side by side</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th></th><th>Survives an IP change</th><th>Helps web and app traffic</th><th>Needs every website to change</th><th>Sends less data on slow links</th></tr></thead>
+        <tbody>
+          <tr><td>QUIC migration</td><td>Yes, when both ends support it</td><td>Only apps built on QUIC</td><td>Yes</td><td>No</td></tr>
+          <tr><td>Mosh</td><td>Yes</td><td>No, terminal sessions only</td><td>Needs Mosh on the remote machine</td><td>Only for terminal screens</td></tr>
+          <tr><td>Multipath TCP</td><td>Yes, if another path is up</td><td>Where both ends support it</td><td>Yes</td><td>No</td></tr>
+          <tr class="ours"><td>Shajarah</td><td>Yes</td><td>Apps that use the phone's proxy setting</td><td>No, only our own server</td><td>Yes: compression and prefetching</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
-  <p class="caption">
-    Wait: the total time a reader spent looking at a page that was still loading, per trip.
-    Ordinary: TCP, which reconnects only after the link has failed, as most apps do. Modern: QUIC,
-    which survives network changes but doesn't prefetch. 20 readers per setup.
-  </p>
-  <p>
-    Compared reader by reader with the modern connection, Shajarah was faster for 8 of the 20 test cases, and
-    slower for none of them. The other readers clicked a page the model hadn't expected and waited for
-    the signal to return, exactly as they would have without Shajarah. The typical reader waited for a page to load for only
-    3.4 seconds, instead of 17 seconds.
-  </p>
-  <p>
-    Switching networks early matters the most for anything live. On a walk out of a building's Wi-Fi, a simulated
-    voice call (50 packets a second) that switched after Wi-Fi had died went silent for about a
-    second and lost 2% of its audio. With Shajarah switching a few seconds before the drop, the longest
-    gap was 60 ms and the only packet loss was the network's normal 0.4%.
-  </p>
-  <p class="callout">
-    <a href="replay.html">Replay the data</a> from any of these runs, second by second: the signal,
-    the moment the dropout is predicted, and every page each setup loaded or waited for.
-  </p>
+</section>
 
-  <h2 id="learned">What's new, and what we learned</h2>
-  <p>
-    Connection migration and link prefetching both exist. What Shajarah adds is timing: it predicts
-    the dropout from the fading signal and moves the connection to another network before the old
-    one fails, without a new handshake. When there's nowhere to switch to, the same warning tells
-    the server when to prefetch, how much, and when to stop. Building it taught us two things that matter for
-    anyone combining them:
-  </p>
-  <ul class="points">
-    <li><b>Never prefetch into a dying link.</b> Our first version kept sending pages after the signal had gone. The unacknowledged data filled the connection when coverage returned, and some readers ended up waiting longer than with no prefetching at all. The server now stops just before the predicted dropout and never has more than 256 KB of packets in flight, because the predicted time can be a few seconds off.</li>
-    <li><b>QUIC waits too long after a long outage.</b> While the link is down, QUIC doubles its retry interval with every failed attempt; after 45 seconds, the next retry was half a minute away, so the connection stayed silent long after the signal came back. We reset that cooldown as soon as the client responds again.</li>
-  </ul>
+<!-- 04 -->
+<section class="slide" id="idea">
+  <div class="wrap">
+    <p class="tag">04 · Our idea</p>
+    <h2 class="title">A dual proxy between the phone and the cloud</h2>
+    <p class="lede">Shajarah places two proxies between the user's apps and the internet: a client proxy on the user's device and a server proxy in the cloud. All traffic between them travels through one QUIC tunnel that stays open when the device changes network, while the server proxy does the heavy work on the device's behalf. Unlike the existing solutions, it both survives network switches and reduces the data that has to cross a slow link.</p>
+    <div class="ideas">
+      <div class="card dark">
+        <div class="n">01</div>
+        <h3>Survives IP switches</h3>
+        <p>The client proxy takes the traffic of every app that uses the phone's proxy setting and carries it inside a single QUIC tunnel. When the phone switches networks, the tunnel moves with it instead of breaking.</p>
+      </div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div class="card">
+        <div class="n">02</div>
+        <h3>Sends less data</h3>
+        <p>The server proxy fetches web pages on the phone's behalf and compresses them before sending, so far less data crosses the slow link. This saves bandwidth on every connection, not just satellite ones, lowering data costs and leaving more capacity for time-critical traffic such as voice calls.</p>
+      </div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div class="card">
+        <div class="n">03</div>
+        <h3>Loads before you click</h3>
+        <p>The server uses Jev, a lightweight AI model accessed through an API, to predict which links the responder will open next. It sends those pages to the phone in advance, so they load instantly, even during a brief loss of signal.</p>
+      </div>
+    </div>
+    <div class="cols halves" style="margin-top:28px">
+      <div>
+        <h3>Why two proxies?</h3>
+        <p>Neither the apps nor the websites have to change. Apps talk to the client proxy as they would to any proxy, and websites see an ordinary visitor: the server proxy. Only the part in between, which we control on both ends, needs to cope with the network changing.</p>
+      </div>
+      <div>
+        <h3>Keeping the unreliable link short</h3>
+        <p>The handshakes with websites and any lost packets on the way to them are handled by the server, over its fast and stable connection. Only the phone's own link, the one that keeps changing, is left to the QUIC tunnel.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-  <h2 id="testing">How we tested it</h2>
-  <p>
-    Everything ran on an emulated network on Linux. The phone, a router, our server and the
-    websites each live in their own network namespace, and the phone's Wi-Fi, 5G and satellite links
-    had a realistic delay, loss and bandwidth. We scheduled the link to fade and cut out over specific times to simulate real-world conditions.
-  </p>
-  <p>
-    We chose to test Shajarah using Wikipedia as the website that the clients are loading, as it is one of the only large public records of which
-    links people actually click. Each reader follows links that real readers chose in August 2026,
-    with realistic reading times, across about 2,000 Wikipedia pages frozen for the tests. We scored
-    the click predictions separately against July's clicks. We also tested Shajarah on ordinary
-    sites (a news front page, documentation, a shop, a forum, a government service) to make sure it
-    isn't tuned only to Wikipedia.
-  </p>
+<!-- 05 -->
+<section class="slide" id="model">
+  <div class="wrap">
+    <p class="tag">05 · Model</p>
+    <h2 class="title">How Shajarah fits together</h2>
+    <div class="flow">
+      <div class="col"><header><b>Phone and apps</b><span>unchanged apps</span></header>
+        <div class="body">The responder keeps using ordinary apps such as a browser, a mapping tool or a VoIP client, and none of them need to be modified. Every request they make is routed through the client proxy instead of going straight to the network. This way, responders keep the tools they already know, and those tools simply stop breaking when the network changes.</div></div>
+      <div class="col dk"><header><b>Client proxy</b><span>on the device</span></header>
+        <div class="body">The client proxy runs on the phone and is the only part of the system that knows which network is in use. It places each request inside the QUIC tunnel and keeps a cache of pages, serving prefetched pages straight from it. When the IP address changes, it continues the same tunnel from the new address, so apps never see a disconnect.</div></div>
+      <div class="col or"><header><b>QUIC tunnel</b><span>Wi-Fi · 5G · satellite</span></header>
+        <div class="body">The tunnel is a single QUIC connection between the phone and the cloud, travelling over Wi-Fi, 5G or satellite. Because QUIC identifies the connection by an ID rather than an address, switching links needs no new handshake. Lost packets only delay their own stream, so one slow page never holds up the others.</div></div>
+      <div class="col dk"><header><b>Cloud proxy</b><span>on a remote server</span></header>
+        <div class="body">The server sits on a stable, fast connection and does the heavy work for the phone. It fetches pages from the web and compresses them with deflate so they are about 5.7 times smaller. Because its own connection never changes, the handshakes with websites happen over its stable link, and the unstable part of the journey is kept short.</div></div>
+      <div class="col pe"><header><b>Jev prediction</b><span>next-link model</span></header>
+        <div class="body">Whenever the server delivers a page, it extracts the page's links and passes them to Jev with the user's recent history. Jev ranks the links by how likely the user is to click them next, and the server pushes the top pages to the phone's cache. If the responder opens one during a signal gap, it loads instantly.</div></div>
+    </div>
+    <div class="cols three" style="margin-top:32px">
+      <div>
+        <h3>A request, step by step</h3>
+        <ol class="steps">
+          <li>An app asks the client proxy for a page.</li>
+          <li>If a fresh copy is in the phone's cache, it is served at once. If an older copy is there, the proxy asks the server whether it changed (ETag), and only the answer crosses the link when it hasn't.</li>
+          <li>Otherwise the request goes through the tunnel; the server fetches the page, compresses it and sends it back.</li>
+          <li>In the background, the server asks Jev which links come next and pushes the likely pages to the cache.</li>
+        </ol>
+      </div>
+      <div>
+        <h3>When the network changes</h3>
+        <ol class="steps">
+          <li>The client proxy checks the tunnel five times a second.</li>
+          <li>If the current link stops answering for a second, it moves the tunnel to another network that works.</li>
+          <li>The same QUIC connection carries on from the new IP address: no new handshake, and requests in flight complete.</li>
+          <li>If the link comes back after a long silence, QUIC's retry timer is reset at once, so traffic flows again within a second.</li>
+        </ol>
+      </div>
+      <div>
+        <h3>When the signal fades</h3>
+        <ol class="steps">
+          <li>The phone watches the signal strength and fits a trend to the last five seconds.</li>
+          <li>If the signal will become unusable within eight seconds and there is no other network, it warns the server.</li>
+          <li>The server prefetches much more, two clicks deep for long outages, so there is something to read offline.</li>
+          <li>It stops sending just before the expected drop, since data sent into a dead link only jams the connection when it comes back.</li>
+        </ol>
+      </div>
+    </div>
+    <div class="callout"><b>Secure sites.</b> HTTPS traffic passes through the tunnel still encrypted: neither proxy can read it, and the server simply relays it to the website. Those connections survive a network change like everything else in the tunnel, but they are not compressed or prefetched.</div>
+  </div>
+</section>
 
-  <h2 id="limits">Limitations</h2>
-  <ul class="points">
-    <li><b>Prefetching costs data.</b> About 3 MB per dropout, most of it never read. That's roughly one photo from a phone camera or a couple of minutes of music streaming, and it's spent mainly in the seconds before a dropout rather than on every page.</li>
-    <li><b>The network is emulated.</b> The signal curves are hand-made; replaying real drive-test measurements is the next step.</li>
-    <li><b>Privacy.</b> The prototype calls Jev through a hosted API. In a production system the model would run on our own server, so page titles and link text never leave infrastructure we control.</li>
-  </ul>
+<!-- 06 -->
+<section class="slide" id="prototype">
+  <div class="wrap">
+    <p class="tag">06 · Prototype</p>
+    <h2 class="title">How our prototype works</h2>
+    <div class="diagram">
+      <div class="row">
+        <div class="box"><b>iPhone</b><span>Safari, proxy set in Wi-Fi settings</span></div>
+        <div class="link">Wi-Fi<i></i>port 8118</div>
+        <div class="box dk"><b>Computer 1</b><span>client proxy (phone side)</span></div>
+        <div class="link"><i></i></div>
+        <div class="tunnel">QUIC tunnel<small>over Ethernet or mobile data</small></div>
+        <div class="link"><i></i></div>
+        <div class="box dk"><b>Computer 2</b><span>server proxy (cloud side)</span></div>
+        <div class="link"><i></i></div>
+        <div class="box"><b>Web</b><span>websites</span></div>
+      </div>
+      <p class="note"><b>Why two computers?</b> We have not yet committed to paying for server hosting, so computer 2 stands in for the cloud server. In the real system, the client proxy runs on the iPhone itself and connects directly to a remote server.</p>
+    </div>
+    <div class="cols three" style="margin-top:28px">
+      <div>
+        <h3>Running the demo</h3>
+        <p>Computer 2 runs the server proxy and creates a certificate, which we copy to computer 1 so the two machines can trust each other. Computer 1 runs the client proxy and accepts connections from other devices on the Wi-Fi network. On the iPhone, we set a manual proxy in the Wi-Fi settings that points at computer 1, then browse normally in Safari. The full steps are in the <a href="https://github.com/a-meriac/Shajarah#live-demo-browse-from-an-iphone-through-the-tunnel">README on GitHub</a>.</p>
+      </div>
+      <div>
+        <h3>Two kinds of traffic</h3>
+        <p>Secure HTTPS sites pass through the tunnel still encrypted, so neither proxy can read their contents. Plain HTTP sites go through the full proxy, where the server compresses pages and the phone side caches them. Both kinds of traffic share the same QUIC tunnel between the two computers.</p>
+      </div>
+      <div>
+        <h3>Showing a network switch</h3>
+        <p>The iPhone's proxy setting only works on Wi-Fi, so the switch happens on computer 1: it keeps Wi-Fi for the iPhone and moves the tunnel between Ethernet and mobile data while Safari keeps loading. On computer 2, the server log records every site opened, and Wireshark shows one QUIC connection carrying all of the traffic. The switch itself is what our emulated tests measure; see the results.</p>
+      </div>
+    </div>
+    <h3>What the live demo showed</h3>
+    <div class="stats">
+      <div class="stat"><div class="num">94</div><p>secure connections to 44 different sites in half an hour of browsing on the iPhone, all carried by one QUIC tunnel</p></div>
+      <div class="stat"><div class="num">41</div><p>connections opened by a single Google search in under four seconds, every one inside the same tunnel</p></div>
+      <div class="stat"><div class="num">0.9 <small>s</small></div><p>to load a 922 KB Wikipedia page over HTTPS through both proxies</p></div>
+    </div>
+    <p class="muted small">The Instagram app worked through the tunnel unchanged: it picks up the iPhone's proxy setting by itself. Every connection that failed was to an ad, tracking or telemetry server, which the network we tested on appears to block.</p>
+    <div class="built-with">
+      <span class="label">Built with</span>
+      <span><b>aioquic</b> QUIC tunnel</span>
+      <span><b>Python ssl</b> TCP baseline</span>
+      <span><b>zlib</b> compression</span>
+      <span><b>Jev via OpenRouter</b> link prediction</span>
+      <span><b>selectolax</b> link extraction</span>
+    </div>
+  </div>
+</section>
 
-  <footer>
-    Shajarah is our entry for the EDGE Challenge, ATP 2026.
-    <a href="replay.html">Replay the data</a> ·
-    <a href="https://github.com/a-meriac/Shajarah">Source code</a>
-    <!-- Team: add names here. -->
-  </footer>
+<!-- 07 -->
+<section class="slide" id="testing">
+  <div class="wrap">
+    <p class="tag">07 · Testing process</p>
+    <h2 class="title">How we tested Shajarah</h2>
+    <div class="cols two">
+      <div>
+        <p>To test the system fairly and repeatably, we built a simulated network on a single Linux PC. Network namespaces create four separate machines: a phone, a router, a cloud server and a website. tc netem, a free, open-source Linux tool, gives each link realistic delay, jitter, packet loss and bandwidth. We ran two scenarios: a 5G outage, where the signal fades and the link stays dead for about 45 seconds before returning, and a walk where Wi-Fi fades out and the phone moves over to 5G.</p>
+        <div class="label" style="margin-top:18px">The outage scenario, second by second</div>
+        <div class="timeline" aria-label="0 to 30 s: good 5G signal. 30 to 38 s: the signal fades. 38 to 84 s: no signal on any network. 84 to 120 s: 5G back.">
+          <div class="ok" style="flex:30">5G</div><div class="fade" style="flex:8"></div><div class="dead" style="flex:46">no signal · 46 s</div><div class="ok" style="flex:36">5G back</div>
+        </div>
+        <div class="timeline-axis"><span>0 s</span><span>30 s</span><span>38 s</span><span>84 s</span><span>120 s</span></div>
+        <p class="small muted" style="margin-top:8px">The signal fades from 30 s, the link is dead from 38 s to 84 s, and 5G returns. Wi-Fi and satellite are unavailable throughout, so there is nowhere to switch to.</p>
+        <p>Instead of inventing browsing behaviour, we used Wikipedia's public click records, which count how often real readers followed each link from one article to another. Each run is one simulated reader following real clicks from August 2026. We ran 20 runs for each of four setups, from plain TCP up to the full system, and compare median results so that one unusually fast or slow run cannot skew the outcome.</p>
+        <p>Jev is used as-is through its API, so it needs no training data. We scored it on 1,002 Wikipedia pages against 109.1 million real clicks from July 2026 and compared it with three baselines: a random pick among the same 40 links Jev sees, the order of links on the page, and the most-clicked link from June. Keeping the three months separate means no predictor is scored on clicks it learned from.</p>
+      </div>
+      <div class="card">
+        <p class="label">What we measured</p>
+        <ul class="clean">
+          <li><b class="yes" style="color:var(--orange-text)">Page load time:</b> The time from requesting a page to receiving all of it.</li>
+          <li><b style="color:var(--orange-text)">Recovery time:</b> How long after the network comes back the first new packet gets through the tunnel.</li>
+          <li><b style="color:var(--orange-text)">Data transferred:</b> The bytes sent over the phone's link, before and after compression.</li>
+          <li><b style="color:var(--orange-text)">Hit rate:</b> The share of real clicks that went to a predictor's top one or top three links.</li>
+          <li><b style="color:var(--orange-text)">Wasted prefetch:</b> Data spent on prefetched pages that were never opened.</li>
+        </ul>
+        <p class="label" style="margin-top:22px">Link settings (one-way)</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Link</th><th class="num">Delay</th><th class="num">Jitter</th><th class="num">Loss</th><th class="num">Bandwidth</th></tr></thead>
+            <tbody>
+              <tr><td>Wi-Fi</td><td class="num">4 ms</td><td class="num">2 ms</td><td class="num">0.1%</td><td class="num">100 Mbit/s</td></tr>
+              <tr><td>5G</td><td class="num">12 ms</td><td class="num">4 ms</td><td class="num">0.2%</td><td class="num">150 Mbit/s</td></tr>
+              <tr><td class="muted">LTE</td><td class="num muted">25 ms</td><td class="num muted">8 ms</td><td class="num muted">0.5%</td><td class="num muted">30 Mbit/s</td></tr>
+              <tr><td class="muted">Low-orbit satellite</td><td class="num muted">20 ms</td><td class="num muted">6 ms</td><td class="num muted">0.5%</td><td class="num muted">100 Mbit/s</td></tr>
+              <tr><td class="muted">Geostationary satellite</td><td class="num muted">300 ms</td><td class="num muted">10 ms</td><td class="num muted">0.3%</td><td class="num muted">20 Mbit/s</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small muted">Applied at both ends of each link, so a round trip is about twice the delay. The grey rows are ready in the testbed but not yet used in a test.</p>
+      </div>
+    </div>
+    <h3>The four setups</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Setup</th><th>Tunnel</th><th>Compression</th><th>Prefetching</th><th class="num">Runs</th><th class="num">Pages opened</th></tr></thead>
+        <tbody>
+          <tr><td>TCP+TLS</td><td>TCP+TLS, reconnects after a drop</td><td>Yes</td><td>No</td><td class="num">20</td><td class="num">78</td></tr>
+          <tr><td>QUIC</td><td>QUIC, keeps the connection</td><td>Yes</td><td>No</td><td class="num">20</td><td class="num">90</td></tr>
+          <tr><td>QUIC + fixed prefetch</td><td>QUIC</td><td>Yes</td><td>Jev, ignoring outage warnings</td><td class="num">20</td><td class="num">92</td></tr>
+          <tr class="ours"><td>Shajarah</td><td>QUIC</td><td>Yes</td><td>Jev, more before an outage</td><td class="num">20</td><td class="num">95</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>Three months of click data, kept apart</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Month</th><th>Used for</th></tr></thead>
+        <tbody>
+          <tr><td>June 2026</td><td>The most-clicked-link baseline only</td></tr>
+          <tr><td>July 2026</td><td>The answer key: scoring Jev and the baselines (109.1 million clicks on 1,002 pages)</td></tr>
+          <tr><td>August 2026</td><td>The browsing sessions the simulated readers follow</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- 08 -->
+<section class="slide" id="results">
+  <div class="wrap">
+    <p class="tag">08 · Test results</p>
+    <h2 class="title">What the tests showed</h2>
+    <div class="stats">
+      <div class="stat dark"><div class="num">0.96 s</div><p>QUIC recovery after a 5G outage, against 13.1 s for our TCP+TLS baseline (median of 20 runs)</p></div>
+      <div class="stat"><div class="num">5.7×</div><p>median page size reduction with deflate, across 2,147 Wikipedia pages</p></div>
+      <div class="stat"><div class="num">16.1%</div><p>Jev top-3 hit rate, over three times a random pick among the same links (5.1%)</p></div>
+    </div>
+    <div class="cols halves">
+      <div class="chart-card">
+        <h4>Recovery time, median</h4>
+        <p class="sub">After the 5G outage, 20 runs each</p>
+        <div class="legend"><span><i class="key" style="background:var(--series-tcp)"></i>TCP+TLS</span><span><i class="key" style="background:var(--series-quic)"></i>QUIC</span></div>
+        <div id="chart-recovery"></div>
+        <details class="data"><summary>Show as a table</summary>
+          <div class="table-wrap"><table><thead><tr><th></th><th class="num">Median</th><th class="num">Middle half of runs</th></tr></thead><tbody>
+            <tr><td>TCP+TLS</td><td class="num">13.1 s</td><td class="num">13.0–13.2 s</td></tr>
+            <tr><td>QUIC</td><td class="num">0.96 s</td><td class="num">0.92–1.03 s</td></tr>
+          </tbody></table></div></details>
+      </div>
+      <div class="chart-card">
+        <h4>Page load time, median</h4>
+        <p class="sub">Away from any drop</p>
+        <div class="legend"><span><i class="key" style="background:var(--series-tcp)"></i>TCP+TLS</span><span><i class="key" style="background:var(--series-quic)"></i>QUIC</span></div>
+        <div id="chart-loads"></div>
+        <details class="data"><summary>Show as a table</summary>
+          <div class="table-wrap"><table><thead><tr><th></th><th class="num">TCP+TLS</th><th class="num">QUIC</th></tr></thead><tbody>
+            <tr><td>Wi-Fi</td><td class="num">224 ms (10 pages)</td><td class="num">216 ms (10 pages)</td></tr>
+            <tr><td>5G</td><td class="num">265 ms (54 pages)</td><td class="num">229 ms (61 pages)</td></tr>
+          </tbody></table></div></details>
+      </div>
+    </div>
+    <div class="cols three" style="margin-top:28px">
+      <div>
+        <h3>Recovery</h3>
+        <p>When 5G returned after an outage of about 45 seconds, QUIC was carrying traffic again within a second, while our TCP+TLS baseline took 13 seconds to reconnect. This includes our own change to QUIC, which resets its retry timer as soon as the server is heard again; without it, QUIC also took tens of seconds. Away from any drop, page loads took about the same time on both.</p>
+      </div>
+      <div>
+        <h3>Prediction</h3>
+        <p>Jev's top-3 hit rate of 16.1% beats both data-free baselines, a random pick (5.1%) and the order of links on the page (9.4%), without needing any click data. A most-clicked ranking scores higher (38.1%), but it relies on the website's own click logs, which a proxy does not have.</p>
+      </div>
+      <div>
+        <h3>Data savings</h3>
+        <p>Across the 20 outage runs, plain QUIC sent 4.7 MB where the uncompressed pages would have taken 25.2 MB, 5.4 times less. Over the whole Wikipedia snapshot used in testing, 847 MB of pages compresses down to 133 MB, a 6.4-fold saving on every link, not just slow ones.</p>
+      </div>
+    </div>
+
+    <h3>Waiting for pages during the outage</h3>
+    <p>Total time each reader spent waiting for pages over the two-minute run, 20 readers per setup. Pages opened from the phone during the outage are the ones Shajarah had prefetched or saved.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Setup</th><th class="num">Mean wait</th><th class="num">Median wait</th><th class="num">Outage clicks opened from the phone</th><th class="num">Prefetched per run</th></tr></thead>
+        <tbody>
+          <tr><td>TCP+TLS</td><td class="num">31.7 s</td><td class="num">28.5 s</td><td class="num">3 of 20</td><td class="num">–</td></tr>
+          <tr><td>QUIC</td><td class="num">21.6 s</td><td class="num">17.0 s</td><td class="num">3 of 22</td><td class="num">–</td></tr>
+          <tr><td>QUIC + fixed prefetch</td><td class="num">20.1 s</td><td class="num">12.6 s</td><td class="num">5 of 23</td><td class="num">0.24 MB</td></tr>
+          <tr class="ours"><td>Shajarah</td><td class="num">14.0 s</td><td class="num">3.4 s</td><td class="num">14 of 26</td><td class="num">2.9 MB</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Against plain QUIC, Shajarah was faster for 8 of the 20 readers and slower for none; the others clicked a page that had not been predicted and waited for the network like everyone else.</p>
+
+    <div class="cols halves">
+      <div>
+        <h3>Prediction in detail</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Predictor</th><th class="num">Top 1</th><th class="num">Top 3</th><th>Needs</th></tr></thead>
+            <tbody>
+              <tr class="ours"><td>Jev</td><td class="num">6.2%</td><td class="num">16.1%</td><td>Nothing but the page</td></tr>
+              <tr><td>Random pick among the same 40 links</td><td class="num">1.7%</td><td class="num">5.1%</td><td>Nothing</td></tr>
+              <tr><td>Order of links on the page</td><td class="num">2.7%</td><td class="num">9.4%</td><td>Nothing</td></tr>
+              <tr><td>Most-clicked link last month</td><td class="num">19.2%</td><td class="num">38.1%</td><td>The website's click logs</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small muted">Share of each page's real July clicks that went to the predictor's top links, averaged over 1,002 pages. Jev sees the page's first 40 content links, which hold 66% of the clicks; the most-clicked baseline ranks every link.</p>
+      </div>
+      <div>
+        <h3>Data in detail</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th></th><th class="num">Uncompressed</th><th class="num">Sent</th><th class="num">Saving</th></tr></thead>
+            <tbody>
+              <tr><td>Wikipedia snapshot, 2,147 pages</td><td class="num">847 MB</td><td class="num">133 MB</td><td class="num">6.4×</td></tr>
+              <tr><td>QUIC, 20 outage runs</td><td class="num">25.2 MB</td><td class="num">4.7 MB</td><td class="num">5.4×</td></tr>
+              <tr><td>Shajarah, 20 outage runs, with prefetching</td><td class="num">384 MB</td><td class="num">62.1 MB</td><td class="num">6.2×</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small muted">Per page, the saving ranges from 2.7× to 19×; the middle half of pages shrink between 5.1× and 6.2×.</p>
+        <h4>The cost of prefetching</h4>
+        <p>Shajarah sent 2.9 MB of prefetched pages per run, and 99.2% of it was never opened: most predictions miss, so a prefetch pays off only when an outage makes one hit worth the data. That is why prefetching is heavy only when a dropout is predicted.</p>
+      </div>
+    </div>
+
+    <h3>What went wrong along the way</h3>
+    <ul class="dash">
+      <li><b>Pushing into a dead link.</b> Early runs kept prefetching into the outage. The unacknowledged data then held up QUIC's recovery, and some readers waited longer than with plain QUIC. The server now stops just before the predicted drop and never has more than 256 KB of prefetched data unacknowledged.</li>
+      <li><b>A retry timer that kept growing.</b> After 45 seconds of silence, QUIC waited about 30 seconds before trying again. Both ends now reset that timer as soon as they hear from each other.</li>
+      <li><b>Pages that never matched.</b> Prefetched pages were missed because the same address was written in two ways. Addresses are now normalised on both ends.</li>
+    </ul>
+    <div class="buttons" style="margin-top:18px"><a class="btn primary" href="replay.html">Replay the test runs</a></div>
+  </div>
+</section>
+
+<!-- 09 -->
+<section class="slide" id="improvements">
+  <div class="wrap">
+    <p class="tag">09 · Improvements</p>
+    <h2 class="title">What we can improve</h2>
+    <div class="map-legend"><span><i class="pip on"></i>Built</span><span><i class="pip"></i>Planned</span></div>
+    <div class="mind">
+      <div class="group">
+        <div class="gname">Transport</div>
+        <ul>
+          <li class="built"><i class="pip on"></i><div><b>QUIC tunnel</b><span>One connection that survives IP address changes.</span></div></li>
+          <li class="built"><i class="pip on"></i><div><b>HTTPS pass-through</b><span>Secure sites cross the tunnel still encrypted.</span></div></li>
+          <li><i class="pip"></i><div><b>Satellite and cellular at once</b><span>Send over both links and use whichever is faster.</span></div></li>
+          <li><i class="pip"></i><div><b>Predictive early switching</b><span>Move networks before the signal fails.</span></div></li>
+          <li><i class="pip"></i><div><b>Proxy authentication</b><span>Only approved devices can use the client proxy.</span></div></li>
+        </ul>
+      </div>
+      <div class="group">
+        <div class="gname">Prediction and caching</div>
+        <ul>
+          <li class="built"><i class="pip on"></i><div><b>Jev link prediction</b><span>Ranks the links a user is likely to open next.</span></div></li>
+          <li class="built"><i class="pip on"></i><div><b>Page cache</b><span>Serves repeated requests without refetching them.</span></div></li>
+          <li class="built"><i class="pip on"></i><div><b>Conditional requests (ETag)</b><span>Checks if a page changed without redownloading it.</span></div></li>
+          <li><i class="pip"></i><div><b>Local Jev via Laya</b><span>Keeps browsing data on servers we control.</span></div></li>
+          <li><i class="pip"></i><div><b>Battery-aware prefetching</b><span>Prefetches less when the battery is running low.</span></div></li>
+        </ul>
+      </div>
+      <div class="group">
+        <div class="gname">Content</div>
+        <ul>
+          <li class="built"><i class="pip on"></i><div><b>Deflate compression</b><span>Pages cross the tunnel about 5.7 times smaller.</span></div></li>
+          <li><i class="pip"></i><div><b>Brotli compression</b><span>A stronger algorithm that shrinks pages further.</span></div></li>
+          <li><i class="pip"></i><div><b>Text-first loading</b><span>Sends the text of a page before its images.</span></div></li>
+          <li><i class="pip"></i><div><b>Strip unneeded HTML and CSS</b><span>Removes code that carries no useful information.</span></div></li>
+          <li><i class="pip"></i><div><b>Resize images and video</b><span>Shrinks images and lowers video quality on slow links.</span></div></li>
+        </ul>
+      </div>
+      <div class="group">
+        <div class="gname">Operations</div>
+        <ul>
+          <li class="built"><i class="pip on"></i><div><b>Emulation testbed</b><span>Recreates Wi-Fi and 5G links, outages and handovers.</span></div></li>
+          <li><i class="pip"></i><div><b>Self-hosted server</b><span>Emergency services control their own infrastructure.</span></div></li>
+          <li><i class="pip"></i><div><b>Responder priority (eMLPP)</b><span>Serves responders first, as GSM does for rescue calls.</span></div></li>
+          <li><i class="pip"></i><div><b>Resilient Opus voice calls</b><span>Error correction turns packet loss into brief distortion.</span></div></li>
+          <li><i class="pip"></i><div><b>Store-and-forward messages</b><span>Messages sent in a blackout arrive on reconnection.</span></div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 -->
+<section class="slide" id="field">
+  <div class="wrap">
+    <p class="tag">10 · Real-world use</p>
+    <h2 class="title">From prototype to the field</h2>
+    <div class="phases">
+      <div class="phase done"><p class="label">Phase 1 · Done</p><h4>Lab prototype</h4><p>The emulated testbed and iPhone demo presented here.</p></div>
+      <div class="phase"><p class="label">Phase 2</p><h4>Field recordings</h4><p>Use an antenna to record real signal drops in the field, then replay them in our simulated network.</p></div>
+      <div class="phase"><p class="label">Phase 3</p><h4>Cloud server</h4><p>Set up an AWS server to host the server proxy, so the tunnel runs over the real internet.</p></div>
+      <div class="phase"><p class="label">Phase 4</p><h4>Easy-to-use app</h4><p>Build a user-friendly laptop or Android app that sets up the client proxy for the user.</p></div>
+    </div>
+    <div class="cols halves">
+      <div>
+        <h3 style="color:var(--ink)">Who can use it</h3>
+        <p>Shajarah was built around first responders, such as search and rescue teams and ambulance crews working in remote areas, but the same problem affects everyday users. Commuters on trains and buses, drivers passing between cell towers and travellers on patchy connections all lose pages and calls when their phone changes network, so Shajarah can keep ordinary browsing smooth too. For emergency teams, each device would be registered with a priority level, so the server knows whom to serve first when bandwidth is scarce.</p>
+        <h3 style="color:var(--ink)">Risks and safeguards</h3>
+        <p>Because the server proxy handles users' traffic, it must be trusted, so it runs on infrastructure we control, starting with AWS, and Jev would eventually run locally. Secure sites already pass through encrypted, so the server cannot read them. The client proxy will also need authentication so that only approved devices can use it, and if the server is unreachable, the client will fall back to a direct connection, so users are never worse off than without Shajarah.</p>
+      </div>
+      <div class="guidelines">
+        <p class="label">Guidelines for quality of service and experience</p>
+        <ol>
+          <li><b>Tie sessions to the user, not the network.</b> A connection should carry on unchanged when the device moves to a new network.</li>
+          <li><b>Keep the unreliable link short.</b> Handshakes and resends should only travel between the device and a nearby, stable server.</li>
+          <li><b>Fetch what matters while the signal is good.</b> Download maps, instructions and contacts before coverage drops.</li>
+          <li><b>Give live traffic priority.</b> Voice calls and urgent messages should always go ahead of large downloads.</li>
+          <li><b>Match content to the connection.</b> On slow links, send smaller images and leave out parts of a page that add nothing.</li>
+          <li><b>Judge quality by what users feel.</b> Measure stall time, recovery time and call quality, not just download speed.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
 </main>
+
+<footer class="closing">
+  <div class="wrap">
+    <div>
+      <p class="thanks-ar" lang="ar">شكراً</p>
+      <p class="thanks">Thank you</p>
+      <p>Andre Meriac · Jassim Alzaabi · Chanwon Cheong</p>
+    </div>
+    <p><a href="https://github.com/a-meriac/Shajarah">github.com/a-meriac/Shajarah</a></p>
+  </div>
+</footer>
+
+<script src="charts.js"></script>
+<script src="site.js"></script>
 <script>
-  // Mark the section being read in the section links.
-  (() => {
-    const links = [...document.querySelectorAll("nav.toc a")];
-    const byId = new Map(links.map((a) => [a.getAttribute("href").slice(1), a]));
-    const heads = [...byId.keys()].map((id) => document.getElementById(id)).filter(Boolean);
-    const mark = () => {
-      let current = heads[0];
-      for (const h of heads) if (h.getBoundingClientRect().top < innerHeight * 0.3) current = h;
-      // The last sections are too short to scroll their heading that far up: at the bottom of
-      // the page, the last one is being read.
-      if (innerHeight + scrollY >= document.documentElement.scrollHeight - 4) current = heads[heads.length - 1];
-      const active = byId.get(current.id);
-      if (active.classList.contains("active")) return;
-      for (const a of links) a.classList.toggle("active", a === active);
-      // In the one-line bar on phones, keep the current section's link in view.
-      const nav = active.parentElement;
-      if (nav.scrollWidth > nav.clientWidth) active.scrollIntoView({ block: "nearest", inline: "center" });
-    };
-    addEventListener("scroll", mark, { passive: true });
-    addEventListener("resize", mark);
-    mark();
-  })();
+  Site.home({
+    series: [
+      { label: "TCP+TLS", color: "var(--series-tcp)" },
+      { label: "QUIC", color: "var(--series-quic)" },
+    ],
+    recovery: { groups: [{ label: "After 5G outage", values: [13.08, 0.96] }], fmt: (v) => (v < 1 ? `${v.toFixed(2)} s` : `${v.toFixed(1)} s`), label: "Recovery time after the 5G outage: TCP+TLS 13.1 s, QUIC 0.96 s" },
+    loads: { groups: [{ label: "Wi-Fi", values: [224, 216] }, { label: "5G", values: [265, 229] }], fmt: (v) => `${v} ms`, label: "Median page load time: Wi-Fi 224 ms TCP+TLS, 216 ms QUIC; 5G 265 ms TCP+TLS, 229 ms QUIC" },
+  });
 </script>
 </body>
 </html>

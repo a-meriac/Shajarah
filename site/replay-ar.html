@@ -4,176 +4,85 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>شجرة · إعادة عرض البيانات</title>
+  <meta name="description" content="التشغيلات العشرون المسجّلة وراء نتائج شجرة: التعافي بعد انقطاع 5G، والانتظار، والبيانات المرسلة، وتحميل الصفحات لكل قارئ، مع إعادة عرض كل تشغيل ثانية بثانية.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Beiruti:wght@400;600;800&display=swap" rel="stylesheet">
   <link rel="alternate" hreflang="en" href="replay.html">
-  <meta name="description" content="خمسة اختبارات مسجّلة لانقطاع مفاجئ للشبكة مدته 45 ثانية، ثانيةً بثانية، مع شجرة ومن دونها.">
-  <style>
-    :root {
-      color-scheme: light;
-      --bg: #fbfaf7;
-      --fg: #1d1d1b;
-      --muted: #6b6a66;
-      --line: #e3e0d8;
-      --card: #ffffff;
-      --accent: #2f6f5e;
-      --accent-soft: #e4f0ec;
-      /* chart roles (validated palette: networks = slots 1-3, page sources = slots 6/7/5) */
-      --grid: #e1e0d9;
-      --axis: #c3c2b7;
-      --ink-muted: #898781;
-      --net-wifi0: #2a78d6;
-      --net-cell0: #eb6834;
-      --net-sat0: #1baf7a;
-      --src-push: #008300;
-      --src-cache: #4a3aa7;
-      --src-net: #e87ba4;
-      --outage: rgba(11, 11, 11, 0.06);
-      --push-burst: #b9b7ae;
-      --good: #0ca30c;
-      --warning: #fab219;
-      --critical: #d03b3b;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root:where(:not([data-theme="light"])) {
-        color-scheme: dark;
-        --bg: #161615;
-        --fg: #ecebe6;
-        --muted: #9d9b94;
-        --line: #2e2d2a;
-        --card: #1f1f1d;
-        --accent: #7cc4ad;
-        --accent-soft: #1f302b;
-        --grid: #2c2c2a;
-        --axis: #383835;
-        --net-wifi0: #3987e5;
-        --net-cell0: #d95926;
-        --net-sat0: #199e70;
-        --src-push: #008300;
-        --src-cache: #9085e9;
-        --src-net: #d55181;
-        --outage: rgba(255, 255, 255, 0.07);
-        --push-burst: #55544f;
-      }
-    }
-    :root[data-theme="dark"] {
-      color-scheme: dark;
-      --bg: #161615; --fg: #ecebe6; --muted: #9d9b94; --line: #2e2d2a; --card: #1f1f1d;
-      --accent: #7cc4ad; --accent-soft: #1f302b; --grid: #2c2c2a; --axis: #383835;
-      --net-wifi0: #3987e5; --net-cell0: #d95926; --net-sat0: #199e70;
-      --src-push: #008300; --src-cache: #9085e9; --src-net: #d55181;
-      --outage: rgba(255, 255, 255, 0.07);
-      --push-burst: #55544f;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--fg);
-      font: 17.5px/1.6 "Beiruti", "Noto Naskh Arabic", system-ui, sans-serif;
-    }
-    main { max-width: 1100px; margin: 0 auto; padding: 32px 16px 64px; }
-    select { max-width: 100%; }
-    a { color: var(--accent); }
-    h1 { font-size: 1.8rem; line-height: 1.2; margin: 8px 0 6px; letter-spacing: -0.01em; }
-    .lede { color: var(--muted); margin: 0 0 20px; max-width: 70ch; }
-    .back { font-size: 0.9rem; }
-
-    .controls {
-      display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: end;
-      background: var(--card); border: 1px solid var(--line); border-radius: 10px;
-      padding: 12px 14px; margin-bottom: 16px;
-    }
-    .controls label { display: flex; flex-direction: column; font-size: 0.8rem; color: var(--muted); gap: 3px; }
-    select, button {
-      font: inherit; font-size: 0.9rem; color: var(--fg); background: var(--bg);
-      border: 1px solid var(--line); border-radius: 7px; padding: 6px 10px;
-    }
-    button { cursor: pointer; }
-    button.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); min-width: 84px; }
-    .timebar { display: flex; align-items: center; gap: 12px; flex: 1 1 320px; min-width: 0; }
-    .timebar input { flex: 1; min-width: 0; accent-color: var(--accent); }
-    .clock { font-variant-numeric: tabular-nums; min-width: 92px; text-align: end; white-space: nowrap; }
-
-    .lanes { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
-    .lane { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px; min-width: 0; }
-    .lane h2 { font-size: 1.05rem; margin: 0 0 2px; }
-    .lane .sub { color: var(--muted); font-size: 0.85rem; margin: 0 0 10px; min-height: 3.1em; } /* room for two lines, so both panels line up */
-
-    /* Fixed-size tiles: values change every frame during playback and must never reflow the page. */
-    .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
-    @media (max-width: 520px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    .tile { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; height: 62px; overflow: hidden; }
-    .tile .k { color: var(--muted); font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .tile .v { font-size: 1.15rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-               font-variant-numeric: tabular-nums; }
-    .tile .v small { font-size: 0.75rem; font-weight: 400; color: var(--muted); }
-    .status { display: inline-flex; align-items: center; gap: 6px; }
-    .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
-
-    .chart { position: relative; margin-top: 6px; }
-    .chart .title { font-size: 0.8rem; color: var(--muted); margin: 8px 0 2px; }
-    svg { display: block; width: 100%; overflow: visible; user-select: none; direction: ltr; }
-    svg text { fill: var(--ink-muted); font-size: 11px; font-family: inherit; }
-    svg .ink { fill: var(--fg); }
-    svg .grid { stroke: var(--grid); stroke-width: 1; }
-    svg .axis { stroke: var(--axis); stroke-width: 1; }
-    svg .cursor { stroke: var(--fg); stroke-width: 1.5; }
-    svg .outage { fill: var(--outage); }
-    svg .hit { cursor: pointer; }
-
-    .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.8rem; color: var(--muted); margin: 4px 0 0; }
-    .legend span { display: inline-flex; align-items: center; gap: 5px; }
-    .swatch { width: 12px; height: 3px; border-radius: 2px; display: inline-block; }
-    .swatch.block { height: 10px; width: 10px; border-radius: 2px; }
-
-    .tooltip {
-      position: fixed; pointer-events: none; z-index: 10; max-width: 260px;
-      background: var(--card); color: var(--fg); border: 1px solid var(--line); border-radius: 8px;
-      padding: 6px 9px; font-size: 0.8rem; box-shadow: 0 4px 16px rgba(0,0,0,0.12); display: none;
-    }
-    .tooltip b { font-weight: 600; }
-
-    details { margin-top: 10px; font-size: 0.85rem; }
-    table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
-    th, td { text-align: start; padding: 4px 8px; border-bottom: 1px solid var(--line); }
-    th { color: var(--muted); font-weight: 500; }
-    td.num, th.num { text-align: end; }
-    .table-note { color: var(--muted); margin: 8px 0 4px; }
-    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-    .lang { font-size: 0.9rem; text-decoration: none; border: 1px solid var(--line); border-radius: 999px;
-            padding: 3px 12px; color: var(--fg); background: var(--card); }
-    .lang:lang(ar) { font-family: "Beiruti", "Noto Naskh Arabic", sans-serif; font-size: 1rem; }
-
-    .empty { background: var(--card); border: 1.5px dashed var(--line); border-radius: 10px; padding: 32px 18px; color: var(--muted); }
-    .empty code { background: var(--accent-soft); padding: 1px 5px; border-radius: 4px; color: var(--fg); }
-    @media (min-width: 980px) { .lanes.two { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
-    @media (max-width: 600px) {
-      .controls label { flex: 1 1 100%; }
-      .controls label select { width: 100%; }
-      .timebar { flex-basis: 100%; }
-      .clock { min-width: 0; }
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<main>
-  <div class="topbar">
-    <a class="back" href="ar.html">→ شجرة</a>
+<nav class="topnav" aria-label="الأقسام">
+  <div class="wrap">
+    <a class="brand" href="ar.html" aria-label="الصفحة الرئيسية لشجرة">شجرة</a>
+    <div class="links">
+      <a href="ar.html">→ الرئيسية</a>
+      <a href="#summary"><b>01</b>التشغيلات العشرون</a>
+      <a href="#player"><b>02</b>أعد عرض تشغيل</a>
+    </div>
     <a class="lang" href="replay.html" lang="en" hreflang="en" data-keep-hash>English</a>
   </div>
-  <h1>إعادة عرض البيانات</h1>
-  <p class="lede">
-    خمسة اختبارات مسجّلة لانقطاع مفاجئ للشبكة مدته 45 ثانية، ثانيةً بثانية. في كل منها يتصفح قارئ افتراضي
-    ويكيبيديا، ويمكنك مقارنة كيف تتعامل شجرة والاتصال العادي والاتصال الحديث مع النقرات نفسها تمامًا.
-    هذه الخمس هي الأوضح من بين القرّاء العشرين الذين اختبرناهم؛ أما المتوسطات عبرهم جميعًا ففي
-    <a href="ar.html#results">الصفحة الرئيسية</a>.
-  </p>
+</nav>
 
-  <div id="app"><p class="lede">جارٍ تحميل التشغيلات…</p></div>
+<main>
+<section class="slide" id="summary">
+  <div class="wrap">
+    <p class="tag">إعادة عرض البيانات</p>
+    <h2 class="title">التشغيلات العشرون وراء النتائج</h2>
+    <p class="lede">كل رقم في شريحة النتائج مصدره هذه التشغيلات: 20 قارئًا افتراضيًا يتصفحون ويكيبيديا خلال انقطاع مفاجئ لشبكة 5G، وكل قارئ شُغّل مرة مع كل إعداد. كل نقطة قارئ واحد. انقر نقطة لتعيد عرض ذلك التشغيل ثانية بثانية.</p>
+    <div class="stats" id="summary-stats"></div>
+    <div class="cols halves">
+      <div class="chart-card">
+        <h4>التعافي بعد الانقطاع</h4>
+        <p class="sub">الوقت من عودة 5G حتى أول رد عبر النفق</p>
+        <div class="legend"><span><i class="key dot" style="background:var(--series-tcp)"></i>نفق TCP+TLS</span><span><i class="key dot" style="background:var(--series-quic)"></i>نفق QUIC</span><span><i class="key" style="background:var(--ink);width:2px;height:12px"></i>القيمة الوسيطة</span></div>
+        <div id="chart-recovery"></div>
+      </div>
+      <div class="chart-card">
+        <h4>الوقت المقضي في انتظار الصفحات</h4>
+        <p class="sub">الإجمالي لكل قارئ خلال التشغيل الذي يمتد دقيقتين</p>
+        <div class="legend"><span><i class="key dot" style="background:var(--series-tcp)"></i>نفق TCP+TLS</span><span><i class="key dot" style="background:var(--series-quic)"></i>نفق QUIC</span><span><i class="key" style="background:var(--ink);width:2px;height:12px"></i>القيمة الوسيطة</span></div>
+        <div id="chart-wait"></div>
+      </div>
+      <div class="chart-card">
+        <h4>البيانات المرسلة عبر رابط الهاتف، لكل تشغيل</h4>
+        <p class="sub">المتوسط على التشغيلات العشرين، مع الصفحات المجلوبة مسبقًا</p>
+        <div class="legend"><span><i class="key" style="background:var(--series-tcp)"></i>غير مضغوطة</span><span><i class="key" style="background:var(--series-quic)"></i>المرسَلة عبر النفق</span></div>
+        <div id="chart-data"></div>
+      </div>
+      <div class="chart-card">
+        <h4>زمن تحميل الصفحة بعيدًا عن أي انقطاع</h4>
+        <p class="sub">نقطة لكل صفحة فُتحت عبر الشبكة</p>
+        <div class="legend"><span><i class="key dot" style="background:var(--series-tcp)"></i>نفق TCP+TLS</span><span><i class="key dot" style="background:var(--series-quic)"></i>نفق QUIC</span><span><i class="key" style="background:var(--ink);width:2px;height:12px"></i>القيمة الوسيطة</span></div>
+        <div id="chart-loads"></div>
+      </div>
+    </div>
+    <details class="data" style="margin-top:16px"><summary>كل التشغيلات في جدول</summary><div class="table-wrap" id="summary-table"></div></details>
+  </div>
+</section>
+
+<section class="slide" id="player">
+  <div class="wrap">
+    <p class="tag">أعد عرض تشغيل</p>
+    <h2 class="title">قارئ واحد، ثانية بثانية</h2>
+    <p class="lede">اختر قارئًا وقارن بين إعدادين جنبًا إلى جنب. الشريط الرمادي هو الانقطاع: تضعف الإشارة ابتداءً من الثانية 30، ويبقى الرابط ميتًا من الثانية 38 إلى 84، ثم تعود 5G.</p>
+    <div id="app"><p class="muted">جارٍ تحميل التشغيلات…</p></div>
+  </div>
+</section>
 </main>
+
+<footer class="closing">
+  <div class="wrap">
+    <div>
+      <p class="thanks-ar">شكراً</p>
+      <p class="thanks" lang="en" dir="ltr" style="text-align:right">Thank you</p>
+      <p lang="en" dir="ltr" style="text-align:right">Andre Meriac · Jassim Alzaabi · Chanwon Cheong</p>
+    </div>
+    <p><a href="ar.html">العودة إلى صفحة المشروع</a> · <a href="https://github.com/a-meriac/Shajarah">GitHub</a></p>
+  </div>
+</footer>
 <div class="tooltip" id="tooltip" role="tooltip"></div>
+<script src="charts.js"></script>
 <script src="replay.js"></script>
 </body>
 </html>

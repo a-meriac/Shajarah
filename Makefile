@@ -40,8 +40,9 @@ experiments:
 cutoff-sweep:  ## offline: how often the next page is pushed, per push cutoff (needs snapshot + Jev cache)
 	$(PY) -m experiments.cutoff_sweep
 
-replay-export:  ## copy finished runs of results/main into site/replays for the replay page
-	$(PY) -m experiments.export_replay main
+replay-export:  ## the outage runs (results/tunnel20) and their summary, for the site's replay page
+	$(PY) -m experiments.export_replay tunnel20 --scenarios car_tunnel_45s
+	$(PY) -m experiments.site_data
 
 figures:  ## paper figures into figures/ (BATCH=<results batch> for the system charts)
 	$(PY) -m experiments.figures --batch $(or $(BATCH),main)
