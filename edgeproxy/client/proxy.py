@@ -302,6 +302,25 @@ class ClientProxy:
         await self.transport.close()
 
 
+async def keep_alive(transport: ClientTransport, every_s: float, log: EventLog = NULL_LOG) -> None:
+    """Ping the server every `every_s`, so an idle tunnel isn't closed by the idle timeout, and
+    reconnect if the connection has ended anyway (standalone use; the experiments' path manager
+    pings on its own)."""
+    while True:
+        await asyncio.sleep(every_s)
+        if not transport.connected:
+            try:
+                await asyncio.wait_for(transport.connect(), 10)
+            except (OSError, TimeoutError):
+                continue
+            log.emit("tunnel_reconnected")
+            print("tunnel reconnected", flush=True)
+        try:
+            await asyncio.wait_for(transport.request(Frame(MsgType.PING)), 5)
+        except (OSError, TimeoutError):
+            pass
+
+
 async def _run(args) -> None:
     from edgeproxy.common.settings import load_settings
 
@@ -334,7 +353,7 @@ async def _run(args) -> None:
     )
     await proxy.start(args.listen, args.listen_port)
     print(f"client proxy on {args.listen}:{proxy.port} -> {args.transport} tunnel", flush=True)
-    await asyncio.Event().wait()
+    await keep_alive(transport, s.client.keepalive_s, proxy.log)
 
 
 def main() -> None:

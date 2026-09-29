@@ -57,6 +57,8 @@ client:
   request_timeout_s: 60        # give up on a page that isn't cached
   revalidate_timeout_s: 2      # serve the cached copy if the tunnel doesn't answer in time
   retry_delay_s: 0.2           # wait before retrying on a broken connection (TCP baseline)
+  keepalive_s: 15              # standalone client proxy: ping this often, so an idle tunnel isn't
+                               # closed by tunnel.idle_timeout_s (and reconnect if it was)
 
 server:
   origin_timeout_s: 15

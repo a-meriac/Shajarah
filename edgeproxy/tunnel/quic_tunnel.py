@@ -293,6 +293,8 @@ class QuicClientTransport(ClientTransport):
         return self._protocol is not None and not self._protocol.terminated.is_set()
 
     async def connect(self) -> None:
+        if self._protocol is not None and self._protocol._transport is not None:
+            self._protocol._transport.close()  # reconnecting: drop the dead connection's socket
         loop = asyncio.get_running_loop()
         connection = QuicConnection(configuration=self.configuration)
         _, protocol = await loop.create_datagram_endpoint(

@@ -46,6 +46,7 @@ class ClientSettings:
     request_timeout_s: float = 60.0
     revalidate_timeout_s: float = 2.0
     retry_delay_s: float = 0.2
+    keepalive_s: float = 15.0  # standalone client proxy: ping this often so the tunnel stays open
 
 
 @dataclass

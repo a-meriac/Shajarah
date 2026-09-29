@@ -110,3 +110,33 @@ async def test_probe_backoff_resets_when_the_peer_is_heard_again(tunnel_certs):
     finally:
         await client.close()
         server.close()
+
+
+async def test_keep_alive_holds_an_idle_tunnel_open_and_reconnects(tunnel_certs):
+    from edgeproxy.client.proxy import keep_alive
+
+    async def handler(frame, session):
+        return Frame(MsgType.RESPONSE, {"status": 204})
+
+    cert, key = tunnel_certs
+    server = QuicTunnelServer(
+        "127.0.0.1", 0, server_configuration(cert, key, idle_timeout=1), handler
+    )
+    await server.start()
+    client = QuicClientTransport(
+        ("127.0.0.1", server.port), client_configuration(cert, idle_timeout=1), ("127.0.0.1", 0)
+    )
+    await client.connect()
+    pinger = asyncio.ensure_future(keep_alive(client, 0.3))
+    try:
+        await asyncio.sleep(2.5)  # well past the 1 s idle timeout
+        assert client.connected and len(server.sessions) == 1
+        client._protocol.close()  # the connection ends anyway
+        await asyncio.sleep(1.5)
+        assert client.connected and len(server.sessions) == 2  # a new connection
+        reply = await asyncio.wait_for(client.request(Frame(MsgType.PING)), 2)
+        assert reply.headers["status"] == 204
+    finally:
+        pinger.cancel()
+        await client.close()
+        server.close()
